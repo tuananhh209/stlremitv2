@@ -6,16 +6,15 @@ import {
   nativeToScVal,
   scValToNative,
   Address,
+  Contract,
+  Memo,
   rpc as StellarRpc,
   xdr,
 } from "@stellar/stellar-sdk";
 import { STELLAR_CONFIG } from "./stellar-config";
-import {
-  StellarTransactionError,
-  InsufficientLiquidityError,
-} from "./errors";
+import { StellarTransactionError, InsufficientLiquidityError } from "./errors";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface FundContractResult {
   txHash: string;
@@ -41,10 +40,10 @@ export interface ContractBalance {
   available: number;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// USDC uses 7 decimal places in Soroban (stroops-like)
-const USDC_DECIMALS = 10_000_000; // 1 USDC = 10^7 units
+// Contract stores amounts as i128 with 7 decimal places (1 USDC = 10_000_000)
+const USDC_DECIMALS = 10_000_000;
 
 function toContractAmount(usdc: number): bigint {
   return BigInt(Math.round(usdc * USDC_DECIMALS));
@@ -69,7 +68,7 @@ export class StellarService {
     this.contractId = STELLAR_CONFIG.ESCROW_CONTRACT_ID;
   }
 
-  // ── Internal: invoke contract function ──────────────────────────────────
+  // ── Internal: build, simulate, sign, submit ───────────────────────────────
 
   private async invokeContract(
     functionName: string,
@@ -80,9 +79,7 @@ export class StellarService {
       this.agentKeypair.publicKey()
     );
 
-    const contract = new (await import("@stellar/stellar-sdk")).Contract(
-      this.contractId
-    );
+    const contract = new Contract(this.contractId);
 
     let txBuilder = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
@@ -92,14 +89,12 @@ export class StellarService {
       .setTimeout(30);
 
     if (memo) {
-      txBuilder = txBuilder.addMemo(
-        (await import("@stellar/stellar-sdk")).Memo.text(memo.slice(0, 28))
-      );
+      txBuilder = txBuilder.addMemo(Memo.text(memo.slice(0, 28)));
     }
 
     const tx = txBuilder.build();
 
-    // Simulate first
+    // Simulate
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
       throw new StellarTransactionError(
@@ -109,7 +104,7 @@ export class StellarService {
       );
     }
 
-    // Assemble and sign
+    // Assemble + sign
     const assembled = StellarRpc.assembleTransaction(tx, simResult).build();
     assembled.sign(this.agentKeypair);
 
@@ -139,17 +134,51 @@ export class StellarService {
       throw new StellarTransactionError(
         getResult.status,
         txHash,
-        `Transaction ${txHash} failed with status: ${getResult.status}`
+        `Transaction ${txHash} failed: ${getResult.status}`
       );
     }
 
-    const returnValue =
-      getResult.returnValue ?? xdr.ScVal.scvVoid();
-
+    const returnValue = getResult.returnValue ?? xdr.ScVal.scvVoid();
     return { txHash, returnValue };
   }
 
-  // ── Public methods ────────────────────────────────────────────────────────
+  // ── Public API ────────────────────────────────────────────────────────────
+
+  /**
+   * Query available collateral balance from contract (read-only simulation).
+   */
+  async getContractBalance(): Promise<ContractBalance> {
+    try {
+      const agentAccount = await this.server.getAccount(
+        this.agentKeypair.publicKey()
+      );
+      const contract = new Contract(this.contractId);
+
+      const tx = new TransactionBuilder(agentAccount, {
+        fee: BASE_FEE,
+        networkPassphrase: Networks.TESTNET,
+      })
+        .addOperation(contract.call("get_balance"))
+        .setTimeout(30)
+        .build();
+
+      const simResult = await this.server.simulateTransaction(tx);
+      if (StellarRpc.Api.isSimulationError(simResult)) {
+        return { total: 0, available: 0 };
+      }
+
+      const successResult =
+        simResult as StellarRpc.Api.SimulateTransactionSuccessResponse;
+      const retval = successResult.result?.retval;
+      if (!retval) return { total: 0, available: 0 };
+
+      const totalRaw = scValToNative(retval) as bigint;
+      const total = fromContractAmount(totalRaw);
+      return { total, available: total };
+    } catch {
+      return { total: 0, available: 0 };
+    }
+  }
 
   /**
    * Agent deposits USDC into the escrow contract collateral pool.
@@ -164,7 +193,6 @@ export class StellarService {
     const { txHash, returnValue } = await this.invokeContract("fund", args);
     const newBalanceRaw = scValToNative(returnValue) as bigint;
     const newBalance = fromContractAmount(newBalanceRaw);
-
     return { txHash, newBalance };
   }
 
@@ -175,7 +203,6 @@ export class StellarService {
     txId: string,
     usdcAmount: number
   ): Promise<ReserveCollateralResult> {
-    // Check available balance first
     const balance = await this.getContractBalance();
     if (balance.available < usdcAmount) {
       throw new InsufficientLiquidityError(usdcAmount, balance.available);
@@ -201,13 +228,9 @@ export class StellarService {
       new Address(this.agentKeypair.publicKey()).toScVal(),
     ];
 
-    const { txHash, returnValue } = await this.invokeContract(
-      "confirm",
-      args
-    );
+    const { txHash, returnValue } = await this.invokeContract("confirm", args);
     const releasedRaw = scValToNative(returnValue) as bigint;
     const releasedUsdc = fromContractAmount(releasedRaw);
-
     return { txHash, releasedUsdc };
   }
 
@@ -217,20 +240,17 @@ export class StellarService {
   async refundCollateral(txId: string): Promise<RefundCollateralResult> {
     const args = [nativeToScVal(txId, { type: "string" })];
 
-    const { txHash, returnValue } = await this.invokeContract(
-      "refund",
-      args
-    );
+    const { txHash, returnValue } = await this.invokeContract("refund", args);
     const refundedRaw = scValToNative(returnValue) as bigint;
     const refundedUsdc = fromContractAmount(refundedRaw);
-
     return { txHash, refundedUsdc };
   }
+}
 
-  // ── Client-side support ──────────────────────────────────────────────────
+  // ── Client-side helpers (for wallet-signed transactions) ─────────────────
 
   /**
-   * Build a transaction for funding the contract.
+   * Build an unsigned fund transaction XDR for client-side signing.
    */
   async buildFundTx(publicKey: string, usdcAmount: number): Promise<string> {
     const amount = toContractAmount(usdcAmount);
@@ -240,7 +260,7 @@ export class StellarService {
     ];
 
     const account = await this.server.getAccount(publicKey);
-    const contract = new (await import("@stellar/stellar-sdk")).Contract(this.contractId);
+    const contract = new Contract(this.contractId);
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
@@ -252,14 +272,14 @@ export class StellarService {
 
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new Error("Simulation failed");
+      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
     }
 
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
 
   /**
-   * Build a transaction for confirming payout.
+   * Build an unsigned confirm transaction XDR for client-side signing.
    */
   async buildConfirmTx(publicKey: string, txId: string): Promise<string> {
     const args = [
@@ -268,7 +288,7 @@ export class StellarService {
     ];
 
     const account = await this.server.getAccount(publicKey);
-    const contract = new (await import("@stellar/stellar-sdk")).Contract(this.contractId);
+    const contract = new Contract(this.contractId);
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
@@ -280,23 +300,26 @@ export class StellarService {
 
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new Error("Simulation failed");
+      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
     }
 
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
 
   /**
-   * Submit a signed transaction.
+   * Submit a signed transaction XDR and wait for confirmation.
    */
   async submitTransaction(signedXdr: string): Promise<string> {
     const tx = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
     const sendResult = await this.server.sendTransaction(tx);
+
     if (sendResult.status === "ERROR") {
-      throw new Error(sendResult.errorResult?.result().toString() ?? "Submit error");
+      throw new StellarTransactionError(
+        sendResult.errorResult?.result().toString() ?? "SUBMIT_ERROR",
+        sendResult.hash
+      );
     }
 
-    // Wait for confirmation
     const txHash = sendResult.hash;
     let getResult = await this.server.getTransaction(txHash);
     let attempts = 0;
@@ -309,10 +332,13 @@ export class StellarService {
       attempts++;
     }
 
+    if (getResult.status !== StellarRpc.Api.GetTransactionStatus.SUCCESS) {
+      throw new StellarTransactionError(getResult.status, txHash);
+    }
+
     return txHash;
   }
 }
 
-// Singleton instance
+// Singleton
 export const stellarService = new StellarService();
-
