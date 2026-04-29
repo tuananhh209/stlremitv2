@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { WalletProvider } from "@/components/wallet-provider";
+import { AppGate } from "@/components/app-gate";
 
 export const metadata: Metadata = {
   title: "STL Remit — Cross-Border Remittance",
@@ -16,10 +17,9 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <WalletProvider>
-          {children}
+          <AppGate>{children}</AppGate>
         </WalletProvider>
       </body>
     </html>
   );
 }
-

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { calculateAmounts } from "@/lib/config";
+import { useWallet } from "@/components/wallet-provider";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,12 +14,15 @@ import {
   Info,
   DollarSign,
   AlertCircle,
+  LogOut,
+  Building2,
 } from "lucide-react";
 
 type Step = "amount" | "receiver" | "review";
 
 export default function SendMoneyPage() {
   const router = useRouter();
+  const { address, bankInfo, disconnect } = useWallet();
   const [step, setStep] = useState<Step>("amount");
   const [vndAmount, setVndAmount] = useState<string>("");
   const [receiverName, setReceiverName] = useState("");
@@ -60,11 +64,10 @@ export default function SendMoneyPage() {
   }
 
   const steps = [
-    { id: "amount", label: "Amount", icon: DollarSign },
-    { id: "receiver", label: "Receiver", icon: User },
-    { id: "review", label: "Review", icon: Check },
+    { id: "amount", label: "Amount" },
+    { id: "receiver", label: "Receiver" },
+    { id: "review", label: "Review" },
   ];
-
   const currentIdx = steps.findIndex((s) => s.id === step);
 
   return (
@@ -82,15 +85,22 @@ export default function SendMoneyPage() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Send Money</h1>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Send Money</h1>
+            {bankInfo && (
+              <p className="text-xs text-gray-400">
+                {bankInfo.bankName} · {bankInfo.accountNumber}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Stepper */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-4">
           {steps.map((s, idx) => (
-            <div key={s.id} className="flex items-center gap-3">
+            <div key={s.id} className="flex items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                   step === s.id
                     ? "bg-primary text-white"
                     : currentIdx > idx
@@ -98,26 +108,23 @@ export default function SendMoneyPage() {
                     : "bg-gray-100 text-gray-400"
                 }`}
               >
-                {currentIdx > idx ? <Check className="w-4 h-4" /> : idx + 1}
+                {currentIdx > idx ? <Check className="w-3.5 h-3.5" /> : idx + 1}
               </div>
-              <span
-                className={`text-sm font-semibold ${
-                  step === s.id ? "text-gray-900" : "text-gray-400"
-                }`}
-              >
+              <span className={`text-sm font-semibold ${step === s.id ? "text-gray-900" : "text-gray-400"}`}>
                 {s.label}
               </span>
-              {idx < steps.length - 1 && (
-                <div className="w-8 h-[2px] bg-gray-100" />
-              )}
+              {idx < steps.length - 1 && <div className="w-6 h-[2px] bg-gray-100" />}
             </div>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Live Rates
-        </div>
+        <button
+          onClick={disconnect}
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-red-500 transition-colors px-3 py-2 rounded-xl hover:bg-red-50"
+        >
+          <LogOut className="w-4 h-4" />
+          <span className="hidden sm:inline">Disconnect</span>
+        </button>
       </nav>
 
       <div className="flex-1 flex items-center justify-center p-6">
@@ -134,13 +141,23 @@ export default function SendMoneyPage() {
             {step === "amount" && (
               <div className="p-10 space-y-8">
                 <div className="space-y-2 text-center">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    How much are you sending?
-                  </h2>
-                  <p className="text-gray-500">
-                    Enter the amount in VND to see the conversion.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">How much to send?</h2>
+                  <p className="text-gray-500">Enter the amount in VND</p>
                 </div>
+
+                {/* Sender bank info display */}
+                {bankInfo && (
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-outline/5">
+                    <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
+                    <div className="text-sm">
+                      <span className="font-semibold text-gray-700">{bankInfo.bankName}</span>
+                      <span className="text-gray-400 mx-2">·</span>
+                      <span className="font-mono text-gray-600">{bankInfo.accountNumber}</span>
+                      <span className="text-gray-400 mx-2">·</span>
+                      <span className="text-gray-600">{bankInfo.accountHolder}</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-6">
                   <div className="relative">
@@ -151,7 +168,7 @@ export default function SendMoneyPage() {
                       type="number"
                       value={vndAmount}
                       onChange={(e) => setVndAmount(e.target.value)}
-                      placeholder="0.00"
+                      placeholder="0"
                       className="w-full bg-gray-50 border-none rounded-3xl px-6 pt-10 pb-6 text-3xl font-bold text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-200"
                     />
                     <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white px-3 py-2 rounded-xl shadow-sm border border-outline/5">
@@ -169,28 +186,18 @@ export default function SendMoneyPage() {
                         <div className="flex-1 h-[1px] bg-gray-100" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-6 rounded-3xl border border-outline/5 space-y-1">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">
-                            USDC Equivalent
-                          </p>
-                          <p className="text-xl font-bold text-gray-900">
-                            {preview.usdcEquivalent.toFixed(4)}
-                          </p>
+                        <div className="bg-gray-50 p-5 rounded-3xl border border-outline/5 space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">USDC Escrow</p>
+                          <p className="text-xl font-bold text-gray-900">{preview.usdcEquivalent.toFixed(4)}</p>
                         </div>
-                        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 space-y-1">
-                          <p className="text-[10px] font-bold text-emerald-600 uppercase">
-                            Receiver Payout
-                          </p>
-                          <p className="text-xl font-bold text-emerald-700">
-                            {preview.phpPayout.toFixed(2)} PHP
-                          </p>
+                        <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100 space-y-1">
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase">Receiver Gets</p>
+                          <p className="text-xl font-bold text-emerald-700">{preview.phpPayout.toFixed(2)} PHP</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 px-6 py-4 bg-primary/5 rounded-2xl">
-                        <Info className="w-5 h-5 text-primary shrink-0" />
-                        <p className="text-xs text-primary font-medium">
-                          Guaranteed exchange rate. No hidden fees.
-                        </p>
+                      <div className="flex items-center gap-3 px-5 py-3.5 bg-primary/5 rounded-2xl">
+                        <Info className="w-4 h-4 text-primary shrink-0" />
+                        <p className="text-xs text-primary font-medium">Fixed rate · No hidden fees</p>
                       </div>
                     </div>
                   )}
@@ -198,9 +205,9 @@ export default function SendMoneyPage() {
                   <button
                     disabled={!parsed || parsed < 1000}
                     onClick={() => setStep("receiver")}
-                    className="w-full btn-primary h-16 rounded-2xl text-lg flex items-center justify-center gap-2 group disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full btn-primary h-14 rounded-2xl text-base flex items-center justify-center gap-2 group disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Continue to Receiver
+                    Continue
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -211,52 +218,39 @@ export default function SendMoneyPage() {
             {step === "receiver" && (
               <div className="p-10 space-y-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Who is receiving?
-                  </h2>
-                  <p className="text-gray-500">
-                    Provide the receiver&apos;s full name and account details.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">Who is receiving?</h2>
+                  <p className="text-gray-500">Enter the receiver&apos;s details in Philippines</p>
                 </div>
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">
-                      Full Name
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-2 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5" /> Full Name
                     </label>
-                    <div className="relative">
-                      <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        value={receiverName}
-                        onChange={(e) => setReceiverName(e.target.value)}
-                        placeholder="John Doe"
-                        className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={receiverName}
+                      onChange={(e) => setReceiverName(e.target.value)}
+                      placeholder="Juan dela Cruz"
+                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">
-                      GCash / Account Number
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-2 flex items-center gap-1.5">
+                      <CreditCard className="w-3.5 h-3.5" /> GCash / Account Number
                     </label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        value={receiverAccount}
-                        onChange={(e) => setReceiverAccount(e.target.value)}
-                        placeholder="09XXXXXXXXX"
-                        className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={receiverAccount}
+                      onChange={(e) => setReceiverAccount(e.target.value)}
+                      placeholder="09XXXXXXXXX"
+                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
                   </div>
 
-                  <div className="pt-4 flex gap-4">
-                    <button
-                      onClick={() => setStep("amount")}
-                      className="flex-1 btn-secondary h-14 rounded-2xl"
-                    >
+                  <div className="flex gap-4 pt-2">
+                    <button onClick={() => setStep("amount")} className="flex-1 btn-secondary h-14 rounded-2xl">
                       Back
                     </button>
                     <button
@@ -275,69 +269,54 @@ export default function SendMoneyPage() {
             {step === "review" && (
               <div className="p-10 space-y-8">
                 <div className="space-y-2 text-center">
-                  <h2 className="text-3xl font-bold text-gray-900">
-                    Review & Send
-                  </h2>
-                  <p className="text-gray-500">
-                    Double check the details before creating the escrow.
-                  </p>
+                  <h2 className="text-3xl font-bold text-gray-900">Review & Send</h2>
+                  <p className="text-gray-500">Confirm before creating the escrow</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-3xl p-8 space-y-6 border border-outline/5">
+                <div className="bg-gray-50 rounded-3xl p-8 space-y-5 border border-outline/5">
                   <div className="flex justify-between items-end">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        You are sending
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {parsed.toLocaleString()} VND
-                      </p>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">You Send</p>
+                      <p className="text-2xl font-bold text-gray-900">{parsed.toLocaleString()} VND</p>
                     </div>
-                    <div className="text-right space-y-1">
-                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-                        They receive
-                      </p>
-                      <p className="text-2xl font-bold text-emerald-700">
-                        {preview?.phpPayout.toFixed(2)} PHP
-                      </p>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">They Receive</p>
+                      <p className="text-2xl font-bold text-emerald-700">{preview?.phpPayout.toFixed(2)} PHP</p>
                     </div>
                   </div>
 
                   <div className="h-[1px] bg-gray-200" />
 
-                  <div className="grid grid-cols-2 gap-8">
+                  {bankInfo && (
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Receiver Name
-                      </p>
-                      <p className="font-semibold text-gray-900">
-                        {receiverName}
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">From (Sender)</p>
+                      <p className="text-sm text-gray-700">
+                        {bankInfo.accountHolder} · {bankInfo.bankName} · <span className="font-mono">{bankInfo.accountNumber}</span>
                       </p>
                     </div>
-                    <div className="space-y-1 text-right">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Account Number
-                      </p>
-                      <p className="font-semibold text-gray-900 font-mono">
-                        {receiverAccount}
-                      </p>
+                  )}
+
+                  <div className="h-[1px] bg-gray-200" />
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Receiver</p>
+                      <p className="font-semibold text-gray-900 mt-1">{receiverName}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
+                      <p className="font-semibold text-gray-900 font-mono mt-1">{receiverAccount}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <button
                     disabled={loading}
                     onClick={handleSubmit}
                     className="w-full btn-primary h-16 rounded-2xl text-lg flex items-center justify-center gap-3 group shadow-lg shadow-primary/20 disabled:opacity-60"
                   >
-                    <Send
-                      className={`w-5 h-5 ${
-                        loading
-                          ? "animate-pulse"
-                          : "group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"
-                      }`}
-                    />
+                    <Send className={`w-5 h-5 ${loading ? "animate-pulse" : "group-hover:-translate-y-0.5 transition-transform"}`} />
                     {loading ? "Creating Escrow..." : "Confirm & Send"}
                   </button>
                   <p className="text-center text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">
@@ -346,17 +325,6 @@ export default function SendMoneyPage() {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="flex items-center justify-center gap-8 text-gray-400">
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs font-semibold">Instant Escrow</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs font-semibold">Verified Agents</span>
-            </div>
           </div>
         </div>
       </div>
