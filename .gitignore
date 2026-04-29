@@ -41,6 +41,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# kiro spec files (local only)
+.kiro/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
