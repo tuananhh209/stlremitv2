@@ -42,7 +42,6 @@ export interface ContractBalance {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-// Contract stores amounts as i128 with 7 decimal places (1 USDC = 10_000_000)
 const USDC_DECIMALS = 10_000_000;
 
 function toContractAmount(usdc: number): bigint {
@@ -94,7 +93,6 @@ export class StellarService {
 
     const tx = txBuilder.build();
 
-    // Simulate
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
       throw new StellarTransactionError(
@@ -104,11 +102,9 @@ export class StellarService {
       );
     }
 
-    // Assemble + sign
     const assembled = StellarRpc.assembleTransaction(tx, simResult).build();
     assembled.sign(this.agentKeypair);
 
-    // Submit
     const sendResult = await this.server.sendTransaction(assembled);
     if (sendResult.status === "ERROR") {
       throw new StellarTransactionError(
@@ -117,7 +113,6 @@ export class StellarService {
       );
     }
 
-    // Poll for confirmation
     const txHash = sendResult.hash;
     let getResult = await this.server.getTransaction(txHash);
     let attempts = 0;
@@ -142,11 +137,8 @@ export class StellarService {
     return { txHash, returnValue };
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
+  // ── Server-side contract calls ────────────────────────────────────────────
 
-  /**
-   * Query available collateral balance from contract (read-only simulation).
-   */
   async getContractBalance(): Promise<ContractBalance> {
     try {
       const agentAccount = await this.server.getAccount(
@@ -180,9 +172,6 @@ export class StellarService {
     }
   }
 
-  /**
-   * Agent deposits USDC into the escrow contract collateral pool.
-   */
   async fundContract(usdcAmount: number): Promise<FundContractResult> {
     const amount = toContractAmount(usdcAmount);
     const args = [
@@ -196,9 +185,6 @@ export class StellarService {
     return { txHash, newBalance };
   }
 
-  /**
-   * Reserve USDC for a remittance request. Attaches txId as memo.
-   */
   async reserveCollateral(
     txId: string,
     usdcAmount: number
@@ -219,9 +205,6 @@ export class StellarService {
     return { txHash };
   }
 
-  /**
-   * Agent confirms payout — releases reserved USDC back to pool.
-   */
   async confirmPayout(txId: string): Promise<ConfirmPayoutResult> {
     const args = [
       nativeToScVal(txId, { type: "string" }),
@@ -234,9 +217,6 @@ export class StellarService {
     return { txHash, releasedUsdc };
   }
 
-  /**
-   * Refund reserved USDC back to pool after timeout.
-   */
   async refundCollateral(txId: string): Promise<RefundCollateralResult> {
     const args = [nativeToScVal(txId, { type: "string" })];
 
@@ -245,13 +225,9 @@ export class StellarService {
     const refundedUsdc = fromContractAmount(refundedRaw);
     return { txHash, refundedUsdc };
   }
-}
 
-  // ── Client-side helpers (for wallet-signed transactions) ─────────────────
+  // ── Client-side helpers (wallet-signed transactions) ──────────────────────
 
-  /**
-   * Build an unsigned fund transaction XDR for client-side signing.
-   */
   async buildFundTx(publicKey: string, usdcAmount: number): Promise<string> {
     const amount = toContractAmount(usdcAmount);
     const args = [
@@ -272,15 +248,16 @@ export class StellarService {
 
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
+      throw new StellarTransactionError(
+        "SIMULATION_FAILED",
+        undefined,
+        simResult.error
+      );
     }
 
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
 
-  /**
-   * Build an unsigned confirm transaction XDR for client-side signing.
-   */
   async buildConfirmTx(publicKey: string, txId: string): Promise<string> {
     const args = [
       nativeToScVal(txId, { type: "string" }),
@@ -300,15 +277,16 @@ export class StellarService {
 
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
+      throw new StellarTransactionError(
+        "SIMULATION_FAILED",
+        undefined,
+        simResult.error
+      );
     }
 
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
 
-  /**
-   * Submit a signed transaction XDR and wait for confirmation.
-   */
   async submitTransaction(signedXdr: string): Promise<string> {
     const tx = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
     const sendResult = await this.server.sendTransaction(tx);
