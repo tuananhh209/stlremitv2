@@ -1,6 +1,10 @@
-// ─── Core domain types ────────────────────────────────────────────────────────
+// Core types for Stellar Remittance MVP
 
-export type RemittanceStatus = "funded" | "processing" | "completed" | "expired";
+export type RemittanceStatus =
+  | "funded"
+  | "processing"
+  | "completed"
+  | "expired";
 
 export interface RemittanceRecord {
   txId: string;
@@ -23,7 +27,7 @@ export interface AgentBalance {
   availableUsdc: number; // = totalCollateral - reservedUsdc
 }
 
-// ─── Remittance request/response interfaces ───────────────────────────────────
+// --- Request / Response interfaces ---
 
 export interface CreateRemittanceRequest {
   vndAmount: number;
@@ -36,12 +40,12 @@ export interface CreateRemittanceResponse {
   usdcEquivalent: number;
   phpPayout: number;
   status: "funded";
-  expiresAt: string; // ISO timestamp
+  expiresAt: string;
   stellarTxHash: string;
 }
 
 export interface MarkPaidRequest {
-  proofImageBase64: string; // base64 encoded image
+  proofImageBase64: string;
   proofImageMimeType: string;
 }
 
@@ -71,8 +75,6 @@ export interface RemittanceListResponse {
   remittances: RemittanceRecord[];
 }
 
-// ─── Agent fund/balance interfaces ───────────────────────────────────────────
-
 export interface AgentFundRequest {
   usdcAmount: number;
 }
@@ -88,8 +90,6 @@ export interface AgentBalanceResponse {
   availableUsdc: number;
 }
 
-// ─── API error response ───────────────────────────────────────────────────────
-
 export interface ApiErrorResponse {
   error: string;
   code:
@@ -99,6 +99,7 @@ export interface ApiErrorResponse {
     | "UNAUTHORIZED"
     | "NOT_FOUND"
     | "STELLAR_ERROR"
-    | "DB_ERROR";
+    | "DB_ERROR"
+    | "VALIDATION_ERROR";
   details?: Record<string, unknown>;
 }

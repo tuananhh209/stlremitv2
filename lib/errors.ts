@@ -1,3 +1,5 @@
+// Custom error classes for Stellar Remittance MVP
+
 export class StellarTransactionError extends Error {
   constructor(
     public readonly stellarErrorCode: string,
@@ -42,7 +44,9 @@ export class TransactionExpiredError extends Error {
 }
 
 export class UnauthorizedError extends Error {
-  constructor(message = "Unauthorized: only the Agent can perform this action") {
+  constructor(
+    message = "Unauthorized: only the Agent can perform this action"
+  ) {
     super(message);
     this.name = "UnauthorizedError";
   }
@@ -53,5 +57,12 @@ export class DatabaseConnectionError extends Error {
     super("Database connection failed");
     this.name = "DatabaseConnectionError";
     this.cause = cause;
+  }
+}
+
+export class NotFoundError extends Error {
+  constructor(public readonly txId: string) {
+    super(`Transaction ${txId} not found`);
+    this.name = "NotFoundError";
   }
 }
