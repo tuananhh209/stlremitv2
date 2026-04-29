@@ -291,6 +291,7 @@ function BankInfoStep({
 
 export function AppGate({ children }: { children: React.ReactNode }) {
   const { isConnected, role, bankInfo, setRole, setBankInfo } = useWallet();
+  // pendingRole: role selected but bank info not yet filled
   const [pendingRole, setPendingRole] = useState<UserRole>(null);
 
   // Step 1: Not connected → show connect screen
@@ -298,29 +299,30 @@ export function AppGate({ children }: { children: React.ReactNode }) {
     return <ConnectStep />;
   }
 
-  // Step 2: Connected but no role → show role selection
-  if (!role) {
+  // Step 2: Connected, no role, no pending → show role selection
+  if (!role && !pendingRole) {
     return (
       <RoleStep
         onSelect={(r) => {
           if (r === "agent") {
             setRole(r); // Agent skips bank info
           } else {
-            setPendingRole(r); // Sender/Receiver need bank info
+            setPendingRole(r); // Sender/Receiver need bank info next
           }
         }}
       />
     );
   }
 
-  // Step 3: Sender/Receiver without bank info → show bank info form
-  if ((role === "sender" || role === "receiver") && !bankInfo) {
+  // Step 3: Pending role (sender/receiver) without bank info → show bank info form
+  if (pendingRole && !bankInfo) {
     return (
       <BankInfoStep
-        role={pendingRole ?? role}
+        role={pendingRole}
         onComplete={(info) => {
           setBankInfo(info);
-          if (pendingRole) setRole(pendingRole);
+          setRole(pendingRole);
+          setPendingRole(null);
         }}
       />
     );
