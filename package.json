@@ -13,13 +13,17 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@stellar/freighter-api": "^2.0.0",
     "@stellar/stellar-sdk": "^15.0.1",
+    "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
+    "lucide-react": "^0.454.0",
     "nanoid": "^5.1.9",
     "next": "16.2.4",
     "pg": "^8.20.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "tailwind-merge": "^2.5.4",
     "uuid": "^14.0.0"
   },
   "devDependencies": {

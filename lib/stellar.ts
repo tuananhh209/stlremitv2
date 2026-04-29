@@ -227,44 +227,92 @@ export class StellarService {
     return { txHash, refundedUsdc };
   }
 
+  // ── Client-side support ──────────────────────────────────────────────────
+
   /**
-   * Query available collateral balance from contract.
+   * Build a transaction for funding the contract.
    */
-  async getContractBalance(): Promise<ContractBalance> {
-    try {
-      const agentAccount = await this.server.getAccount(
-        this.agentKeypair.publicKey()
-      );
-      const contract = new (await import("@stellar/stellar-sdk")).Contract(
-        this.contractId
-      );
+  async buildFundTx(publicKey: string, usdcAmount: number): Promise<string> {
+    const amount = toContractAmount(usdcAmount);
+    const args = [
+      new Address(publicKey).toScVal(),
+      nativeToScVal(amount, { type: "i128" }),
+    ];
 
-      const tx = new TransactionBuilder(agentAccount, {
-        fee: BASE_FEE,
-        networkPassphrase: Networks.TESTNET,
-      })
-        .addOperation(contract.call("get_balance"))
-        .setTimeout(30)
-        .build();
+    const account = await this.server.getAccount(publicKey);
+    const contract = new (await import("@stellar/stellar-sdk")).Contract(this.contractId);
 
-      const simResult = await this.server.simulateTransaction(tx);
-      if (StellarRpc.Api.isSimulationError(simResult)) {
-        // Contract not yet funded — return 0
-        return { total: 0, available: 0 };
-      }
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: Networks.TESTNET,
+    })
+      .addOperation(contract.call("fund", ...args))
+      .setTimeout(30)
+      .build();
 
-      const returnValue = (simResult as StellarRpc.Api.SimulateTransactionSuccessResponse).result?.retval;
-      if (!returnValue) return { total: 0, available: 0 };
-
-      const totalRaw = scValToNative(returnValue) as bigint;
-      const total = fromContractAmount(totalRaw);
-
-      return { total, available: total };
-    } catch {
-      return { total: 0, available: 0 };
+    const simResult = await this.server.simulateTransaction(tx);
+    if (StellarRpc.Api.isSimulationError(simResult)) {
+      throw new Error("Simulation failed");
     }
+
+    return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
+  }
+
+  /**
+   * Build a transaction for confirming payout.
+   */
+  async buildConfirmTx(publicKey: string, txId: string): Promise<string> {
+    const args = [
+      nativeToScVal(txId, { type: "string" }),
+      new Address(publicKey).toScVal(),
+    ];
+
+    const account = await this.server.getAccount(publicKey);
+    const contract = new (await import("@stellar/stellar-sdk")).Contract(this.contractId);
+
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: Networks.TESTNET,
+    })
+      .addOperation(contract.call("confirm", ...args))
+      .setTimeout(30)
+      .build();
+
+    const simResult = await this.server.simulateTransaction(tx);
+    if (StellarRpc.Api.isSimulationError(simResult)) {
+      throw new Error("Simulation failed");
+    }
+
+    return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
+  }
+
+  /**
+   * Submit a signed transaction.
+   */
+  async submitTransaction(signedXdr: string): Promise<string> {
+    const tx = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
+    const sendResult = await this.server.sendTransaction(tx);
+    if (sendResult.status === "ERROR") {
+      throw new Error(sendResult.errorResult?.result().toString() ?? "Submit error");
+    }
+
+    // Wait for confirmation
+    const txHash = sendResult.hash;
+    let getResult = await this.server.getTransaction(txHash);
+    let attempts = 0;
+    while (
+      getResult.status === StellarRpc.Api.GetTransactionStatus.NOT_FOUND &&
+      attempts < 20
+    ) {
+      await new Promise((r) => setTimeout(r, 1500));
+      getResult = await this.server.getTransaction(txHash);
+      attempts++;
+    }
+
+    return txHash;
   }
 }
 
 // Singleton instance
 export const stellarService = new StellarService();
+

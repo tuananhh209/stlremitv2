@@ -2,20 +2,36 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import type { RemittanceRecord, AgentBalanceResponse } from "@/lib/types";
+import { useWallet } from "@/components/wallet-provider";
+import { 
+  LayoutDashboard, 
+  Wallet, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Clock, 
+  CheckCircle2, 
+  AlertCircle,
+  MoreVertical,
+  Search,
+  Plus,
+  Image as ImageIcon
+} from "lucide-react";
 
-// ── Status badge ──────────────────────────────────────────────────────────────
+// ── Status Badge ──────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  funded: { label: "Chờ TT", color: "bg-yellow-100 text-yellow-800" },
-  processing: { label: "Đang xử lý", color: "bg-blue-100 text-blue-800" },
-  completed: { label: "Hoàn thành", color: "bg-green-100 text-green-800" },
-  expired: { label: "Hết hạn", color: "bg-gray-100 text-gray-500" },
+  funded: { label: "Pending VND", color: "text-amber-600 bg-amber-50 border-amber-100", icon: Clock },
+  processing: { label: "Processing PHP", color: "text-blue-600 bg-blue-50 border-blue-100", icon: ArrowUpRight },
+  completed: { label: "Completed", color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
+  expired: { label: "Expired", color: "text-gray-500 bg-gray-50 border-gray-100", icon: AlertCircle },
 } as const;
 
 function StatusBadge({ status }: { status: RemittanceRecord["status"] }) {
   const cfg = STATUS_CONFIG[status];
+  const Icon = cfg.icon;
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.color}`}>
+      <Icon className="w-3 h-3" />
       {cfg.label}
     </span>
   );
@@ -35,13 +51,14 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
   const m = Math.floor(remaining / 60);
   const s = remaining % 60;
   return (
-    <span className={`font-mono text-xs ${remaining < 60 && remaining > 0 ? "text-red-600 font-bold" : "text-gray-600"}`}>
+    <span className={`inline-flex items-center gap-1 font-mono text-xs ${remaining < 60 && remaining > 0 ? "text-red-600 font-bold" : "text-gray-500"}`}>
+      <Clock className="w-3 h-3" />
       {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
     </span>
   );
 }
 
-// ── Proof upload modal ────────────────────────────────────────────────────────
+// ── Proof Upload Modal ────────────────────────────────────────────────────────
 
 function ProofUploadModal({
   txId,
@@ -75,44 +92,57 @@ function ProofUploadModal({
       });
       if (!res.ok) {
         const d = await res.json();
-        setError(d.error ?? "Upload thất bại");
+        setError(d.error ?? "Upload failed");
         return;
       }
       onSuccess();
       onClose();
     } catch {
-      setError("Lỗi khi upload");
+      setError("Upload error");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
-        <h3 className="font-bold text-gray-900 mb-4">Upload ảnh chứng minh PHP</h3>
-        <form onSubmit={handleUpload} className="space-y-3">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:text-emerald-700"
-          />
-          {error && <p className="text-red-600 text-sm">⚠️ {error}</p>}
-          <div className="flex gap-2">
+    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full space-y-6">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Upload PHP Proof</h3>
+          <p className="text-sm text-gray-500 mt-1">Upload a screenshot of the GCash/Bank transfer.</p>
+        </div>
+        
+        <form onSubmit={handleUpload} className="space-y-4">
+          <div className="border-2 border-dashed border-outline/20 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+              <ImageIcon className="w-6 h-6 text-primary" />
+            </div>
+            <p className="text-sm font-medium text-gray-900">{file ? file.name : "Click to select image"}</p>
+            <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
+          </div>
+
+          {error && <p className="text-red-600 text-xs text-center font-medium">⚠️ {error}</p>}
+          
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-xl text-sm"
+              className="flex-1 btn-secondary py-2.5 text-sm"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
               disabled={!file || loading}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 text-white py-2 rounded-xl text-sm font-semibold"
+              className="flex-1 btn-primary py-2.5 text-sm"
             >
-              {loading ? "Đang gửi..." : "Upload"}
+              {loading ? "Uploading..." : "Upload Proof"}
             </button>
           </div>
         </form>
@@ -121,15 +151,14 @@ function ProofUploadModal({
   );
 }
 
-// ── Main dashboard ────────────────────────────────────────────────────────────
+// ── Main Dashboard ────────────────────────────────────────────────────────────
 
 export default function AgentDashboard() {
+  const { address, sign, isConnected } = useWallet();
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
   const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
-  const [depositError, setDepositError] = useState<string | null>(null);
-  const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [proofModalId, setProofModalId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -154,217 +183,332 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     fetchAll();
-    pollingRef.current = setInterval(fetchAll, 3000);
+    pollingRef.current = setInterval(fetchAll, 5000);
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [fetchAll]);
 
   async function handleDeposit(e: React.FormEvent) {
     e.preventDefault();
-    setDepositError(null);
-    setDepositSuccess(null);
+    if (!isConnected || !address) {
+      alert("Please connect your wallet first");
+      return;
+    }
     setDepositLoading(true);
     try {
-      const res = await fetch("/api/agent/fund", {
+      // 1. Get unsigned XDR from API
+      const res = await fetch("/api/agent/build-fund-tx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usdcAmount: parseFloat(depositAmount) }),
+        body: JSON.stringify({ publicKey: address, usdcAmount: parseFloat(depositAmount) }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setDepositError(data.error ?? "Deposit thất bại");
-        return;
+      const { xdr } = await res.json();
+      
+      // 2. Sign with wallet
+      const signedXdr = await sign(xdr, "TESTNET");
+      
+      // 3. Submit signed XDR
+      const submitRes = await fetch("/api/stellar/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signedXdr }),
+      });
+      
+      if (submitRes.ok) {
+        setDepositAmount("");
+        fetchAll();
+        alert("Deposit successful!");
+      } else {
+        alert("Transaction failed");
       }
-      setDepositSuccess(`Đã deposit thành công! Balance mới: ${data.newBalance.toFixed(4)} USDC`);
-      setDepositAmount("");
-      fetchAll();
-    } catch {
-      setDepositError("Lỗi kết nối server");
+    } catch (err) {
+      console.error(err);
+      alert("Error during deposit");
     } finally {
       setDepositLoading(false);
     }
   }
 
   async function handleConfirm(txId: string) {
+    if (!isConnected || !address) {
+      alert("Please connect your wallet first");
+      return;
+    }
     setConfirmingId(txId);
     try {
-      const res = await fetch(`/api/remittance/${txId}/confirm`, { method: "POST" });
-      if (!res.ok) {
-        const d = await res.json();
-        alert(`Lỗi: ${d.error}`);
-        return;
+      const res = await fetch("/api/agent/build-confirm-tx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicKey: address, txId }),
+      });
+      const { xdr } = await res.json();
+      const signedXdr = await sign(xdr, "TESTNET");
+      
+      const submitRes = await fetch("/api/stellar/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signedXdr }),
+      });
+      
+      if (submitRes.ok) {
+        fetchAll();
+      } else {
+        alert("Confirmation failed");
       }
-      fetchAll();
-    } catch {
-      alert("Lỗi kết nối server");
+    } catch (err) {
+      console.error(err);
+      alert("Error during confirmation");
     } finally {
       setConfirmingId(null);
     }
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">🏦</span>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Agent Dashboard</h1>
-            <p className="text-sm text-gray-500">Stellar Testnet · Soroban Escrow</p>
+    <main className="min-h-screen bg-[#f9f9ff] flex">
+      {/* Sidebar (Desktop) */}
+      <aside className="w-64 bg-white border-r border-outline/10 p-6 flex flex-col gap-8 hidden lg:flex">
+        <div className="flex items-center gap-2 px-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
+          <span className="font-bold text-lg text-gray-900 tracking-tight">STL Remit</span>
         </div>
 
-        {/* Balance + Deposit */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Balance card */}
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h2 className="font-semibold text-gray-700 text-sm uppercase tracking-wide mb-4">
-              Collateral Pool
-            </h2>
-            {balance ? (
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Tổng collateral</span>
-                  <span className="font-bold text-gray-900">{balance.totalCollateral.toFixed(4)} USDC</span>
+        <nav className="flex flex-col gap-1">
+          <button className="flex items-center gap-3 px-3 py-2 bg-primary/5 text-primary rounded-lg font-medium text-sm transition-colors">
+            <LayoutDashboard className="w-4 h-4" />
+            Overview
+          </button>
+          <button className="flex items-center gap-3 px-3 py-2 text-gray-500 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors">
+            <Clock className="w-4 h-4" />
+            History
+          </button>
+          <button className="flex items-center gap-3 px-3 py-2 text-gray-500 hover:bg-gray-50 rounded-lg font-medium text-sm transition-colors">
+            <Wallet className="w-4 h-4" />
+            Pools
+          </button>
+        </nav>
+
+        <div className="mt-auto p-4 bg-gray-50 rounded-2xl border border-gray-100">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Network</p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-xs font-semibold text-gray-700">Stellar Testnet</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="h-20 bg-white border-b border-outline/10 px-8 flex items-center justify-between sticky top-0 z-20">
+          <h1 className="text-xl font-bold text-gray-900 lg:hidden">Dashboard</h1>
+          <div className="hidden lg:flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 min-w-[320px]">
+            <Search className="w-4 h-4 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search transactions..." 
+              className="bg-transparent border-none text-sm focus:ring-0 w-full text-gray-900"
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            {isConnected ? (
+              <div className="flex items-center gap-3 pl-4 border-l border-outline/10">
+                <div className="text-right">
+                  <p className="text-xs font-bold text-gray-400 uppercase">Agent Wallet</p>
+                  <p className="text-sm font-mono text-gray-900 font-medium">{address?.slice(0, 4)}...{address?.slice(-4)}</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Đang reserve</span>
-                  <span className="font-semibold text-orange-600">{balance.reservedUsdc.toFixed(4)} USDC</span>
-                </div>
-                <div className="flex justify-between items-center border-t pt-3">
-                  <span className="text-gray-700 text-sm font-medium">Khả dụng</span>
-                  <span className="font-bold text-emerald-600 text-lg">{balance.availableUsdc.toFixed(4)} USDC</span>
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                  {address?.[0]}
                 </div>
               </div>
             ) : (
-              <div className="animate-pulse h-20 bg-gray-100 rounded-xl" />
+              <p className="text-sm text-red-500 font-medium">Wallet Disconnected</p>
             )}
           </div>
+        </header>
 
-          {/* Deposit form */}
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h2 className="font-semibold text-gray-700 text-sm uppercase tracking-wide mb-4">
-              Deposit Collateral
-            </h2>
-            <form onSubmit={handleDeposit} className="space-y-3">
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0.0001"
-                  step="0.0001"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                  placeholder="Số USDC cần deposit"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-16 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900 text-sm"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">USDC</span>
-              </div>
-              {depositError && <p className="text-red-600 text-xs">⚠️ {depositError}</p>}
-              {depositSuccess && <p className="text-emerald-600 text-xs">✅ {depositSuccess}</p>}
-              <button
-                type="submit"
-                disabled={depositLoading || !depositAmount}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
-              >
-                {depositLoading ? "Đang xử lý..." : "Deposit vào Contract"}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Transactions table */}
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <div className="px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Tất cả giao dịch</h2>
-            <span className="text-sm text-gray-400">{remittances.length} giao dịch</span>
-          </div>
-
-          {remittances.length === 0 ? (
-            <div className="p-12 text-center text-gray-400">
-              <p className="text-4xl mb-3">📭</p>
-              <p>Chưa có giao dịch nào</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {remittances.map((r) => (
-                <div key={r.txId} className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Left info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <StatusBadge status={r.status} />
-                        {r.status === "funded" && (
-                          <Countdown expiresAt={r.expiresAt} />
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-400 font-mono truncate">{r.txId}</p>
-                      <p className="text-sm text-gray-700 mt-1">
-                        {r.receiverName} · <span className="font-mono text-xs">{r.receiverAccount}</span>
-                      </p>
-                    </div>
-
-                    {/* Amounts */}
-                    <div className="text-right shrink-0">
-                      <p className="font-semibold text-gray-900 text-sm">{r.vndAmount.toLocaleString()} VND</p>
-                      <p className="text-xs text-indigo-600">{r.usdcEquivalent.toFixed(4)} USDC</p>
-                      <p className="text-xs text-emerald-600">{r.phpPayout.toFixed(2)} PHP</p>
-                    </div>
-                  </div>
-
-                  {/* Actions for processing */}
-                  {r.status === "processing" && (
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={() => setProofModalId(r.txId)}
-                        className="flex-1 border border-emerald-300 text-emerald-700 hover:bg-emerald-50 py-2 rounded-xl text-xs font-medium transition-colors"
-                      >
-                        📷 Upload Proof PHP
-                      </button>
-                      <button
-                        onClick={() => handleConfirm(r.txId)}
-                        disabled={confirmingId === r.txId}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white py-2 rounded-xl text-xs font-semibold transition-colors"
-                      >
-                        {confirmingId === r.txId ? "Đang xác nhận..." : "✅ Confirm Payout"}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Expand proof images */}
-                  {(r.senderProofRef || r.agentProofRef) && (
-                    <button
-                      onClick={() => setExpandedId(expandedId === r.txId ? null : r.txId)}
-                      className="mt-2 text-xs text-indigo-500 hover:underline"
-                    >
-                      {expandedId === r.txId ? "Ẩn ảnh ▲" : "Xem ảnh ▼"}
-                    </button>
-                  )}
-
-                  {expandedId === r.txId && (
-                    <div className="mt-3 grid grid-cols-2 gap-3">
-                      {r.senderProofRef && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Ảnh Sender (VND)</p>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={r.senderProofRef} alt="Sender proof" className="rounded-xl max-h-32 object-contain w-full bg-gray-50" />
-                        </div>
-                      )}
-                      {r.agentProofRef && (
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Ảnh Agent (PHP)</p>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={r.agentProofRef} alt="Agent proof" className="rounded-xl max-h-32 object-contain w-full bg-gray-50" />
-                        </div>
-                      )}
-                    </div>
-                  )}
+        <div className="p-8 space-y-8 overflow-y-auto">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-3xl premium-shadow border border-outline/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary">
+                  <Wallet className="w-6 h-6" />
                 </div>
-              ))}
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">Available</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Available Collateral</p>
+                <p className="text-3xl font-bold text-gray-900">{balance?.availableUsdc.toFixed(2) ?? "0.00"} <span className="text-lg font-medium text-gray-400">USDC</span></p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl premium-shadow border border-outline/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">Reserved</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Active Reserves</p>
+                <p className="text-3xl font-bold text-gray-900">{balance?.reservedUsdc.toFixed(2) ?? "0.00"} <span className="text-lg font-medium text-gray-400">USDC</span></p>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl premium-shadow border border-primary text-white bg-primary relative overflow-hidden group">
+              <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+              <div className="relative z-10 space-y-4">
+                <p className="text-sm font-medium text-white/80">Manage Liquidity</p>
+                <form onSubmit={handleDeposit} className="space-y-3">
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" 
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      placeholder="Amount"
+                      className="bg-white/20 border-white/20 text-white placeholder:text-white/50 rounded-xl text-sm w-full focus:ring-white/30"
+                    />
+                    <button 
+                      disabled={depositLoading || !depositAmount}
+                      className="bg-white text-primary px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/90 transition-colors shrink-0 flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {depositLoading ? "..." : "Add"}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-white/60 font-medium">Add USDC to the smart contract pool.</p>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div className="bg-white rounded-3xl premium-shadow border border-outline/5 overflow-hidden">
+            <div className="px-8 py-6 border-b border-outline/10 flex items-center justify-between bg-gray-50/50">
+              <h2 className="font-bold text-gray-900">Active Remittances</h2>
+              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <MoreVertical className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-white">
+                    <th className="px-8 py-4">Transaction ID / Receiver</th>
+                    <th className="px-8 py-4">Status / Timer</th>
+                    <th className="px-8 py-4 text-right">Amounts</th>
+                    <th className="px-8 py-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline/5">
+                  {remittances.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-8 py-20 text-center text-gray-400">
+                        <div className="flex flex-col items-center gap-3">
+                          <Search className="w-10 h-10 text-gray-200" />
+                          <p className="text-sm font-medium">No transactions found</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    remittances.map((r) => (
+                      <tr key={r.txId} className="group hover:bg-gray-50/50 transition-colors">
+                        <td className="px-8 py-5">
+                          <div className="space-y-1">
+                            <p className="text-sm font-bold text-gray-900">{r.receiverName}</p>
+                            <p className="text-xs font-mono text-gray-400">{r.txId.slice(0, 12)}...</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="flex flex-col gap-2">
+                            <StatusBadge status={r.status} />
+                            {r.status === "funded" && <Countdown expiresAt={r.expiresAt} />}
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-bold text-gray-900">{r.vndAmount.toLocaleString()} VND</p>
+                            <p className="text-xs font-medium text-emerald-600">{r.phpPayout.toFixed(2)} PHP</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-2">
+                            {r.status === "processing" ? (
+                              <>
+                                <button
+                                  onClick={() => setProofModalId(r.txId)}
+                                  className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                                  title="Upload Proof"
+                                >
+                                  <ImageIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleConfirm(r.txId)}
+                                  disabled={confirmingId === r.txId}
+                                  className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                >
+                                  {confirmingId === r.txId ? "..." : "Confirm"}
+                                </button>
+                              </>
+                            ) : (
+                              <button 
+                                onClick={() => setExpandedId(expandedId === r.txId ? null : r.txId)}
+                                className="text-xs font-bold text-primary hover:underline"
+                              >
+                                {expandedId === r.txId ? "Hide Proof" : "View Proof"}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Proof Images Display */}
+          {expandedId && remittances.find(r => r.txId === expandedId) && (
+            <div className="bg-white p-8 rounded-3xl premium-shadow border border-primary/10 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-gray-900">Transaction Proofs</h3>
+                <button onClick={() => setExpandedId(null)} className="text-xs font-bold text-gray-400 hover:text-gray-900">Close</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {remittances.find(r => r.txId === expandedId)?.senderProofRef ? (
+                   <div className="space-y-3">
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sender Proof (VND Payment)</p>
+                     <img src={remittances.find(r => r.txId === expandedId)?.senderProofRef} alt="Sender proof" className="rounded-2xl border border-outline/10 w-full" />
+                   </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-outline/10">
+                    <ImageIcon className="w-8 h-8" />
+                    <p className="text-xs font-medium">No sender proof provided</p>
+                  </div>
+                )}
+                
+                {remittances.find(r => r.txId === expandedId)?.agentProofRef ? (
+                   <div className="space-y-3">
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Agent Proof (PHP Payout)</p>
+                     <img src={remittances.find(r => r.txId === expandedId)?.agentProofRef} alt="Agent proof" className="rounded-2xl border border-outline/10 w-full" />
+                   </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-300 gap-2 border border-dashed border-outline/10">
+                    <ImageIcon className="w-8 h-8" />
+                    <p className="text-xs font-medium">No agent proof provided</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Proof upload modal */}
+      {/* Modals */}
       {proofModalId && (
         <ProofUploadModal
           txId={proofModalId}
@@ -375,3 +519,4 @@ export default function AgentDashboard() {
     </main>
   );
 }
+

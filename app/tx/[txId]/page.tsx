@@ -1,132 +1,44 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import type { RemittanceRecord } from "@/lib/types";
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle, 
+  ExternalLink,
+  ShieldCheck,
+  Globe2,
+  FileText,
+  Image as ImageIcon,
+  Zap,
+  ArrowRight
+} from "lucide-react";
 
-// ── Status badge ──────────────────────────────────────────────────────────────
+// ── Status Config ──────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  funded: { label: "Chờ thanh toán", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-  processing: { label: "Đang xử lý", color: "bg-blue-100 text-blue-800 border-blue-200" },
-  completed: { label: "Hoàn thành", color: "bg-green-100 text-green-800 border-green-200" },
-  expired: { label: "Hết hạn", color: "bg-gray-100 text-gray-600 border-gray-200" },
-} as const;
+  funded: { label: "Pending VND", color: "text-amber-600 bg-amber-50 border-amber-100", icon: Clock },
+  processing: { label: "Processing PHP", color: "text-blue-600 bg-blue-50 border-blue-100", icon: ArrowUpRight },
+  completed: { label: "Completed", color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
+  expired: { label: "Expired", color: "text-gray-500 bg-gray-50 border-gray-100", icon: AlertCircle },
+} as any;
 
-function StatusBadge({ status }: { status: RemittanceRecord["status"] }) {
-  const cfg = STATUS_CONFIG[status];
-  return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${cfg.color}`}>
-      {cfg.label}
-    </span>
-  );
+function ArrowUpRight(props: any) {
+  return <Zap {...props} />;
 }
 
-// ── Countdown timer ───────────────────────────────────────────────────────────
-
-function CountdownTimer({ expiresAt }: { expiresAt: string }) {
-  const [remaining, setRemaining] = useState(0);
-
-  useEffect(() => {
-    const calc = () => {
-      const diff = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
-      setRemaining(diff);
-    };
-    calc();
-    const id = setInterval(calc, 1000);
-    return () => clearInterval(id);
-  }, [expiresAt]);
-
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const urgent = remaining < 60 && remaining > 0;
-
-  return (
-    <div className={`text-center p-4 rounded-xl border-2 ${urgent ? "border-red-300 bg-red-50" : "border-yellow-300 bg-yellow-50"}`}>
-      <p className="text-xs text-gray-500 mb-1">Thời gian còn lại để gửi VND</p>
-      <p className={`text-3xl font-mono font-bold ${urgent ? "text-red-600" : "text-yellow-700"}`}>
-        {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
-      </p>
-      {remaining === 0 && (
-        <p className="text-xs text-red-500 mt-1">Giao dịch đã hết hạn</p>
-      )}
-    </div>
-  );
-}
-
-// ── Proof upload ──────────────────────────────────────────────────────────────
-
-function ProofUpload({ txId, onSuccess }: { txId: string; onSuccess: () => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleUpload(e: React.FormEvent) {
-    e.preventDefault();
-    if (!file) return;
-    setLoading(true);
-    setError(null);
-
-    try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const res = await fetch(`/api/remittance/${txId}/mark-paid`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proofImageBase64: base64,
-          proofImageMimeType: file.type || "image/jpeg",
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? "Upload thất bại");
-        return;
-      }
-
-      onSuccess();
-    } catch {
-      setError("Lỗi khi upload ảnh");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleUpload} className="space-y-3">
-      <p className="text-sm font-medium text-gray-700">
-        Upload ảnh chứng minh đã chuyển VND
-      </p>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-      />
-      {error && <p className="text-red-600 text-sm">⚠️ {error}</p>}
-      <button
-        type="submit"
-        disabled={!file || loading}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
-      >
-        {loading ? "Đang gửi..." : "Xác nhận đã chuyển VND"}
-      </button>
-    </form>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────────────────────────
+// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function TransactionStatusPage() {
+  const router = useRouter();
   const { txId } = useParams<{ txId: string }>();
   const [record, setRecord] = useState<RemittanceRecord | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchRecord = useCallback(async () => {
@@ -136,7 +48,6 @@ export default function TransactionStatusPage() {
       if (!res.ok) return;
       const data: RemittanceRecord = await res.json();
       setRecord(data);
-      // Stop polling when terminal state
       if (data.status === "completed" || data.status === "expired") {
         if (pollingRef.current) clearInterval(pollingRef.current);
       }
@@ -145,126 +56,257 @@ export default function TransactionStatusPage() {
 
   useEffect(() => {
     fetchRecord();
-    pollingRef.current = setInterval(fetchRecord, 3000);
+    pollingRef.current = setInterval(fetchRecord, 5000);
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [fetchRecord]);
 
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
+    setUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch(`/api/remittance/${txId}/mark-paid`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proofImageBase64: base64,
+          proofImageMimeType: file.type || "image/jpeg",
+        }),
+      });
+      if (res.ok) fetchRecord();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (notFound) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 text-lg">Không tìm thấy giao dịch</p>
-          <a href="/send" className="text-indigo-600 text-sm mt-2 block">← Tạo giao dịch mới</a>
-        </div>
+      <main className="min-h-screen bg-[#f9f9ff] flex flex-col items-center justify-center p-6">
+        <AlertCircle className="w-16 h-16 text-gray-200 mb-4" />
+        <h1 className="text-2xl font-bold text-gray-900">Transaction Not Found</h1>
+        <p className="text-gray-500 mt-2">The requested transaction could not be located.</p>
+        <button onClick={() => router.push("/send")} className="btn-primary mt-8">Create New Transaction</button>
       </main>
     );
   }
 
   if (!record) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Đang tải...</div>
+      <main className="min-h-screen bg-[#f9f9ff] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Transaction</p>
+        </div>
       </main>
     );
   }
 
+  const steps = [
+    { label: "Initiated", status: "completed" },
+    { label: "VND Payment", status: record.status === "funded" ? "active" : "completed" },
+    { label: "PHP Payout", status: record.status === "processing" ? "active" : record.status === "completed" ? "completed" : "pending" },
+    { label: "Completed", status: record.status === "completed" ? "completed" : "pending" },
+  ];
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-lg mx-auto space-y-4">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-900">Chi tiết giao dịch</h1>
-            <StatusBadge status={record.status} />
+    <main className="min-h-screen bg-[#f9f9ff] flex flex-col items-center py-12 px-6">
+      <div className="max-w-2xl w-full space-y-8">
+        
+        {/* Progress Header */}
+        <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-8">
+          <div className="flex items-center justify-between">
+            <button onClick={() => router.push("/")} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className={`px-4 py-1.5 rounded-full text-xs font-bold border flex items-center gap-2 ${STATUS_CONFIG[record.status].color}`}>
+              {record.status === "funded" && <Clock className="w-3 h-3" />}
+              {record.status === "completed" && <CheckCircle2 className="w-3 h-3" />}
+              {STATUS_CONFIG[record.status].label}
+            </div>
           </div>
-          <p className="text-xs text-gray-400 font-mono break-all">{record.txId}</p>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+              {steps.map((s, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-3 relative z-10">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    s.status === "completed" ? "bg-emerald-500 border-emerald-500 text-white" :
+                    s.status === "active" ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" :
+                    "bg-white border-gray-100 text-gray-300"
+                  }`}>
+                    {s.status === "completed" ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${s.status === "pending" ? "text-gray-300" : "text-gray-900"}`}>{s.label}</span>
+                </div>
+              ))}
+              {/* Connector lines */}
+              <div className="absolute left-[10%] right-[10%] top-[148px] h-[2px] bg-gray-100 -z-0" />
+            </div>
+          </div>
         </div>
 
-        {/* Amounts */}
-        <div className="bg-white rounded-2xl shadow p-6 space-y-3">
-          <h2 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">Số tiền</h2>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-xs text-gray-500">Gửi</p>
-              <p className="font-bold text-gray-900">{record.vndAmount.toLocaleString()}</p>
-              <p className="text-xs text-gray-400">VND</p>
+        {/* Main Content: Receipt Style */}
+        <div className="bg-white rounded-[32px] premium-shadow border border-outline/5 overflow-hidden relative">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-primary" />
+          
+          <div className="p-10 space-y-10">
+            <div className="text-center space-y-2">
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Transaction Summary</p>
+              <h2 className="text-4xl font-bold text-gray-900">{record.vndAmount.toLocaleString()} <span className="text-xl font-medium text-gray-400">VND</span></h2>
             </div>
-            <div className="bg-indigo-50 rounded-xl p-3">
-              <p className="text-xs text-gray-500">Escrow</p>
-              <p className="font-bold text-indigo-700">{record.usdcEquivalent.toFixed(4)}</p>
-              <p className="text-xs text-gray-400">USDC</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <User className="w-3 h-3" /> Receiver
+                  </p>
+                  <p className="font-bold text-gray-900">{record.receiverName}</p>
+                  <p className="text-sm text-gray-500 font-mono">{record.receiverAccount}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <FileText className="w-3 h-3" /> Transaction ID
+                  </p>
+                  <p className="text-xs font-mono text-gray-500 break-all">{record.txId}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100/50 space-y-1">
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">They Receive</p>
+                  <p className="text-2xl font-bold text-emerald-700">{record.phpPayout.toFixed(2)} PHP</p>
+                </div>
+                <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10 space-y-1">
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Locked in Escrow</p>
+                  <p className="text-2xl font-bold text-primary">{record.usdcEquivalent.toFixed(4)} USDC</p>
+                </div>
+              </div>
             </div>
-            <div className="bg-emerald-50 rounded-xl p-3">
-              <p className="text-xs text-gray-500">Nhận</p>
-              <p className="font-bold text-emerald-700">{record.phpPayout.toFixed(2)}</p>
-              <p className="text-xs text-gray-400">PHP</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Receiver */}
-        <div className="bg-white rounded-2xl shadow p-6 space-y-2">
-          <h2 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">Người nhận</h2>
-          <p className="text-gray-900">{record.receiverName}</p>
-          <p className="text-gray-500 text-sm font-mono">{record.receiverAccount}</p>
-        </div>
+            {/* Actions for funded state */}
+            {record.status === "funded" && (
+              <div className="pt-6 border-t border-dashed border-outline/20 space-y-6">
+                <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 flex items-start gap-4">
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-900">Waiting for VND Transfer</h4>
+                    <p className="text-sm text-amber-700 mt-1">Please transfer the VND amount to the agent and upload the receipt here.</p>
+                  </div>
+                </div>
 
-        {/* Countdown + Upload (only when funded) */}
-        {record.status === "funded" && (
-          <div className="bg-white rounded-2xl shadow p-6 space-y-4">
-            <CountdownTimer expiresAt={record.expiresAt} />
-            <div className="border-t pt-4">
-              <ProofUpload txId={record.txId} onSuccess={fetchRecord} />
-            </div>
-          </div>
-        )}
+                <form onSubmit={handleUpload} className="space-y-4">
+                  <div className="border-2 border-dashed border-outline/20 rounded-3xl p-10 flex flex-col items-center justify-center gap-3 hover:border-primary/50 transition-colors cursor-pointer relative group">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                    <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ImageIcon className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-gray-900">{file ? file.name : "Click to upload VND receipt"}</p>
+                      <p className="text-xs text-gray-400 mt-1">PNG or JPG up to 10MB</p>
+                    </div>
+                  </div>
+                  <button 
+                    disabled={!file || uploading}
+                    className="w-full btn-primary h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                  >
+                    {uploading ? "Uploading..." : "Confirm Payment"}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
+            )}
 
-        {/* Processing state */}
-        {record.status === "processing" && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
-            <div className="text-3xl mb-2">⏳</div>
-            <p className="font-semibold text-blue-800">Đang chờ Agent xác nhận</p>
-            <p className="text-sm text-blue-600 mt-1">Agent đang gửi PHP cho người nhận</p>
-          </div>
-        )}
+            {/* Processing State */}
+            {record.status === "processing" && (
+              <div className="pt-6 border-t border-dashed border-outline/20">
+                <div className="bg-blue-50 p-10 rounded-3xl border border-blue-100 flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center relative">
+                    <div className="absolute inset-0 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin" />
+                    <Zap className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-lg font-bold text-blue-900">Processing PHP Payout</h4>
+                    <p className="text-sm text-blue-700">The agent is now transferring PHP to your receiver.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-        {/* Completed */}
-        {record.status === "completed" && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
-            <div className="text-3xl mb-2">✅</div>
-            <p className="font-semibold text-green-800">Giao dịch hoàn thành!</p>
-            {record.stellarTxHash && (
-              <a
-                href={`https://stellar.expert/explorer/testnet/tx/${record.stellarTxHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-green-600 underline mt-2 block"
-              >
-                Xem trên Stellar Explorer ↗
-              </a>
+            {/* Completed State */}
+            {record.status === "completed" && (
+              <div className="pt-6 border-t border-dashed border-outline/20 space-y-6">
+                <div className="bg-emerald-50 p-10 rounded-3xl border border-emerald-100 flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <CheckCircle2 className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-lg font-bold text-emerald-900">Transfer Completed!</h4>
+                    <p className="text-sm text-emerald-700">The funds have been successfully delivered to the receiver.</p>
+                  </div>
+                </div>
+
+                {record.stellarTxHash && (
+                  <a 
+                    href={`https://stellar.expert/explorer/testnet/tx/${record.stellarTxHash}`}
+                    target="_blank"
+                    className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-outline/5 hover:border-primary/20 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Globe2 className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">View on Stellar Blockchain</p>
+                        <p className="text-xs text-gray-500">Immutable proof of transaction</p>
+                      </div>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
+                  </a>
+                )}
+              </div>
             )}
           </div>
-        )}
 
-        {/* Expired */}
-        {record.status === "expired" && (
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
-            <div className="text-3xl mb-2">⏰</div>
-            <p className="font-semibold text-gray-700">Giao dịch đã hết hạn</p>
-            <p className="text-sm text-gray-500 mt-1">USDC đã được hoàn trả về Agent</p>
-            <a href="/send" className="text-indigo-600 text-sm mt-3 block">← Tạo giao dịch mới</a>
+          <div className="bg-gray-50/50 px-10 py-6 flex items-center justify-between border-t border-outline/10">
+             <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Escrow Protected</span>
+             </div>
+             <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Stellar Network</p>
           </div>
-        )}
+        </div>
 
-        {/* Proof images */}
+        {/* Sender Proof Display */}
         {record.senderProofRef && (
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h2 className="font-semibold text-gray-700 text-sm mb-3">Ảnh chứng minh VND</h2>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={record.senderProofRef} alt="Sender proof" className="rounded-xl max-h-48 object-contain w-full" />
+          <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-gray-400" />
+              Payment Receipt
+            </h3>
+            <img src={record.senderProofRef} alt="Sender proof" className="rounded-2xl border border-outline/10 w-full shadow-sm" />
           </div>
         )}
+
       </div>
     </main>
   );
 }
+
+function User(props: any) {
+  return <ArrowUpRight {...props} icon={User} />;
+}
+
