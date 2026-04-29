@@ -47,6 +47,9 @@ yarn-error.log*
 # Rust build artifacts
 contracts/escrow/target/
 
+# Editor
+.vscode/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
