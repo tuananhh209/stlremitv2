@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stl-remit-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_STELLAR_NETWORK=${NEXT_PUBLIC_STELLAR_NETWORK}
+      - STELLAR_AGENT_SECRET_KEY=${STELLAR_AGENT_SECRET_KEY}
+      - ESCROW_CONTRACT_ID=${ESCROW_CONTRACT_ID}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}

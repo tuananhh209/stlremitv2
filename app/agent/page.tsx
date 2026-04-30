@@ -948,7 +948,7 @@ export default function AgentDashboard() {
                   <QrUpload 
                     currentUrl={payoutProofUrl}
                     walletAddress={address!}
-                    field="agent_proof"
+                    field="agentQr"
                     label="Upload Transfer Receipt"
                     onUploaded={(url) => setPayoutProofUrl(url || null)}
                   />

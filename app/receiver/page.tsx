@@ -47,7 +47,9 @@ export default function ReceiverDashboard() {
   // Detail Modal State
   const [selectedTx, setSelectedTx] = useState<RemittanceRecord | null>(null);
   const [agentProfile, setAgentProfile] = useState<any>(null);
+  const [senderProfile, setSenderProfile] = useState<any>(null);
   const [loadingAgent, setLoadingAgent] = useState(false);
+  const [loadingSender, setLoadingSender] = useState(false);
 
   // Settings state
   const [sBankName, setSBankName] = useState("");
@@ -69,13 +71,11 @@ export default function ReceiverDashboard() {
 
   const fetchRecent = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance?limit=10");
+      const res = await fetch(`/api/remittance?limit=10&receiver=${address || ""}`);
       if (res.ok) {
         const d = await res.json();
         const all: RemittanceRecord[] = d.remittances ?? [];
-        // Filter by receiver's Stellar wallet address (set by sender in the form)
-        const mine = address ? all.filter(r => r.receiverWallet === address) : [];
-        setRecentRemittances(mine);
+        setRecentRemittances(all);
       }
     } catch { /* ignore */ }
     finally { setActivityLoading(false); }
@@ -83,13 +83,11 @@ export default function ReceiverDashboard() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance");
+      const res = await fetch(`/api/remittance?receiver=${address || ""}`);
       if (res.ok) {
         const d = await res.json();
         const all: RemittanceRecord[] = d.remittances ?? [];
-        // Filter by receiver's Stellar wallet address (set by sender in the form)
-        const mine = address ? all.filter(r => r.receiverWallet === address) : [];
-        setAllRemittances(mine);
+        setAllRemittances(all);
       }
     } catch { /* ignore */ }
     finally { setHistoryLoading(false); }
@@ -126,17 +124,33 @@ export default function ReceiverDashboard() {
       .finally(() => setSLoading(false));
   }, [activeTab, address]);
 
-  // Load agent profile when modal opens
+  // Load profiles when modal opens
   useEffect(() => {
-    if (selectedTx?.agentWallet) {
-      setLoadingAgent(true);
-      fetch(`/api/profile?wallet=${selectedTx.agentWallet}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => setAgentProfile(data))
-        .catch(() => {})
-        .finally(() => setLoadingAgent(false));
+    if (selectedTx) {
+      if (selectedTx.agentWallet) {
+        setLoadingAgent(true);
+        fetch(`/api/profile?wallet=${selectedTx.agentWallet}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => setAgentProfile(data))
+          .catch(() => {})
+          .finally(() => setLoadingAgent(false));
+      } else {
+        setAgentProfile(null);
+      }
+
+      if (selectedTx.senderWallet) {
+        setLoadingSender(true);
+        fetch(`/api/profile?wallet=${selectedTx.senderWallet}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => setSenderProfile(data))
+          .catch(() => {})
+          .finally(() => setLoadingSender(false));
+      } else {
+        setSenderProfile(null);
+      }
     } else {
       setAgentProfile(null);
+      setSenderProfile(null);
     }
   }, [selectedTx]);
 
@@ -387,9 +401,10 @@ export default function ReceiverDashboard() {
                               <td className="px-10 py-7 text-right">
                                 <button 
                                   onClick={() => setSelectedTx(r)}
-                                  className="p-3 bg-gray-50 rounded-2xl hover:bg-emerald-100 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200"
+                                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all border border-outline/5 hover:border-emerald-500 font-bold text-xs shadow-sm"
                                 >
-                                  <Info className="w-4 h-4" />
+                                  <Info className="w-3.5 h-3.5" />
+                                  <span>Details</span>
                                 </button>
                               </td>
                             </tr>
@@ -476,9 +491,10 @@ export default function ReceiverDashboard() {
                             <td className="px-10 py-7 text-right">
                               <button 
                                 onClick={() => setSelectedTx(r)}
-                                className="p-3 bg-gray-50 rounded-2xl hover:bg-emerald-100 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all border border-outline/5 hover:border-emerald-500 font-bold text-xs shadow-sm"
                               >
-                                <Info className="w-4 h-4" />
+                                <Info className="w-3.5 h-3.5" />
+                                <span>Details</span>
                               </button>
                             </td>
                           </tr>
@@ -636,6 +652,17 @@ export default function ReceiverDashboard() {
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Name / Role</p>
                       <p className="text-sm font-bold text-gray-900">{selectedTx.senderName || "Vietnamese Sender"}</p>
                     </div>
+                    {loadingSender ? (
+                      <div className="py-2"><Loader2 className="w-4 h-4 animate-spin text-gray-200" /></div>
+                    ) : senderProfile && (
+                      <>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sender Bank</p>
+                          <p className="text-xs font-bold text-gray-700">{senderProfile.bankName}</p>
+                          <p className="text-xs text-gray-400">{senderProfile.accountNumber}</p>
+                        </div>
+                      </>
+                    )}
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stellar Wallet</p>
                       <p className="text-[11px] font-mono text-gray-500 break-all">{selectedTx.senderWallet || "N/A"}</p>

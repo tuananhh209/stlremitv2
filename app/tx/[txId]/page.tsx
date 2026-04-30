@@ -583,16 +583,16 @@ export default function TransactionStatusPage() {
 
             {/* 6. expired */}
             {record.status === "expired" && (
-              <div className="pt-8 border-t border-dashed border-outline/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="bg-gray-50 p-16 rounded-[48px] border border-outline/5 flex flex-col items-center text-center gap-8">
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-10 h-10 text-gray-300" />
+              <div className="pt-8 border-t border-dashed border-outline/10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-red-500 p-16 rounded-[48px] text-white flex flex-col items-center text-center gap-8 shadow-2xl shadow-red-100">
+                  <div className="w-24 h-24 bg-white/20 rounded-[32px] flex items-center justify-center backdrop-blur-md border border-white/20">
+                    <Clock className="w-12 h-12 text-white" />
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="text-3xl font-bold text-gray-900">Transaction Expired</h4>
-                    <p className="text-gray-400 max-w-xs">The 5-minute payment window has passed. USDC has been unlocked for the agent.</p>
+                  <div className="space-y-3">
+                    <h4 className="text-4xl font-bold tracking-tight">Transaction Expired</h4>
+                    <p className="text-red-50 max-w-sm text-lg">The payment window has closed. Any funds sent will be refunded to your source account.</p>
                   </div>
-                  <button onClick={() => router.push("/send")} className="btn-primary h-14 rounded-2xl px-10 font-bold">New Remittance</button>
+                  <button onClick={() => router.push("/send")} className="bg-white text-red-500 h-16 rounded-[24px] px-12 font-bold shadow-xl hover:bg-red-50 transition-all">New Remittance</button>
                 </div>
               </div>
             )}

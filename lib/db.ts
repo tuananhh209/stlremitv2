@@ -94,11 +94,21 @@ export const databaseService = {
   /**
    * List remittances, newest first.
    */
-  async listRemittances(limit?: number): Promise<RemittanceRecord[]> {
+  async listRemittances(limit?: number, filters?: { receiver?: string; sender?: string; agent?: string }): Promise<RemittanceRecord[]> {
     let query = db
       .select()
-      .from(remittanceRequests)
-      .orderBy(desc(remittanceRequests.createdAt));
+      .from(remittanceRequests);
+    
+    const conditions = [];
+    if (filters?.receiver) conditions.push(eq(remittanceRequests.receiverWallet, filters.receiver));
+    if (filters?.sender) conditions.push(eq(remittanceRequests.senderWallet, filters.sender));
+    if (filters?.agent) conditions.push(eq(remittanceRequests.agentWallet, filters.agent));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    query = query.orderBy(desc(remittanceRequests.createdAt)) as any;
 
     if (limit) {
       query = query.limit(limit) as any;

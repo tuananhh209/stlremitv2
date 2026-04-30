@@ -125,7 +125,7 @@ export default function SenderDashboard() {
 
   const fetchRecentActivity = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance?limit=5", { cache: "no-store" });
+      const res = await fetch(`/api/remittance?limit=5&sender=${address || ""}`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setRecentRemittances(data.remittances ?? []);
@@ -137,7 +137,7 @@ export default function SenderDashboard() {
 
   const fetchAllHistory = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance", { cache: "no-store" });
+      const res = await fetch(`/api/remittance?sender=${address || ""}`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setAllRemittances(data.remittances ?? []);

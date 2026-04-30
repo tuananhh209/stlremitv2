@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+build
+.git
+.env*.local
+README.md
+Dockerfile
+docker-compose.yml
+.kiro
+.vscode
+tests
+contracts

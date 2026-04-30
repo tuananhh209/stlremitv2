@@ -11,6 +11,7 @@ export const remittanceStatusEnum = pgEnum("remittance_status", [
   "cancelled",
   "funded",
   "processing",
+  "payout_submitted",
   "completed",
   "expired",
 ]);
