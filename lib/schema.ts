@@ -8,6 +8,7 @@ import {
 
 export const remittanceStatusEnum = pgEnum("remittance_status", [
   "pending_agent",
+  "cancelled",
   "funded",
   "processing",
   "completed",
@@ -32,8 +33,11 @@ export const remittanceRequests = pgTable("remittance_requests", {
   senderProofRef: text("sender_proof_ref"),
   agentProofRef: text("agent_proof_ref"),
   stellarTxHash: text("stellar_tx_hash"),
-  // Added via ALTER TABLE — must be last to match DB column order
+  // Added via ALTER TABLE
   receiverWallet: text("receiver_wallet"),
+  senderWallet: text("sender_wallet"),
+  senderName: text("sender_name"),
+  agentWallet: text("agent_wallet"),
 });
 
 export const agentState = pgTable("agent_state", {

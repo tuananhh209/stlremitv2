@@ -7,7 +7,7 @@ import { errorResponse } from "@/lib/api-helpers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { vndAmount, receiverName, receiverAccount, receiverWallet } = body;
+    const { vndAmount, receiverName, receiverAccount, receiverWallet, senderWallet, senderName } = body;
 
     if (!vndAmount || typeof vndAmount !== "number" || vndAmount <= 0) {
       return NextResponse.json(
@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
     const { usdcEquivalent, phpPayout } = calculateAmounts(vndAmount);
     const txId = uuidv4();
 
@@ -45,6 +44,8 @@ export async function POST(req: NextRequest) {
       receiverName: receiverName.trim(),
       receiverAccount: receiverAccount.trim(),
       receiverWallet: receiverWallet.trim(),
+      senderWallet: senderWallet?.trim() || null,
+      senderName: senderName?.trim() || null,
       status: "pending_agent",
     });
 

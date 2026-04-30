@@ -75,6 +75,7 @@ function CountdownTimer({ expiresAt, status }: { expiresAt: string; status: stri
 // ── Status Badge ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   pending_agent: { label: "Awaiting Accept", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
+  cancelled:     { label: "Cancelled",       color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
   funded:        { label: "Waiting VND",     color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
   processing:    { label: "Pay PHP Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: TrendingUp },
   completed:     { label: "Completed",       color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
@@ -105,8 +106,12 @@ export default function AgentDashboard() {
       router.replace("/");
     }
   }, [role, router]);
-  const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
+  const [recentRemittances, setRecentRemittances] = useState<RemittanceRecord[]>([]);
+  const [allRemittances, setAllRemittances] = useState<RemittanceRecord[]>([]);
   const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [balanceLoading, setBalanceLoading] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
   const [activeNav, setActiveNav] = useState<NavTab>("requests");
@@ -125,15 +130,36 @@ export default function AgentDashboard() {
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const AGENT_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
 
-  const fetchAll = useCallback(async () => {
+  const fetchBalance = useCallback(async () => {
     try {
-      const [rRes, bRes] = await Promise.all([
-        fetch("/api/remittance", { cache: "no-store" }),
-        fetch("/api/agent/balance", { cache: "no-store" }),
-      ]);
-      if (rRes.ok) { const d = await rRes.json(); setRemittances(d.remittances ?? []); }
-      if (bRes.ok) { const d = await bRes.json(); setBalance(d); }
+      const res = await fetch("/api/agent/balance", { cache: "no-store" });
+      if (res.ok) {
+        const d = await res.json();
+        setBalance(d);
+      }
     } catch { /* ignore */ }
+  }, []);
+
+  const fetchRecentActivity = useCallback(async () => {
+    try {
+      const res = await fetch("/api/remittance?limit=10", { cache: "no-store" });
+      if (res.ok) {
+        const d = await res.json();
+        setRecentRemittances(d.remittances ?? []);
+      }
+    } catch { /* ignore */ }
+    finally { setActivityLoading(false); }
+  }, []);
+
+  const fetchAllHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/remittance", { cache: "no-store" });
+      if (res.ok) {
+        const d = await res.json();
+        setAllRemittances(d.remittances ?? []);
+      }
+    } catch { /* ignore */ }
+    finally { setHistoryLoading(false); }
   }, []);
 
   // Trigger timeout check every 30s to auto-refund expired transactions
@@ -145,19 +171,32 @@ export default function AgentDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchAll();
-    // Poll every 2s for near-realtime updates
-    const id = setInterval(fetchAll, 2000);
+    fetchBalance();
+    fetchRecentActivity();
+    
+    // Poll balance and recent activity frequently
+    const bId = setInterval(fetchBalance, 3000);
+    const aId = setInterval(fetchRecentActivity, 5000);
 
-    // Also re-fetch immediately when tab becomes visible
-    const onVisible = () => { if (document.visibilityState === "visible") fetchAll(); };
+    // Fetch history less frequently or when tab is active
+    const hId = setInterval(fetchAllHistory, 15000);
+    fetchAllHistory();
+
+    const onVisible = () => { 
+      if (document.visibilityState === "visible") {
+        fetchBalance();
+        fetchRecentActivity();
+      } 
+    };
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      clearInterval(id);
+      clearInterval(bId);
+      clearInterval(aId);
+      clearInterval(hId);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [fetchAll]);
+  }, [fetchBalance, fetchRecentActivity, fetchAllHistory]);
 
   // Load profile when settings tab opens
   useEffect(() => {
@@ -300,7 +339,7 @@ export default function AgentDashboard() {
       const acceptRes = await fetch(`/api/remittance/${txId}/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stellarTxHash: txHash }),
+        body: JSON.stringify({ stellarTxHash: txHash, agentWallet: address }),
       });
       if (acceptRes.ok) fetchAll();
       else {
@@ -323,9 +362,9 @@ export default function AgentDashboard() {
     finally { setConfirmingId(null); }
   }
 
-  const pendingRequests  = remittances.filter(r => r.status === "pending_agent");
-  const activeRemittances = remittances.filter(r => r.status === "funded" || r.status === "processing");
-  const historyRemittances = remittances.filter(r => r.status === "completed" || r.status === "expired");
+  const pendingRequests  = allRemittances.filter(r => r.status === "pending_agent");
+  const activeRemittances = allRemittances.filter(r => r.status === "funded" || r.status === "processing");
+  const historyRemittances = allRemittances.filter(r => r.status === "completed" || r.status === "expired");
 
   const navItems: { id: NavTab; label: string; icon: any; badge?: number }[] = [
     { id: "requests", label: "Requests",  icon: Inbox,          badge: pendingRequests.length },
@@ -638,8 +677,8 @@ export default function AgentDashboard() {
                   </div>
                   <div className="h-[1px] bg-outline/10" />
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Pooled</span>
-                    <span className="font-bold text-gray-900">{balance?.totalCollateral.toFixed(2)} USDC</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Committed (Lifetime)</span>
+                    <span className="font-bold text-gray-900">{balance?.historicalVolume.toFixed(2)} USDC</span>
                   </div>
                   <button onClick={() => setActiveNav("overview")} className="w-full btn-primary h-14 rounded-2xl text-xs font-bold">View Active Reserves</button>
                 </div>

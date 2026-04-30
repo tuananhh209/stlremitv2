@@ -2,6 +2,7 @@
 
 export type RemittanceStatus =
   | "pending_agent"    // Sender submitted, waiting for agent to accept & lock USDC
+  | "cancelled"        // Sender cancelled before agent accepted
   | "funded"           // Agent accepted & locked USDC, waiting for sender to pay VND (5-min timer starts)
   | "processing"       // Sender uploaded VND proof, agent needs to pay PHP
   | "completed"        // Agent confirmed PHP payout on-chain, USDC released
@@ -21,6 +22,9 @@ export interface RemittanceRecord {
   senderProofRef: string | null;
   agentProofRef: string | null;
   stellarTxHash: string | null;
+  senderWallet: string | null;
+  senderName: string | null;
+  agentWallet: string | null;
 }
 
 export interface AgentBalance {
@@ -91,6 +95,7 @@ export interface AgentBalanceResponse {
   totalCollateral: number;
   reservedUsdc: number;
   availableUsdc: number;
+  historicalVolume: number;
 }
 
 export interface ApiErrorResponse {

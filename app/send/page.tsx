@@ -78,7 +78,8 @@ export default function SenderDashboard() {
   // Real-time Data
   const [availableUsdc, setAvailableUsdc] = useState<number>(0);
   const [totalCollateral, setTotalCollateral] = useState<number>(0);
-  const [remittances, setRemittances] = useState<any[]>([]);
+  const [reservedUsdc, setReservedUsdc] = useState<number>(0);
+  const [historicalVolume, setHistoricalVolume] = useState<number>(0);
 
   // Settings state
   const [settingsBankName, setSettingsBankName] = useState("");
@@ -95,29 +96,69 @@ export default function SenderDashboard() {
   const parsedAmount = parseFloat(vndAmount);
   const amounts = !isNaN(parsedAmount) && parsedAmount > 0 ? calculateAmounts(parsedAmount) : null;
 
-  const fetchData = useCallback(async () => {
+  const [recentRemittances, setRecentRemittances] = useState<any[]>([]);
+  const [allRemittances, setAllRemittances] = useState<any[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+
+  const fetchBalance = useCallback(async () => {
     try {
-      const [poolRes, histRes] = await Promise.all([
-        fetch("/api/agent/balance"),
-        fetch("/api/remittance"),
-      ]);
-      if (poolRes.ok) {
-        const data = await poolRes.json();
+      const res = await fetch("/api/agent/balance");
+      if (res.ok) {
+        const data = await res.json();
         setAvailableUsdc(data.availableUsdc);
         setTotalCollateral(data.totalCollateral);
-      }
-      if (histRes.ok) {
-        const data = await histRes.json();
-        setRemittances(data.remittances ?? []);
+        setReservedUsdc(data.reservedUsdc);
+        setHistoricalVolume(data.historicalVolume);
       }
     } catch { /* ignore */ }
   }, []);
 
+  const fetchRecentActivity = useCallback(async () => {
+    try {
+      const res = await fetch("/api/remittance?limit=5");
+      if (res.ok) {
+        const data = await res.json();
+        setRecentRemittances(data.remittances ?? []);
+      }
+    } catch { /* ignore */ }
+    finally { setActivityLoading(false); }
+  }, []);
+
+  const fetchAllHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/remittance");
+      if (res.ok) {
+        const data = await res.json();
+        setAllRemittances(data.remittances ?? []);
+      }
+    } catch { /* ignore */ }
+    finally { setHistoryLoading(false); }
+  }, []);
+
+  // Poll balance frequently
   useEffect(() => {
-    fetchData();
-    const id = setInterval(fetchData, 2000);
+    fetchBalance();
+    const id = setInterval(fetchBalance, 3000);
     return () => clearInterval(id);
-  }, [fetchData]);
+  }, [fetchBalance]);
+
+  // Poll recent activity frequently
+  useEffect(() => {
+    fetchRecentActivity();
+    const id = setInterval(fetchRecentActivity, 5000);
+    return () => clearInterval(id);
+  }, [fetchRecentActivity]);
+
+  // Load all history only when needed or less frequently
+  useEffect(() => {
+    if (activeTab === "history" || activeTab === "overview") {
+      fetchAllHistory();
+    }
+    const id = setInterval(fetchAllHistory, 15000);
+    return () => clearInterval(id);
+  }, [fetchAllHistory, activeTab]);
 
   // Load profile when settings tab opens
   useEffect(() => {
@@ -169,7 +210,14 @@ export default function SenderDashboard() {
       const res = await fetch("/api/remittance/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vndAmount: parsedAmount, receiverName, receiverAccount, receiverWallet }),
+        body: JSON.stringify({ 
+          vndAmount: parsedAmount, 
+          receiverName, 
+          receiverAccount, 
+          receiverWallet,
+          senderWallet: address,
+          senderName: "Sender"
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -373,14 +421,14 @@ export default function SenderDashboard() {
                     <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600"><Send className="w-6 h-6" /></div>
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active</p>
-                      <p className="text-2xl font-bold text-gray-900">{remittances.filter(r => ["pending_agent","funded","processing"].includes(r.status)).length}</p>
+                      <p className="text-2xl font-bold text-gray-900">{allRemittances.filter(r => ["pending_agent","funded","processing"].includes(r.status)).length}</p>
                     </div>
                   </div>
                   <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
                     <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600"><HistoryIcon className="w-6 h-6" /></div>
                     <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Completed</p>
-                      <p className="text-2xl font-bold text-gray-900">{remittances.filter(r => r.status === "completed").length}</p>
+                      <p className="text-2xl font-bold text-gray-900">{allRemittances.filter(r => r.status === "completed").length}</p>
                     </div>
                   </div>
                 </div>
@@ -394,7 +442,7 @@ export default function SenderDashboard() {
                     <button onClick={() => setActiveTab("history")} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">View All</button>
                   </div>
                   <div className="space-y-4">
-                    {remittances.slice(0, 5).map((r) => (
+                    {recentRemittances.map((r) => (
                       <div
                         key={r.txId}
                         onClick={() => router.push(`/tx/${r.txId}`)}
@@ -410,12 +458,17 @@ export default function SenderDashboard() {
                         <p className="text-xs text-gray-400 mt-1">{Number(r.vndAmount).toLocaleString()} VND → {Number(r.phpPayout).toFixed(0)} PHP</p>
                       </div>
                     ))}
-                    {remittances.length === 0 && (
+                    {activityLoading ? (
+                      <div className="py-10 flex flex-col items-center gap-3">
+                        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Loading activity...</p>
+                      </div>
+                    ) : recentRemittances.length === 0 ? (
                       <div className="py-10 text-center space-y-3">
                         <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-200"><HistoryIcon className="w-6 h-6" /></div>
                         <p className="text-xs text-gray-400 font-medium">No activity yet</p>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -464,7 +517,7 @@ export default function SenderDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline/5">
-                    {remittances.map((r) => (
+                    {allRemittances.map((r) => (
                       <tr key={r.txId} className="hover:bg-gray-50/30 transition-colors group">
                         <td className="px-10 py-7">
                           <p className="text-sm font-bold text-gray-900">{new Date(r.createdAt).toLocaleDateString()}</p>
@@ -490,7 +543,16 @@ export default function SenderDashboard() {
                         </td>
                       </tr>
                     ))}
-                    {remittances.length === 0 && (
+                    {historyLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-10 py-32 text-center">
+                          <div className="flex flex-col items-center gap-4 text-gray-300">
+                            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                            <p className="font-bold">Loading history...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : allRemittances.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-10 py-32 text-center">
                           <div className="flex flex-col items-center gap-4 text-gray-300">
@@ -499,7 +561,7 @@ export default function SenderDashboard() {
                           </div>
                         </td>
                       </tr>
-                    )}
+                    ) : null}
                   </tbody>
                 </table>
               </div>
@@ -527,7 +589,7 @@ export default function SenderDashboard() {
                   <div className="bg-white rounded-[40px] p-10 text-gray-900 shadow-2xl space-y-10">
                     <div className="space-y-2">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Committed</p>
-                      <p className="text-6xl font-bold tracking-tighter text-primary">{totalCollateral.toFixed(2)} <span className="text-2xl font-medium text-gray-300">USDC</span></p>
+                      <p className="text-6xl font-bold tracking-tighter text-primary">{historicalVolume.toFixed(2)} <span className="text-2xl font-medium text-gray-300">USDC</span></p>
                     </div>
                     <div className="h-[2px] bg-gray-50" />
                     <div className="grid grid-cols-2 gap-10">
@@ -537,7 +599,7 @@ export default function SenderDashboard() {
                       </div>
                       <div className="space-y-2">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /> Reserved</p>
-                        <p className="text-3xl font-bold">{(totalCollateral - availableUsdc).toFixed(2)}</p>
+                        <p className="text-3xl font-bold">{reservedUsdc.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>

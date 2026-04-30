@@ -58,6 +58,8 @@ export class StellarService {
   private server: StellarRpc.Server;
   private agentKeypair: Keypair;
   private contractId: string;
+  private balanceCache: ContractBalance | null = null;
+  private balanceCacheTime: number = 0;
 
   constructor() {
     this.server = new StellarRpc.Server(STELLAR_CONFIG.RPC_URL, {
@@ -140,6 +142,11 @@ export class StellarService {
   // ── Server-side contract calls ────────────────────────────────────────────
 
   async getContractBalance(): Promise<ContractBalance> {
+    const now = Date.now();
+    if (this.balanceCache && now - this.balanceCacheTime < 5000) {
+      return this.balanceCache;
+    }
+
     try {
       const agentAccount = await this.server.getAccount(
         this.agentKeypair.publicKey()
@@ -166,7 +173,11 @@ export class StellarService {
 
       const totalRaw = scValToNative(retval) as bigint;
       const total = fromContractAmount(totalRaw);
-      return { total, available: total };
+      
+      const result = { total, available: total };
+      this.balanceCache = result;
+      this.balanceCacheTime = now;
+      return result;
     } catch {
       return { total: 0, available: 0 };
     }

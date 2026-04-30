@@ -7,11 +7,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { total, available } = await stellarService.getContractBalance();
+    const { total } = await stellarService.getContractBalance();
+    const reserved = await databaseService.getReservedUsdc();
+    const historicalVolume = await databaseService.getHistoricalVolume();
+    
     const response: AgentBalanceResponse = {
       totalCollateral: total,
-      reservedUsdc: total - available,
-      availableUsdc: available,
+      reservedUsdc: reserved,
+      availableUsdc: Math.max(0, total - reserved),
+      historicalVolume,
     };
     return NextResponse.json(response);
   } catch (err) {

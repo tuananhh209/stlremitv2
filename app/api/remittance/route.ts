@@ -5,9 +5,12 @@ import type { RemittanceListResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic"; // never cache this route
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const remittances = await databaseService.listRemittances();
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined;
+    
+    const remittances = await databaseService.listRemittances(limit);
     const response: RemittanceListResponse = { remittances };
     return NextResponse.json(response, {
       headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },

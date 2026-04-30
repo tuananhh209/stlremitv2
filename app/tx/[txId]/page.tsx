@@ -7,6 +7,7 @@ import {
   ArrowLeft, CheckCircle2, Clock, AlertCircle, ExternalLink,
   ShieldCheck, Globe2, FileText, Image as ImageIcon, Zap,
   ArrowRight, User, CreditCard, Activity, Banknote, Building2, QrCode,
+  XCircle, Loader2,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -20,6 +21,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; desc: string
     color: "text-indigo-600 bg-indigo-50 border-indigo-100",
     desc: "Your request has been sent. Waiting for the agent to accept and lock USDC.",
     icon: Activity,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "text-gray-500 bg-gray-50 border-gray-200",
+    desc: "You cancelled this request before the agent accepted.",
+    icon: XCircle,
   },
   funded: {
     label: "Agent Accepted — Pay Now",
@@ -50,8 +57,13 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; desc: string
 function getSteps(status: string) {
   return [
     { label: "Requested", done: true },
-    { label: "Agent Accept", active: status === "pending_agent", done: status !== "pending_agent" },
-    { label: "Pay VND", active: status === "funded", done: !["pending_agent", "funded"].includes(status) },
+    { 
+      label: status === "cancelled" ? "Cancelled" : "Agent Accept", 
+      active: status === "pending_agent", 
+      done: !["pending_agent", "cancelled"].includes(status),
+      cancelled: status === "cancelled"
+    },
+    { label: "Pay VND", active: status === "funded", done: !["pending_agent", "funded", "cancelled"].includes(status) },
     { label: "PHP Payout", active: status === "processing", done: status === "completed" },
     { label: "Done", done: status === "completed" },
   ];
@@ -141,6 +153,35 @@ export default function TransactionStatusPage() {
     }
   }, [record?.status, timeRemaining]);
 
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancel = async () => {
+    if (!confirm("Cancel this remittance request?")) return;
+    
+    // Optimistic UI update for immediate feedback
+    const prevRecord = record;
+    if (record) {
+      setRecord({ ...record, status: "cancelled" });
+    }
+    
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/remittance/${txId}/cancel`, { method: "POST" });
+      if (!res.ok) {
+        // Rollback on error
+        setRecord(prevRecord);
+        const d = await res.json(); 
+        alert(d.error ?? "Cancel failed"); 
+      } else {
+        fetchRecord();
+      }
+    } catch { 
+      setRecord(prevRecord);
+      alert("Network error"); 
+    }
+    finally { setCancelling(false); }
+  };
+
   const handleUploadProof = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
@@ -206,17 +247,18 @@ export default function TransactionStatusPage() {
           </div>
           <div className="flex items-center justify-between relative px-4">
             <div className="absolute left-[8%] right-[8%] top-6 h-[2px] bg-gray-50 -z-0" />
-            {steps.map((s, idx) => (
+            {steps.map((s: any, idx) => (
               <div key={idx} className="flex flex-col items-center gap-3 relative z-10">
                 <div className={cn(
                   "w-12 h-12 rounded-[18px] flex items-center justify-center border-2 transition-all duration-500",
+                  s.cancelled ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-100" :
                   s.done ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100" :
                   s.active ? "bg-primary border-primary text-white shadow-xl shadow-primary/20 scale-110" :
                   "bg-white border-gray-100 text-gray-300"
                 )}>
-                  {s.done ? <CheckCircle2 className="w-6 h-6" /> : <span className="font-bold text-sm">{idx + 1}</span>}
+                  {s.cancelled ? <XCircle className="w-6 h-6" /> : s.done ? <CheckCircle2 className="w-6 h-6" /> : <span className="font-bold text-sm">{idx + 1}</span>}
                 </div>
-                <span className={cn("text-[10px] font-bold uppercase tracking-widest", (s.done || s.active) ? "text-gray-900" : "text-gray-200")}>{s.label}</span>
+                <span className={cn("text-[10px] font-bold uppercase tracking-widest", s.cancelled ? "text-red-500" : (s.done || s.active) ? "text-gray-900" : "text-gray-200")}>{s.label}</span>
               </div>
             ))}
           </div>
@@ -280,35 +322,102 @@ export default function TransactionStatusPage() {
                     Polling for agent response...
                   </div>
                 </div>
+                {/* Cancel button */}
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="mt-4 w-full h-12 rounded-2xl border border-red-200 text-red-500 hover:bg-red-50 font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {cancelling ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelling...</> : <><XCircle className="w-4 h-4" /> Cancel Request</>}
+                </button>
+              </div>
+            )}
+
+            {/* 1b. cancelled */}
+            {record.status === "cancelled" && (
+              <div className="pt-8 border-t border-dashed border-outline/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-gray-50 p-12 rounded-[40px] border border-outline/5 flex flex-col items-center text-center gap-6">
+                  <div className="w-16 h-16 bg-gray-100 rounded-[20px] flex items-center justify-center text-gray-400">
+                    <XCircle className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-xl font-bold text-gray-900">Request Cancelled</h4>
+                    <p className="text-sm text-gray-400 max-w-sm">You cancelled this request before the agent accepted. No funds were locked.</p>
+                  </div>
+                  <button onClick={() => router.push("/send")} className="btn-primary h-12 rounded-2xl px-8 font-bold">New Remittance</button>
+                </div>
               </div>
             )}
 
             {/* 2. funded: Pay button */}
             {record.status === "funded" && !showPayment && (
               <div className="pt-8 border-t border-dashed border-outline/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="bg-amber-50 border border-amber-200 rounded-[40px] p-10 space-y-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600">
-                      <CheckCircle2 className="w-7 h-7" />
-                    </div>
+                {timeRemaining === 0 ? (
+                  <div className="bg-red-50 border border-red-200 rounded-[40px] p-10 flex flex-col items-center text-center gap-4">
+                    <AlertCircle className="w-10 h-10 text-red-400" />
                     <div>
-                      <h4 className="text-xl font-bold text-amber-900">Agent Accepted!</h4>
-                      <p className="text-sm text-amber-700/70">USDC locked in escrow. Complete your VND transfer now.</p>
+                      <h4 className="text-lg font-bold text-red-900">Payment Window Expired</h4>
+                      <p className="text-sm text-red-700/70 mt-1">The 5-minute window has passed. USDC is being returned to the agent.</p>
                     </div>
+                    <button onClick={() => router.push("/send")} className="px-8 h-12 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-bold text-sm transition-all">
+                      New Remittance
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setShowPayment(true)}
-                    className="w-full h-16 bg-amber-500 hover:bg-amber-600 text-white rounded-[24px] font-bold text-sm shadow-xl shadow-amber-200 flex items-center justify-center gap-3 transition-all active:scale-95"
-                  >
-                    <Banknote className="w-5 h-5" /> Proceed to Payment <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-[40px] p-10 space-y-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600">
+                        <CheckCircle2 className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-amber-900">Agent Accepted!</h4>
+                        <p className="text-sm text-amber-700/70">USDC locked in escrow. Complete your VND transfer now.</p>
+                      </div>
+                    </div>
+                    {/* Countdown preview */}
+                    <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl border border-amber-100 w-fit">
+                      <Clock className={cn("w-5 h-5", timeRemaining < 60 ? "text-red-500 animate-pulse" : "text-amber-500")} />
+                      <span className={cn("text-2xl font-mono font-bold", timeRemaining < 60 ? "text-red-600" : "text-amber-600")}>
+                        {Math.floor(timeRemaining / 60)}:{String(timeRemaining % 60).padStart(2, "0")}
+                      </span>
+                      <span className="text-xs text-amber-400 font-bold uppercase tracking-widest">remaining</span>
+                    </div>
+                    <button
+                      onClick={() => setShowPayment(true)}
+                      className="w-full h-16 bg-amber-500 hover:bg-amber-600 text-white rounded-[24px] font-bold text-sm shadow-xl shadow-amber-200 flex items-center justify-center gap-3 transition-all active:scale-95"
+                    >
+                      <Banknote className="w-5 h-5" /> Proceed to Payment <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* 3. funded + showPayment */}
             {record.status === "funded" && showPayment && (
               <div className="pt-8 border-t border-dashed border-outline/10 animate-in zoom-in-95 duration-500 space-y-8">
+
+                {/* ── EXPIRED LOCALLY (timer = 0, DB not yet updated) ── */}
+                {timeRemaining === 0 ? (
+                  <div className="bg-red-50 border border-red-200 rounded-[40px] p-12 flex flex-col items-center text-center gap-6">
+                    <div className="w-16 h-16 bg-red-100 rounded-[20px] flex items-center justify-center text-red-500">
+                      <AlertCircle className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xl font-bold text-red-900">Payment Window Expired</h4>
+                      <p className="text-sm text-red-700/70 max-w-sm">
+                        The 5-minute payment window has passed. The USDC is being returned to the agent. Please create a new remittance request.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => router.push("/send")}
+                      className="px-8 h-12 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-bold text-sm transition-all"
+                    >
+                      New Remittance
+                    </button>
+                  </div>
+                ) : (
+                  <>
                 <div className="bg-gray-50 rounded-[40px] p-10 border border-outline/5 shadow-inner space-y-8">
                   <div className="flex items-center justify-between border-b border-outline/10 pb-6">
                     <div className="space-y-1">
@@ -377,6 +486,8 @@ export default function TransactionStatusPage() {
                     </button>
                   </div>
                 </form>
+                  </>
+                )}
               </div>
             )}
 

@@ -1,4 +1,4 @@
-import { eq, lt, and } from "drizzle-orm";
+import { eq, lt, and, desc } from "drizzle-orm";
 import { db } from "./db-client";
 import { remittanceRequests, agentState, userProfiles } from "./schema";
 import type { RemittanceRecord, RemittanceStatus } from "./types";
@@ -21,6 +21,9 @@ function rowToRecord(row: typeof remittanceRequests.$inferSelect): RemittanceRec
     senderProofRef: row.senderProofRef ?? null,
     agentProofRef: row.agentProofRef ?? null,
     stellarTxHash: row.stellarTxHash ?? null,
+    senderWallet: row.senderWallet ?? null,
+    senderName: row.senderName ?? null,
+    agentWallet: row.agentWallet ?? null,
   };
 }
 
@@ -34,6 +37,9 @@ export interface CreateRemittanceData {
   receiverName: string;
   receiverAccount: string;
   receiverWallet?: string;
+  senderWallet?: string;
+  senderName?: string;
+  agentWallet?: string;
   stellarTxHash?: string;
 }
 
@@ -59,6 +65,9 @@ export const databaseService = {
         receiverName: data.receiverName,
         receiverAccount: data.receiverAccount,
         receiverWallet: data.receiverWallet ?? null,
+        senderWallet: data.senderWallet ?? null,
+        senderName: data.senderName ?? null,
+        agentWallet: data.agentWallet ?? null,
         status: data.status || "pending_agent",
         createdAt: now,
         expiresAt,
@@ -83,15 +92,20 @@ export const databaseService = {
   },
 
   /**
-   * List all remittances, newest first.
+   * List remittances, newest first.
    */
-  async listRemittances(): Promise<RemittanceRecord[]> {
-    const rows = await db
+  async listRemittances(limit?: number): Promise<RemittanceRecord[]> {
+    let query = db
       .select()
       .from(remittanceRequests)
-      .orderBy(remittanceRequests.createdAt);
+      .orderBy(desc(remittanceRequests.createdAt));
 
-    return rows.map(rowToRecord).reverse();
+    if (limit) {
+      query = query.limit(limit) as any;
+    }
+
+    const rows = await query;
+    return rows.map(rowToRecord);
   },
 
   /**
@@ -100,11 +114,16 @@ export const databaseService = {
    * - Resets expiresAt to now + 300s (5-min payment window starts NOW)
    * - Stores stellar tx hash from USDC lock
    */
-  async acceptRemittance(txId: string, stellarTxHash: string): Promise<RemittanceRecord> {
+  async acceptRemittance(txId: string, stellarTxHash: string, agentWallet: string): Promise<RemittanceRecord> {
     const expiresAt = new Date(Date.now() + EXCHANGE_RATES.TIMEOUT_SECONDS * 1000);
     const [row] = await db
       .update(remittanceRequests)
-      .set({ status: "funded", expiresAt, stellarTxHash })
+      .set({ 
+        status: "funded", 
+        expiresAt, 
+        stellarTxHash,
+        agentWallet 
+      })
       .where(eq(remittanceRequests.txId, txId))
       .returning();
     return rowToRecord(row);
@@ -224,5 +243,42 @@ export const databaseService = {
           updatedAt: new Date(),
         },
       });
+  },
+
+  /**
+   * Calculate total USDC currently reserved (locked in contract for active remittances).
+   * Statuses: funded, processing
+   */
+  async getReservedUsdc(): Promise<number> {
+    const rows = await db
+      .select({ usdc: remittanceRequests.usdcEquivalent })
+      .from(remittanceRequests)
+      .where(
+        and(
+          eq(remittanceRequests.status, "funded"),
+          // also include processing if it's still locked in contract
+          // (depending on contract logic, it's released on completion)
+        )
+      );
+    
+    // Also check processing
+    const processingRows = await db
+      .select({ usdc: remittanceRequests.usdcEquivalent })
+      .from(remittanceRequests)
+      .where(eq(remittanceRequests.status, "processing"));
+
+    const allActive = [...rows, ...processingRows];
+    return allActive.reduce((sum, r) => sum + Number(r.usdc), 0);
+  },
+
+  /**
+   * Get total historical volume (sum of all remittances ever created).
+   */
+  async getHistoricalVolume(): Promise<number> {
+    const rows = await db
+      .select({ usdc: remittanceRequests.usdcEquivalent })
+      .from(remittanceRequests);
+    
+    return rows.reduce((sum, r) => sum + Number(r.usdc), 0);
   },
 };

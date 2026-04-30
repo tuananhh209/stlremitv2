@@ -18,7 +18,7 @@ export async function POST(
   try {
     const { id: txId } = await params;
     const body = await req.json().catch(() => ({}));
-    const stellarTxHash: string = body.stellarTxHash ?? "";
+    const { stellarTxHash = "", agentWallet = "" } = body;
 
     const record = await databaseService.getRemittance(txId);
     if (!record) throw new NotFoundError(txId);
@@ -28,7 +28,7 @@ export async function POST(
     }
 
     // Set expiresAt = now + 5 min (payment window starts when agent accepts)
-    const updated = await databaseService.acceptRemittance(txId, stellarTxHash);
+    const updated = await databaseService.acceptRemittance(txId, stellarTxHash, agentWallet);
 
     return NextResponse.json({
       txId: updated.txId,
