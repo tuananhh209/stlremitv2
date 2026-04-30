@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@/components/wallet-provider";
 import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
@@ -27,11 +28,19 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 const RECEIVER_BANKS = ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank", "GCash", "Maya"];
 
 export default function ReceiverDashboard() {
-  const { address, bankInfo } = useWallet();
+  const router = useRouter();
+  const { address, bankInfo, role } = useWallet();
   const { isBankInfoComplete, loading: profileLoading } = useProfile();
   const [activeTab, setActiveTab] = useState<"transfers" | "settings">("transfers");
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Role guard
+  useEffect(() => {
+    if (role && role !== "receiver") {
+      router.replace("/");
+    }
+  }, [role]);
 
   // Settings state
   const [sBankName, setSBankName] = useState("");

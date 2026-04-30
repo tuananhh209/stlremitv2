@@ -56,9 +56,16 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function SenderDashboard() {
   const router = useRouter();
-  const { address, isConnected } = useWallet();
+  const { address, isConnected, role } = useWallet();
   const { isBankInfoComplete, loading: profileLoading } = useProfile();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  // Role guard — if wrong role, redirect to root
+  useEffect(() => {
+    if (isConnected && role && role !== "sender") {
+      router.replace("/");
+    }
+  }, [isConnected, role, router]);
 
   // Form State
   const [vndAmount, setVndAmount] = useState<string>("");

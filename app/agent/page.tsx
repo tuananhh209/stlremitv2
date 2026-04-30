@@ -96,8 +96,15 @@ type NavTab = "overview" | "requests" | "history" | "pools" | "settings";
 
 export default function AgentDashboard() {
   const router = useRouter();
-  const { address } = useWallet();
+  const { address, role } = useWallet();
   const { isBankInfoComplete, loading: profileLoading } = useProfile();
+
+  // Role guard
+  useEffect(() => {
+    if (role && role !== "agent") {
+      router.replace("/");
+    }
+  }, [role, router]);
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
   const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
   const [depositAmount, setDepositAmount] = useState("");

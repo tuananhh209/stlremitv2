@@ -69,6 +69,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setWalletType(null);
     setRoleState(null);
     setBankInfoState(null);
+    // Force redirect to root so AppGate can re-run role selection
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
   };
 
   const setRole = (r: UserRole) => setRoleState(r);
