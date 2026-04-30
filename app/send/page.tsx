@@ -75,9 +75,15 @@ export default function SenderDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Real-time Data
-  const [availableUsdc, setAvailableUsdc] = useState<number>(0);
-  const [totalCollateral, setTotalCollateral] = useState<number>(0);
+  // Real-time Data — init from localStorage cache for instant display
+  const [availableUsdc, setAvailableUsdc] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    try { return JSON.parse(localStorage.getItem("stl_balance") ?? "null")?.availableUsdc ?? 0; } catch { return 0; }
+  });
+  const [totalCollateral, setTotalCollateral] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    try { return JSON.parse(localStorage.getItem("stl_balance") ?? "null")?.totalCollateral ?? 0; } catch { return 0; }
+  });
   const [reservedUsdc, setReservedUsdc] = useState<number>(0);
   const [historicalVolume, setHistoricalVolume] = useState<number>(0);
 

@@ -72,12 +72,13 @@ export default function ReceiverDashboard() {
       if (res.ok) {
         const d = await res.json();
         const all: RemittanceRecord[] = d.remittances ?? [];
-        const mine = bankInfo ? all.filter(r => r.receiverAccount === bankInfo.accountNumber) : all;
+        // Filter by receiver's Stellar wallet address (set by sender in the form)
+        const mine = address ? all.filter(r => r.receiverWallet === address) : [];
         setRecentRemittances(mine);
       }
     } catch { /* ignore */ }
     finally { setActivityLoading(false); }
-  }, [bankInfo]);
+  }, [address]);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -85,12 +86,13 @@ export default function ReceiverDashboard() {
       if (res.ok) {
         const d = await res.json();
         const all: RemittanceRecord[] = d.remittances ?? [];
-        const mine = bankInfo ? all.filter(r => r.receiverAccount === bankInfo.accountNumber) : all;
+        // Filter by receiver's Stellar wallet address (set by sender in the form)
+        const mine = address ? all.filter(r => r.receiverWallet === address) : [];
         setAllRemittances(mine);
       }
     } catch { /* ignore */ }
     finally { setHistoryLoading(false); }
-  }, [bankInfo]);
+  }, [address]);
 
   useEffect(() => {
     fetchRecent();

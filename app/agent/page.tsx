@@ -106,11 +106,26 @@ export default function AgentDashboard() {
       router.replace("/");
     }
   }, [role, router]);
-  const [recentRemittances, setRecentRemittances] = useState<RemittanceRecord[]>([]);
-  const [allRemittances, setAllRemittances] = useState<RemittanceRecord[]>([]);
-  const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
-  const [activityLoading, setActivityLoading] = useState(true);
-  const [historyLoading, setHistoryLoading] = useState(true);
+  const [recentRemittances, setRecentRemittances] = useState<RemittanceRecord[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem("stl_recent") ?? "[]"); } catch { return []; }
+  });
+  const [allRemittances, setAllRemittances] = useState<RemittanceRecord[]>(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem("stl_history") ?? "[]"); } catch { return []; }
+  });
+  const [balance, setBalance] = useState<AgentBalanceResponse | null>(() => {
+    if (typeof window === "undefined") return null;
+    try { return JSON.parse(localStorage.getItem("stl_balance") ?? "null"); } catch { return null; }
+  });
+  const [activityLoading, setActivityLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !localStorage.getItem("stl_recent");
+  });
+  const [historyLoading, setHistoryLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !localStorage.getItem("stl_history");
+  });
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -136,6 +151,7 @@ export default function AgentDashboard() {
       if (res.ok) {
         const d = await res.json();
         setBalance(d);
+        try { localStorage.setItem("stl_balance", JSON.stringify(d)); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
   }, []);
@@ -146,6 +162,7 @@ export default function AgentDashboard() {
       if (res.ok) {
         const d = await res.json();
         setRecentRemittances(d.remittances ?? []);
+        try { localStorage.setItem("stl_recent", JSON.stringify(d.remittances ?? [])); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
     finally { setActivityLoading(false); }
@@ -157,6 +174,7 @@ export default function AgentDashboard() {
       if (res.ok) {
         const d = await res.json();
         setAllRemittances(d.remittances ?? []);
+        try { localStorage.setItem("stl_history", JSON.stringify(d.remittances ?? [])); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
     finally { setHistoryLoading(false); }
