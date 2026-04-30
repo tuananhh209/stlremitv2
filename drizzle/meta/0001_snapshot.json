@@ -1,0 +1,240 @@
+{
+  "id": "7be713e7-34a6-4f7b-90ca-4e3b8ebe8b18",
+  "prevId": "b91af671-b076-48ec-a67b-a77b7a1fba08",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.agent_state": {
+      "name": "agent_state",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "'singleton'"
+        },
+        "total_collateral": {
+          "name": "total_collateral",
+          "type": "numeric(20, 7)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "reserved_usdc": {
+          "name": "reserved_usdc",
+          "type": "numeric(20, 7)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.remittance_requests": {
+      "name": "remittance_requests",
+      "schema": "",
+      "columns": {
+        "tx_id": {
+          "name": "tx_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "vnd_amount": {
+          "name": "vnd_amount",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usdc_equivalent": {
+          "name": "usdc_equivalent",
+          "type": "numeric(20, 7)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "php_payout": {
+          "name": "php_payout",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "receiver_name": {
+          "name": "receiver_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "receiver_account": {
+          "name": "receiver_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "remittance_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'funded'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sender_proof_ref": {
+          "name": "sender_proof_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_proof_ref": {
+          "name": "agent_proof_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stellar_tx_hash": {
+          "name": "stellar_tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_profiles": {
+      "name": "user_profiles",
+      "schema": "",
+      "columns": {
+        "wallet_address": {
+          "name": "wallet_address",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bank_name": {
+          "name": "bank_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "account_number": {
+          "name": "account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "account_holder": {
+          "name": "account_holder",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qr_image_url": {
+          "name": "qr_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_bank_name": {
+          "name": "agent_bank_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_account_number": {
+          "name": "agent_account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_account_holder": {
+          "name": "agent_account_holder",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_qr_image_url": {
+          "name": "agent_qr_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.remittance_status": {
+      "name": "remittance_status",
+      "schema": "public",
+      "values": [
+        "pending_agent",
+        "funded",
+        "processing",
+        "completed",
+        "expired"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
