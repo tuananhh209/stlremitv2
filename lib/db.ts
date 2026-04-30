@@ -39,12 +39,13 @@ export interface CreateRemittanceData {
 
 export const databaseService = {
   /**
-   * Create a new remittance request.
-   * expiresAt = createdAt + TIMEOUT_SECONDS
+   * Create a new remittance request with status pending_agent.
+   * expiresAt is set to far future initially — reset when agent accepts.
    */
-  async createRemittance(data: CreateRemittanceData): Promise<RemittanceRecord> {
+  async createRemittance(data: CreateRemittanceData & { status?: RemittanceStatus }): Promise<RemittanceRecord> {
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + EXCHANGE_RATES.TIMEOUT_SECONDS * 1000);
+    // expiresAt placeholder — will be reset to now+300s when agent accepts
+    const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h placeholder
 
     const [row] = await db
       .insert(remittanceRequests)
@@ -55,7 +56,7 @@ export const databaseService = {
         phpPayout: data.phpPayout.toString(),
         receiverName: data.receiverName,
         receiverAccount: data.receiverAccount,
-        status: "funded",
+        status: data.status || "pending_agent",
         createdAt: now,
         expiresAt,
         stellarTxHash: data.stellarTxHash ?? null,
@@ -88,6 +89,22 @@ export const databaseService = {
       .orderBy(remittanceRequests.createdAt);
 
     return rows.map(rowToRecord).reverse();
+  },
+
+  /**
+   * Agent accepts a pending_agent request:
+   * - Sets status to "funded"
+   * - Resets expiresAt to now + 300s (5-min payment window starts NOW)
+   * - Stores stellar tx hash from USDC lock
+   */
+  async acceptRemittance(txId: string, stellarTxHash: string): Promise<RemittanceRecord> {
+    const expiresAt = new Date(Date.now() + EXCHANGE_RATES.TIMEOUT_SECONDS * 1000);
+    const [row] = await db
+      .update(remittanceRequests)
+      .set({ status: "funded", expiresAt, stellarTxHash })
+      .where(eq(remittanceRequests.txId, txId))
+      .returning();
+    return rowToRecord(row);
   },
 
   /**
@@ -131,7 +148,7 @@ export const databaseService = {
   },
 
   /**
-   * Get all funded remittances that have expired (for cron refund job).
+   * Get all "funded" remittances whose 5-min window has expired (for cron refund job).
    */
   async getExpiredFundedRemittances(): Promise<RemittanceRecord[]> {
     const now = new Date();
@@ -144,7 +161,6 @@ export const databaseService = {
           lt(remittanceRequests.expiresAt, now)
         )
       );
-
     return rows.map(rowToRecord);
   },
 

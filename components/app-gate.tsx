@@ -1,22 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
-import { useWallet, type UserRole, type BankInfo } from "./wallet-provider";
+import React, { useState, useEffect } from "react";
+import { useWallet, type UserRole } from "./wallet-provider";
 import { ConnectWallet } from "./connect-wallet";
 import {
   Globe2,
   ShieldCheck,
   Zap,
   ArrowRight,
-  User,
-  Building2,
-  CreditCard,
   CheckCircle2,
   LogOut,
 } from "lucide-react";
 
 // ── Step 1: Connect Wallet ────────────────────────────────────────────────────
-
 function ConnectStep() {
   return (
     <div className="min-h-screen bg-[#f9f9ff] flex flex-col items-center justify-center relative overflow-hidden p-6">
@@ -24,7 +20,6 @@ function ConnectStep() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-[120px]" />
 
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-        {/* Left */}
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold tracking-wider uppercase">
             <Globe2 className="w-3 h-3" />
@@ -57,13 +52,10 @@ function ConnectStep() {
           </div>
         </div>
 
-        {/* Right */}
         <div className="glass-card p-8 rounded-3xl premium-shadow space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Connect Wallet</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Connect your Stellar wallet to get started.
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Connect your Stellar wallet to get started.</p>
           </div>
           <ConnectWallet />
           <p className="text-center text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">
@@ -76,14 +68,12 @@ function ConnectStep() {
 }
 
 // ── Step 2: Select Role ───────────────────────────────────────────────────────
-
 function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
   const { address, disconnect } = useWallet();
 
   const roles = [
     {
       id: "sender" as UserRole,
-      icon: "💸",
       title: "Sender",
       desc: "Send VND from Vietnam to Philippines",
       color: "hover:border-primary/50 hover:bg-primary/5",
@@ -91,7 +81,6 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
     },
     {
       id: "receiver" as UserRole,
-      icon: "📥",
       title: "Receiver",
       desc: "Receive PHP payout in Philippines",
       color: "hover:border-emerald-300 hover:bg-emerald-50",
@@ -99,7 +88,6 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
     },
     {
       id: "agent" as UserRole,
-      icon: "🏦",
       title: "Agent",
       desc: "Manage remittances and liquidity pool",
       color: "hover:border-indigo-300 hover:bg-indigo-50",
@@ -110,18 +98,14 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen bg-[#f9f9ff] flex flex-col items-center justify-center p-6">
       <div className="max-w-lg w-full space-y-8">
-        {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
             <Globe2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Select Your Role</h1>
-          <p className="text-gray-500 text-sm">
-            Choose how you want to use STL Remit
-          </p>
+          <p className="text-gray-500 text-sm">Choose how you want to use STL Remit</p>
         </div>
 
-        {/* Wallet info */}
         <div className="flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-outline/10 premium-shadow">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -129,9 +113,7 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
             </div>
             <div>
               <p className="text-xs text-gray-400 font-medium">Connected</p>
-              <p className="text-sm font-mono text-gray-900">
-                {address?.slice(0, 6)}...{address?.slice(-6)}
-              </p>
+              <p className="text-sm font-mono text-gray-900">{address?.slice(0, 6)}...{address?.slice(-6)}</p>
             </div>
           </div>
           <button
@@ -143,7 +125,6 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
           </button>
         </div>
 
-        {/* Role cards */}
         <div className="space-y-3">
           {roles.map((r) => (
             <button
@@ -151,7 +132,6 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
               onClick={() => onSelect(r.id)}
               className={`w-full flex items-center gap-4 p-5 bg-white border border-outline/10 rounded-2xl transition-all premium-shadow group ${r.color}`}
             >
-              <div className="text-3xl">{r.icon}</div>
               <div className="flex-1 text-left">
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-gray-900">{r.title}</p>
@@ -170,164 +150,29 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
   );
 }
 
-// ── Step 3: Bank Info (Sender & Receiver only) ────────────────────────────────
-
-function BankInfoStep({
-  role,
-  onComplete,
-}: {
-  role: UserRole;
-  onComplete: (info: BankInfo) => void;
-}) {
-  const { disconnect } = useWallet();
-  const [accountNumber, setAccountNumber] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [accountHolder, setAccountHolder] = useState("");
-
-  const isSender = role === "sender";
-
-  const banks = isSender
-    ? ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"]
-    : ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank", "GCash", "Maya"];
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!accountNumber.trim() || !bankName.trim() || !accountHolder.trim()) return;
-    onComplete({ accountNumber: accountNumber.trim(), bankName: bankName.trim(), accountHolder: accountHolder.trim() });
-  }
-
-  return (
-    <div className="min-h-screen bg-[#f9f9ff] flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center space-y-2">
-          <div className="text-4xl">{isSender ? "💸" : "📥"}</div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {isSender ? "Your Bank Account" : "Your Payout Account"}
-          </h1>
-          <p className="text-gray-500 text-sm">
-            {isSender
-              ? "Enter your Vietnamese bank account for VND transfers"
-              : "Enter your Philippine account for PHP payouts"}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-3xl premium-shadow border border-outline/5 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Bank Name */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5" />
-                {isSender ? "Vietnamese Bank" : "Philippine Bank / E-Wallet"}
-              </label>
-              <select
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                required
-                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-              >
-                <option value="">Select bank...</option>
-                {banks.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Account Number */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5" />
-                Account Number
-              </label>
-              <input
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder={isSender ? "0123456789" : "09XXXXXXXXX"}
-                required
-                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-            </div>
-
-            {/* Account Holder */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5" />
-                Account Holder Name
-              </label>
-              <input
-                type="text"
-                value={accountHolder}
-                onChange={(e) => setAccountHolder(e.target.value)}
-                placeholder="Full name as on bank account"
-                required
-                className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={!accountNumber || !bankName || !accountHolder}
-              className="w-full btn-primary h-14 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-2"
-            >
-              Continue
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
-
-        <button
-          onClick={disconnect}
-          className="w-full text-sm text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center gap-1.5"
-        >
-          <LogOut className="w-4 h-4" />
-          Disconnect & Start Over
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── App Gate ──────────────────────────────────────────────────────────────────
-
 export function AppGate({ children }: { children: React.ReactNode }) {
-  const { isConnected, role, bankInfo, setRole, setBankInfo } = useWallet();
-  // pendingRole: role selected but bank info not yet filled
-  const [pendingRole, setPendingRole] = useState<UserRole>(null);
+  const { isConnected, role, setRole } = useWallet();
+  const [step, setStep] = useState<"connect" | "role" | "app">("connect");
 
-  // Step 1: Not connected → show connect screen
-  if (!isConnected) {
-    return <ConnectStep />;
-  }
+  useEffect(() => {
+    if (!isConnected) { setStep("connect"); return; }
+    if (role) { setStep("app"); return; }
+    setStep("role");
+  }, [isConnected, role]);
 
-  // Step 2: Connected, no role, no pending → show role selection
-  if (!role && !pendingRole) {
+  if (step === "connect" || !isConnected) return <ConnectStep />;
+
+  if (step === "role") {
     return (
       <RoleStep
         onSelect={(r) => {
-          if (r === "agent") {
-            setRole(r); // Agent skips bank info
-          } else {
-            setPendingRole(r); // Sender/Receiver need bank info next
-          }
+          setRole(r);
+          // step updates via useEffect
         }}
       />
     );
   }
 
-  // Step 3: Pending role (sender/receiver) without bank info → show bank info form
-  if (pendingRole && !bankInfo) {
-    return (
-      <BankInfoStep
-        role={pendingRole}
-        onComplete={(info) => {
-          setBankInfo(info);
-          setRole(pendingRole);
-          setPendingRole(null);
-        }}
-      />
-    );
-  }
-
-  // All steps complete → render app
   return <>{children}</>;
 }

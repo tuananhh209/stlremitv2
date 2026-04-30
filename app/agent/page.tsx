@@ -1,140 +1,128 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { RemittanceRecord, AgentBalanceResponse } from "@/lib/types";
 import { useWallet } from "@/components/wallet-provider";
+import { WalletMenu } from "@/components/wallet-menu";
+import { useProfile } from "@/lib/hooks/use-profile";
+import { BankInfoGuard } from "@/components/bank-info-guard";
+import { QrUpload } from "@/components/qr-upload";
 import {
   LayoutDashboard,
   Wallet,
   Clock,
   CheckCircle2,
   AlertCircle,
-  MoreVertical,
   Search,
   Plus,
-  Image as ImageIcon,
-  LogOut,
   TrendingUp,
   RefreshCw,
+  Activity,
+  ArrowRight,
+  ShieldCheck,
+  ChevronRight,
+  Zap,
+  Inbox,
+  User,
+  CreditCard,
+  Globe2,
+  Settings,
+  Building2,
+  Save,
+  Loader2,
 } from "lucide-react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-const STATUS_CONFIG = {
-  funded: { label: "Pending VND", color: "text-amber-600 bg-amber-50 border-amber-100", icon: Clock },
-  processing: { label: "Processing PHP", color: "text-blue-600 bg-blue-50 border-blue-100", icon: TrendingUp },
-  completed: { label: "Completed", color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
-  expired: { label: "Expired", color: "text-gray-500 bg-gray-50 border-gray-100", icon: AlertCircle },
-} as const;
-
-function StatusBadge({ status }: { status: RemittanceRecord["status"] }) {
-  const cfg = STATUS_CONFIG[status];
-  const Icon = cfg.icon;
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.color}`}>
-      <Icon className="w-3 h-3" />
-      {cfg.label}
-    </span>
-  );
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
-function Countdown({ expiresAt }: { expiresAt: string }) {
-  const [remaining, setRemaining] = useState(0);
+// ── Countdown Timer ───────────────────────────────────────────────────────────
+function CountdownTimer({ expiresAt, status }: { expiresAt: string; status: string }) {
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
+  );
+
   useEffect(() => {
-    const calc = () => setRemaining(Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)));
-    calc();
-    const id = setInterval(calc, 1000);
+    if (status === "completed" || status === "expired" || status === "pending_agent") return;
+    if (remaining <= 0) return;
+    const id = setInterval(() => setRemaining(p => Math.max(0, p - 1)), 1000);
     return () => clearInterval(id);
-  }, [expiresAt]);
-  const m = Math.floor(remaining / 60);
-  const s = remaining % 60;
+  }, [status, remaining]);
+
+  if (status === "completed" || status === "expired" || status === "pending_agent") return null;
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const isUrgent = remaining < 60;
+
   return (
-    <span className={`inline-flex items-center gap-1 font-mono text-xs ${remaining < 60 && remaining > 0 ? "text-red-600 font-bold" : "text-gray-500"}`}>
+    <div className={cn(
+      "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border",
+      remaining === 0 ? "bg-red-50 text-red-600 border-red-100" :
+      isUrgent ? "bg-amber-50 text-amber-600 border-amber-100 animate-pulse" :
+      "bg-gray-50 text-gray-600 border-gray-100"
+    )}>
       <Clock className="w-3 h-3" />
-      {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
-    </span>
-  );
-}
-
-function ProofUploadModal({ txId, onClose, onSuccess }: { txId: string; onClose: () => void; onSuccess: () => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleUpload(e: React.FormEvent) {
-    e.preventDefault();
-    if (!file) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const res = await fetch(`/api/remittance/${txId}/agent-proof`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ proofImageBase64: base64, proofImageMimeType: file.type }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        setError(d.error ?? "Upload failed");
-        return;
-      }
-      onSuccess();
-      onClose();
-    } catch {
-      setError("Upload error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full space-y-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">Upload PHP Proof</h3>
-          <p className="text-sm text-gray-500 mt-1">Upload screenshot of GCash/Bank transfer.</p>
-        </div>
-        <form onSubmit={handleUpload} className="space-y-4">
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center gap-2 hover:border-primary/50 transition-colors cursor-pointer relative">
-            <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-            <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
-              <ImageIcon className="w-6 h-6 text-primary" />
-            </div>
-            <p className="text-sm font-medium text-gray-900">{file ? file.name : "Click to select image"}</p>
-            <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
-          </div>
-          {error && <p className="text-red-600 text-xs text-center">⚠️ {error}</p>}
-          <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 btn-secondary py-2.5 text-sm">Cancel</button>
-            <button type="submit" disabled={!file || loading} className="flex-1 btn-primary py-2.5 text-sm disabled:opacity-50">
-              {loading ? "Uploading..." : "Upload"}
-            </button>
-          </div>
-        </form>
-      </div>
+      {remaining === 0 ? "Expired" : `${mins}:${String(secs).padStart(2, "0")}`}
     </div>
   );
 }
 
+// ── Status Badge ──────────────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
+  pending_agent: { label: "Awaiting Accept", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
+  funded:        { label: "Waiting VND",     color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
+  processing:    { label: "Pay PHP Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: TrendingUp },
+  completed:     { label: "Completed",       color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
+  expired:       { label: "Expired",         color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
+};
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.funded;
+  const Icon = cfg.icon;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border", cfg.color)}>
+      <Icon className="w-3 h-3" />{cfg.label}
+    </span>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+type NavTab = "overview" | "requests" | "history" | "pools" | "settings";
+
 export default function AgentDashboard() {
-  const { address, disconnect } = useWallet();
+  const router = useRouter();
+  const { address } = useWallet();
+  const { isBankInfoComplete, loading: profileLoading } = useProfile();
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
   const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
-  const [depositMsg, setDepositMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [activeNav, setActiveNav] = useState<NavTab>("requests");
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const [proofModalId, setProofModalId] = useState<string | null>(null);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeNav, setActiveNav] = useState<"overview" | "history" | "pools">("overview");
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Settings state
+  const [settingsBankName, setSettingsBankName] = useState("");
+  const [settingsAccountNumber, setSettingsAccountNumber] = useState("");
+  const [settingsAccountHolder, setSettingsAccountHolder] = useState("");
+  const [settingsQrUrl, setSettingsQrUrl] = useState<string | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const AGENT_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
 
   const fetchAll = useCallback(async () => {
     try {
-      const [rRes, bRes] = await Promise.all([fetch("/api/remittance"), fetch("/api/agent/balance")]);
+      const [rRes, bRes] = await Promise.all([
+        fetch("/api/remittance"),
+        fetch("/api/agent/balance"),
+      ]);
       if (rRes.ok) { const d = await rRes.json(); setRemittances(d.remittances ?? []); }
       if (bRes.ok) { const d = await bRes.json(); setBalance(d); }
     } catch { /* ignore */ }
@@ -142,371 +130,493 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     fetchAll();
-    pollingRef.current = setInterval(fetchAll, 5000);
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+    const id = setInterval(fetchAll, 4000);
+    return () => clearInterval(id);
   }, [fetchAll]);
+
+  // Load profile when settings tab opens
+  useEffect(() => {
+    if (activeNav !== "settings" || !address) return;
+    setSettingsLoading(true);
+    fetch(`/api/profile?wallet=${address}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setSettingsBankName(data.agentBankName ?? "");
+          setSettingsAccountNumber(data.agentAccountNumber ?? "");
+          setSettingsAccountHolder(data.agentAccountHolder ?? "");
+          setSettingsQrUrl(data.agentQrImageUrl ?? null);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setSettingsLoading(false));
+  }, [activeNav, address]);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!address) return;
+    setSettingsSaving(true);
+    setSettingsError(null);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress: address,
+          role: "agent",
+          agentBankName: settingsBankName || null,
+          agentAccountNumber: settingsAccountNumber || null,
+          agentAccountHolder: settingsAccountHolder || null,
+          agentQrImageUrl: settingsQrUrl || null,
+        }),
+      });
+      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); }
+      else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
+    } catch { setSettingsError("Network error"); }
+    finally { setSettingsSaving(false); }
+  };
 
   async function handleDeposit(e: React.FormEvent) {
     e.preventDefault();
     const amount = parseFloat(depositAmount);
     if (!amount || amount <= 0) return;
     setDepositLoading(true);
-    setDepositMsg(null);
     try {
       const res = await fetch("/api/agent/fund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usdcAmount: amount }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setDepositMsg({ type: "success", text: `Deposited! New balance: ${data.newBalance?.toFixed(4)} USDC` });
-        setDepositAmount("");
-        fetchAll();
-      } else {
-        setDepositMsg({ type: "error", text: data.error ?? "Deposit failed" });
-      }
-    } catch {
-      setDepositMsg({ type: "error", text: "Connection error" });
-    } finally {
-      setDepositLoading(false);
-      setTimeout(() => setDepositMsg(null), 4000);
-    }
+      if (res.ok) { setDepositAmount(""); fetchAll(); }
+    } catch { /* ignore */ }
+    finally { setDepositLoading(false); }
   }
 
-  async function handleConfirm(txId: string) {
+  async function handleAccept(txId: string) {
+    setAcceptingId(txId);
+    try {
+      const res = await fetch(`/api/remittance/${txId}/accept`, { method: "POST" });
+      if (res.ok) fetchAll();
+    } catch { /* ignore */ }
+    finally { setAcceptingId(null); }
+  }
+
+  async function handleConfirmPayout(txId: string) {
     setConfirmingId(txId);
     try {
       const res = await fetch(`/api/remittance/${txId}/confirm`, { method: "POST" });
-      if (!res.ok) {
-        const d = await res.json();
-        alert(`Error: ${d.error}`);
-        return;
-      }
-      fetchAll();
-    } catch {
-      alert("Connection error");
-    } finally {
-      setConfirmingId(null);
-    }
+      if (res.ok) fetchAll();
+    } catch { /* ignore */ }
+    finally { setConfirmingId(null); }
   }
 
-  const filteredRemittances = activeNav === "history"
-    ? remittances.filter(r => r.status === "completed" || r.status === "expired")
-    : activeNav === "overview"
-    ? remittances
-    : remittances;
+  const pendingRequests  = remittances.filter(r => r.status === "pending_agent");
+  const activeRemittances = remittances.filter(r => r.status === "funded" || r.status === "processing");
+  const historyRemittances = remittances.filter(r => r.status === "completed" || r.status === "expired");
+
+  const navItems: { id: NavTab; label: string; icon: any; badge?: number }[] = [
+    { id: "requests", label: "Requests",  icon: Inbox,          badge: pendingRequests.length },
+    { id: "overview", label: "Overview",  icon: LayoutDashboard },
+    { id: "history",  label: "History",   icon: Clock },
+    { id: "pools",    label: "Pools",     icon: Wallet },
+    { id: "settings", label: "Settings",  icon: Settings },
+  ];
 
   return (
     <main className="min-h-screen bg-[#f9f9ff] flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-100 p-6 flex-col gap-8 hidden lg:flex">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="w-5 h-5 text-white" />
+      {/* ── Sidebar ── */}
+      <aside className="w-72 bg-white border-r border-outline/5 p-8 flex-col gap-10 hidden xl:flex">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 bg-indigo-600 rounded-[20px] flex items-center justify-center shadow-lg shadow-indigo-100">
+            <LayoutDashboard className="w-6 h-6 text-white" />
           </div>
-          <span className="font-bold text-lg text-gray-900">STL Remit</span>
+          <span className="font-bold text-xl text-gray-900 tracking-tight">Agent Panel</span>
         </div>
 
-        <nav className="flex flex-col gap-1">
-          {[
-            { id: "overview" as const, label: "Overview", icon: LayoutDashboard },
-            { id: "history" as const, label: "History", icon: Clock },
-            { id: "pools" as const, label: "Pools", icon: Wallet },
-          ].map(({ id, label, icon: Icon }) => (
+        <nav className="flex flex-col gap-2">
+          {navItems.map(item => (
             <button
-              key={id}
-              onClick={() => setActiveNav(id)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
-                activeNav === id ? "bg-primary/5 text-primary" : "text-gray-500 hover:bg-gray-50"
-              }`}
+              key={item.id}
+              onClick={() => setActiveNav(item.id)}
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all",
+                activeNav === item.id ? "bg-indigo-50 text-indigo-600 shadow-sm" : "text-gray-400 hover:bg-gray-50"
+              )}
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              <item.icon className="w-5 h-5" />
+              {item.label}
+              {item.badge !== undefined && item.badge > 0 && (
+                <span className="ml-auto bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                  {item.badge}
+                </span>
+              )}
             </button>
           ))}
         </nav>
 
-        <div className="mt-auto p-4 bg-gray-50 rounded-2xl border border-gray-100">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Network</p>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-semibold text-gray-700">Stellar Testnet</span>
+        <div className="mt-auto p-6 bg-indigo-50 rounded-[32px] border border-indigo-100">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Agent Verified</span>
           </div>
+          <p className="text-[10px] text-indigo-600/70 leading-relaxed font-medium">
+            Accept requests to lock USDC. Confirm payouts to release collateral.
+          </p>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* ── Main ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="h-20 bg-white border-b border-gray-100 px-8 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-gray-900 lg:hidden">Dashboard</h1>
-            <div className="hidden lg:flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 min-w-[280px]">
-              <Search className="w-4 h-4 text-gray-400" />
-              <input type="text" placeholder="Search transactions..." className="bg-transparent border-none text-sm focus:ring-0 w-full text-gray-900 outline-none" />
-            </div>
-          </div>
-
+        <header className="h-24 bg-white/80 backdrop-blur-md border-b border-outline/5 px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <button onClick={fetchAll} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Refresh">
-              <RefreshCw className="w-4 h-4 text-gray-400" />
+            <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeNav}</h1>
+            {activeNav === "requests" && pendingRequests.length > 0 && (
+              <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                {pendingRequests.length} pending
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-6">
+            <button onClick={fetchAll} className="p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-outline/5">
+              <RefreshCw className="w-5 h-5 text-gray-400" />
             </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-              <div className="text-right">
-                <p className="text-xs font-bold text-gray-400 uppercase">Agent</p>
-                <p className="text-sm font-mono text-gray-900">{address?.slice(0, 4)}...{address?.slice(-4)}</p>
-              </div>
-              <div className="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">
-                {address?.[0]}
-              </div>
-            </div>
-            <button
-              onClick={disconnect}
-              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-red-500 transition-colors px-3 py-2 rounded-xl hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Disconnect</span>
-            </button>
+            <WalletMenu />
           </div>
         </header>
 
-        <div className="p-8 space-y-8 overflow-y-auto">
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-3xl premium-shadow border border-gray-100 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-primary" />
-                </div>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">Available</span>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Available Collateral</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {balance?.availableUsdc.toFixed(2) ?? "—"} <span className="text-lg font-medium text-gray-400">USDC</span>
-                </p>
-              </div>
-            </div>
+        <div className="p-8 lg:p-12 space-y-10 overflow-y-auto max-w-7xl mx-auto w-full">
 
-            <div className="bg-white p-6 rounded-3xl premium-shadow border border-gray-100 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-amber-600" />
-                </div>
-                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">Reserved</span>
+          {/* ── Stats Bar (always visible) ── */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-[40px] premium-shadow border border-outline/5 flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available USDC</p>
+                <p className="text-4xl font-bold text-gray-900">{balance?.availableUsdc.toFixed(2) ?? "0.00"}</p>
+                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Active Pool</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Active Reserves</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {balance?.reservedUsdc.toFixed(2) ?? "—"} <span className="text-lg font-medium text-gray-400">USDC</span>
-                </p>
-              </div>
+              <div className="w-16 h-16 bg-primary/5 rounded-[24px] flex items-center justify-center text-primary"><Wallet className="w-8 h-8" /></div>
             </div>
-
-            {/* Deposit Card */}
-            <div className="bg-primary p-6 rounded-3xl premium-shadow relative overflow-hidden group">
-              <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-              <div className="relative z-10 space-y-4">
-                <p className="text-sm font-medium text-white/80">Add Liquidity</p>
-                <form onSubmit={handleDeposit} className="space-y-3">
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder="USDC amount"
-                      min="0.0001"
-                      step="0.0001"
-                      className="bg-white/20 text-white placeholder:text-white/50 rounded-xl text-sm w-full px-3 py-2 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                    <button
-                      type="submit"
-                      disabled={depositLoading || !depositAmount}
-                      className="bg-white text-primary px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/90 transition-colors shrink-0 flex items-center gap-1.5 disabled:opacity-60"
-                    >
-                      <Plus className="w-4 h-4" />
-                      {depositLoading ? "..." : "Add"}
-                    </button>
-                  </div>
-                  {depositMsg && (
-                    <p className={`text-xs font-medium ${depositMsg.type === "success" ? "text-white" : "text-red-200"}`}>
-                      {depositMsg.type === "success" ? "✅" : "⚠️"} {depositMsg.text}
-                    </p>
-                  )}
-                  {!depositMsg && <p className="text-[10px] text-white/60">Deposit USDC into the escrow pool</p>}
-                </form>
+            <div className="bg-white p-8 rounded-[40px] premium-shadow border border-outline/5 flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reserved USDC</p>
+                <p className="text-4xl font-bold text-gray-900">{balance?.reservedUsdc.toFixed(2) ?? "0.00"}</p>
+                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">In-Flight</p>
               </div>
+              <div className="w-16 h-16 bg-amber-50 rounded-[24px] flex items-center justify-center text-amber-600"><Clock className="w-8 h-8" /></div>
+            </div>
+            <div className="bg-indigo-600 p-8 rounded-[40px] shadow-2xl shadow-indigo-100 text-white flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <p className="text-xs font-bold uppercase tracking-widest text-white/70">Add Pool Liquidity</p>
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><Plus className="w-6 h-6" /></div>
+              </div>
+              <form onSubmit={handleDeposit} className="flex gap-3 mt-4">
+                <input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)} placeholder="USDC amount..." className="bg-white/20 border-none rounded-2xl px-4 py-3 text-sm font-bold placeholder:text-white/40 focus:ring-4 focus:ring-white/10 w-full" />
+                <button disabled={depositLoading} className="bg-white text-indigo-600 px-6 py-3 rounded-2xl font-bold text-xs hover:bg-white/90 transition-all disabled:opacity-50">
+                  {depositLoading ? "..." : "Commit"}
+                </button>
+              </form>
             </div>
           </div>
 
-          {/* Transactions Table */}
-          <div className="bg-white rounded-3xl premium-shadow border border-gray-100 overflow-hidden">
-            <div className="px-8 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-3">
-                <h2 className="font-bold text-gray-900">
-                  {activeNav === "history" ? "Transaction History" : activeNav === "pools" ? "Liquidity Pools" : "Active Remittances"}
-                </h2>
-                <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">
-                  {filteredRemittances.length}
-                </span>
-              </div>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <MoreVertical className="w-4 h-4 text-gray-400" />
-              </button>
-            </div>
+          {/* ── BANK INFO GUARD ── */}
+          {!profileLoading && !isBankInfoComplete("agent") && activeNav !== "settings" && (
+            <BankInfoGuard role="agent" onGoToSettings={() => setActiveNav("settings")} />
+          )}
 
-            {activeNav === "pools" ? (
-              <div className="p-8 space-y-4">
-                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900">USDC Collateral Pool</h3>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">Active</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Total</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">{balance?.totalCollateral.toFixed(4) ?? "—"}</p>
-                      <p className="text-xs text-gray-400">USDC</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Reserved</p>
-                      <p className="text-2xl font-bold text-amber-600 mt-1">{balance?.reservedUsdc.toFixed(4) ?? "—"}</p>
-                      <p className="text-xs text-gray-400">USDC</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Available</p>
-                      <p className="text-2xl font-bold text-emerald-600 mt-1">{balance?.availableUsdc.toFixed(4) ?? "—"}</p>
-                      <p className="text-xs text-gray-400">USDC</p>
-                    </div>
-                  </div>
+          {/* ── TAB: REQUESTS ── */}
+          {activeNav === "requests" && (profileLoading || isBankInfoComplete("agent")) && (
+            <div className="space-y-6">
+              {pendingRequests.length === 0 ? (
+                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 py-32 flex flex-col items-center gap-4 text-gray-200">
+                  <Inbox className="w-16 h-16" />
+                  <p className="font-bold text-gray-400 text-lg">No pending requests</p>
+                  <p className="text-sm text-gray-300">New sender requests will appear here</p>
                 </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {pendingRequests.map(r => (
+                    <div key={r.txId} className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-6 hover:border-indigo-200 transition-all">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">New Request</p>
+                          <p className="text-xs font-mono text-gray-300">{r.txId.slice(0, 20)}...</p>
+                        </div>
+                        <StatusBadge status={r.status} />
+                      </div>
+
+                      {/* Receiver info */}
+                      <div className="bg-gray-50 rounded-3xl p-6 space-y-4 border border-outline/5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900">{r.receiverName}</p>
+                            <p className="text-xs text-gray-400 font-mono">{r.receiverAccount}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 pt-2 border-t border-outline/5">
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">VND</p>
+                            <p className="font-bold text-gray-900 text-sm">{r.vndAmount.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">USDC Lock</p>
+                            <p className="font-bold text-indigo-600 text-sm">{r.usdcEquivalent.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">PHP Out</p>
+                            <p className="font-bold text-emerald-600 text-sm">{r.phpPayout.toFixed(0)}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Accept button */}
+                      <button
+                        onClick={() => handleAccept(r.txId)}
+                        disabled={acceptingId === r.txId}
+                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[20px] font-bold text-sm shadow-lg shadow-indigo-100 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                      >
+                        {acceptingId === r.txId ? (
+                          <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Locking USDC...</>
+                        ) : (
+                          <><ShieldCheck className="w-5 h-5" /> Accept & Lock USDC <ArrowRight className="w-4 h-4" /></>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── TAB: OVERVIEW (active remittances) ── */}
+          {activeNav === "overview" && (profileLoading || isBankInfoComplete("agent")) && (
+            <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
+              <div className="px-10 py-8 border-b border-outline/5 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Active Remittances</h2>
+                <div className="bg-gray-50 px-4 py-2 rounded-xl text-[10px] font-bold text-gray-400 uppercase tracking-widest">{activeRemittances.length} records</div>
               </div>
-            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead>
-                    <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                      <th className="px-8 py-4">Receiver / TX ID</th>
-                      <th className="px-8 py-4">Status</th>
-                      <th className="px-8 py-4 text-right">Amounts</th>
-                      <th className="px-8 py-4">Actions</th>
+                  <thead className="bg-gray-50/50">
+                    <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <th className="px-10 py-5">Beneficiary</th>
+                      <th className="px-10 py-5">Status</th>
+                      <th className="px-10 py-5">Timer</th>
+                      <th className="px-10 py-5 text-right">Payout</th>
+                      <th className="px-10 py-5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {filteredRemittances.length === 0 ? (
+                  <tbody className="divide-y divide-outline/5">
+                    {activeRemittances.map(r => (
+                      <tr key={r.txId} className="hover:bg-gray-50/30 transition-colors">
+                        <td className="px-10 py-6">
+                          <p className="text-sm font-bold text-gray-900">{r.receiverName}</p>
+                          <p className="text-[10px] font-mono text-gray-300 mt-1">{r.txId.slice(0, 14)}...</p>
+                        </td>
+                        <td className="px-10 py-6"><StatusBadge status={r.status} /></td>
+                        <td className="px-10 py-6"><CountdownTimer expiresAt={r.expiresAt} status={r.status} /></td>
+                        <td className="px-10 py-6 text-right">
+                          <p className="text-sm font-bold text-gray-900">{r.phpPayout.toLocaleString()} PHP</p>
+                          <p className="text-xs text-emerald-600 font-bold mt-1">{r.vndAmount.toLocaleString()} VND</p>
+                        </td>
+                        <td className="px-10 py-6 text-right">
+                          {r.status === "processing" ? (
+                            <button
+                              onClick={() => handleConfirmPayout(r.txId)}
+                              disabled={confirmingId === r.txId}
+                              className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto disabled:opacity-50"
+                            >
+                              {confirmingId === r.txId
+                                ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                : <Zap className="w-3.5 h-3.5" />}
+                              Confirm Payout
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setExpandedId(expandedId === r.txId ? null : r.txId)}
+                              className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-1 ml-auto"
+                            >
+                              Details <ChevronRight className={cn("w-3.5 h-3.5 transition-transform", expandedId === r.txId && "rotate-90")} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {activeRemittances.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="px-8 py-20 text-center">
-                          <div className="flex flex-col items-center gap-3 text-gray-300">
-                            <Search className="w-10 h-10" />
-                            <p className="text-sm font-medium text-gray-400">No transactions found</p>
+                        <td colSpan={5} className="px-10 py-24 text-center">
+                          <div className="flex flex-col items-center gap-4 text-gray-200">
+                            <Search className="w-12 h-12" />
+                            <p className="font-bold">No active remittances</p>
                           </div>
                         </td>
                       </tr>
-                    ) : (
-                      filteredRemittances.map((r) => (
-                        <tr key={r.txId} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-8 py-5">
-                            <p className="text-sm font-bold text-gray-900">{r.receiverName}</p>
-                            <p className="text-xs font-mono text-gray-400 mt-0.5">{r.txId.slice(0, 14)}...</p>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex flex-col gap-1.5">
-                              <StatusBadge status={r.status} />
-                              {r.status === "funded" && <Countdown expiresAt={r.expiresAt} />}
-                            </div>
-                          </td>
-                          <td className="px-8 py-5 text-right">
-                            <p className="text-sm font-bold text-gray-900">{r.vndAmount.toLocaleString()} VND</p>
-                            <p className="text-xs text-emerald-600 font-medium mt-0.5">{r.phpPayout.toFixed(2)} PHP</p>
-                          </td>
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-2">
-                              {r.status === "processing" ? (
-                                <>
-                                  <button
-                                    onClick={() => setProofModalId(r.txId)}
-                                    className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                                    title="Upload PHP proof"
-                                  >
-                                    <ImageIcon className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleConfirm(r.txId)}
-                                    disabled={confirmingId === r.txId}
-                                    className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                  >
-                                    {confirmingId === r.txId ? "..." : "Confirm"}
-                                  </button>
-                                </>
-                              ) : (
-                                <button
-                                  onClick={() => setExpandedId(expandedId === r.txId ? null : r.txId)}
-                                  className="text-xs font-bold text-primary hover:underline"
-                                >
-                                  {expandedId === r.txId ? "Hide" : "View Proof"}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
                     )}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Proof Images */}
-          {expandedId && (() => {
-            const rec = remittances.find(r => r.txId === expandedId);
-            if (!rec) return null;
-            return (
-              <div className="bg-white p-8 rounded-3xl premium-shadow border border-primary/10">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900">Transaction Proofs</h3>
-                  <button onClick={() => setExpandedId(null)} className="text-xs font-bold text-gray-400 hover:text-gray-900">Close ✕</button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {rec.senderProofRef ? (
-                    <div className="space-y-3">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sender Proof (VND)</p>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={rec.senderProofRef} alt="Sender proof" className="rounded-2xl border border-gray-100 w-full" />
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 rounded-2xl p-8 flex flex-col items-center gap-2 border border-dashed border-gray-200 text-gray-300">
-                      <ImageIcon className="w-8 h-8" />
-                      <p className="text-xs font-medium text-gray-400">No sender proof</p>
-                    </div>
-                  )}
-                  {rec.agentProofRef ? (
-                    <div className="space-y-3">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Agent Proof (PHP)</p>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={rec.agentProofRef} alt="Agent proof" className="rounded-2xl border border-gray-100 w-full" />
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 rounded-2xl p-8 flex flex-col items-center gap-2 border border-dashed border-gray-200 text-gray-300">
-                      <ImageIcon className="w-8 h-8" />
-                      <p className="text-xs font-medium text-gray-400">No agent proof</p>
-                    </div>
-                  )}
+          {/* ── TAB: HISTORY ── */}
+          {activeNav === "history" && (profileLoading || isBankInfoComplete("agent")) && (
+            <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
+              <div className="px-10 py-8 border-b border-outline/5">
+                <h2 className="text-xl font-bold text-gray-900">Completed Transfers</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50/50">
+                    <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                      <th className="px-10 py-5">Date</th>
+                      <th className="px-10 py-5">Beneficiary</th>
+                      <th className="px-10 py-5">Volume</th>
+                      <th className="px-10 py-5">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline/5">
+                    {historyRemittances.map(r => (
+                      <tr key={r.txId} className="hover:bg-gray-50/30 transition-colors">
+                        <td className="px-10 py-6 text-sm font-bold text-gray-900">{new Date(r.createdAt).toLocaleDateString()}</td>
+                        <td className="px-10 py-6 text-sm font-bold text-gray-900">{r.receiverName}</td>
+                        <td className="px-10 py-6 text-sm font-bold text-gray-900">{r.usdcEquivalent.toFixed(2)} USDC</td>
+                        <td className="px-10 py-6"><StatusBadge status={r.status} /></td>
+                      </tr>
+                    ))}
+                    {historyRemittances.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-10 py-24 text-center text-gray-300 font-bold">No history yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: POOLS ── */}
+          {activeNav === "pools" && (profileLoading || isBankInfoComplete("agent")) && (
+            <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-12 space-y-12">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-indigo-50 rounded-[32px] flex items-center justify-center text-indigo-600"><Wallet className="w-10 h-10" /></div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">Pool Management</h2>
+                  <p className="text-gray-400 mt-1">Manage your collateral and reserved liquidity.</p>
                 </div>
               </div>
-            );
-          })()}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available for New Accepts</p>
+                  <p className="text-6xl font-bold text-indigo-600 tracking-tighter">{balance?.availableUsdc.toFixed(2)} <span className="text-2xl font-medium text-gray-300">USDC</span></p>
+                  <p className="text-xs text-gray-400 leading-relaxed max-w-sm">This is the amount you can lock when accepting new sender requests.</p>
+                </div>
+                <div className="bg-gray-50 rounded-[40px] p-10 space-y-6 border border-outline/5 shadow-inner">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reserved (Locked)</span>
+                    <span className="font-bold text-amber-600">{balance?.reservedUsdc.toFixed(2)} USDC</span>
+                  </div>
+                  <div className="h-[1px] bg-outline/10" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Pooled</span>
+                    <span className="font-bold text-gray-900">{balance?.totalCollateral.toFixed(2)} USDC</span>
+                  </div>
+                  <button onClick={() => setActiveNav("overview")} className="w-full btn-primary h-14 rounded-2xl text-xs font-bold">View Active Reserves</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: SETTINGS ── */}
+          {activeNav === "settings" && (
+            <div className="max-w-2xl space-y-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+                <p className="text-sm text-gray-400 mt-1">Your Vietnamese bank account — senders will transfer VND here.</p>
+              </div>
+
+              {settingsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                </div>
+              ) : (
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5" /> Vietnamese Bank
+                      </label>
+                      <select
+                        value={settingsBankName}
+                        onChange={e => setSettingsBankName(e.target.value)}
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-indigo-200 transition-all"
+                      >
+                        <option value="">Select bank...</option>
+                        {AGENT_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5" /> Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsAccountNumber}
+                        onChange={e => setSettingsAccountNumber(e.target.value)}
+                        placeholder="0123456789"
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-indigo-200 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" /> Account Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsAccountHolder}
+                        onChange={e => setSettingsAccountHolder(e.target.value)}
+                        placeholder="Full name as on bank account"
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-indigo-200 transition-all"
+                      />
+                    </div>
+
+                    {/* QR Upload */}
+                    {address && (
+                      <QrUpload
+                        currentUrl={settingsQrUrl}
+                        walletAddress={address}
+                        field="agentQr"
+                        label="Bank QR Code (senders will scan this)"
+                        onUploaded={(url) => setSettingsQrUrl(url || null)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-3">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Connected Wallet</p>
+                    <p className="text-sm font-mono text-gray-700 break-all">{address}</p>
+                  </div>
+
+                  {settingsError && <p className="text-sm text-red-500 font-bold">⚠️ {settingsError}</p>}
+
+                  <button
+                    type="submit"
+                    disabled={settingsSaving}
+                    className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[24px] font-bold text-sm shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 disabled:opacity-50 transition-all"
+                  >
+                    {settingsSaving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> :
+                     settingsSaved  ? <><CheckCircle2 className="w-5 h-5" /> Saved!</> :
+                     <><Save className="w-5 h-5" /> Save Settings</>}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
-
-      {proofModalId && (
-        <ProofUploadModal
-          txId={proofModalId}
-          onClose={() => setProofModalId(null)}
-          onSuccess={fetchAll}
-        />
-      )}
     </main>
   );
 }

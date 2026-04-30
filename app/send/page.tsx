@@ -1,331 +1,649 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { calculateAmounts } from "@/lib/config";
+import { calculateAmounts, EXCHANGE_RATES } from "@/lib/config";
 import { useWallet } from "@/components/wallet-provider";
+import { WalletMenu } from "@/components/wallet-menu";
+import { useProfile } from "@/lib/hooks/use-profile";
+import { BankInfoGuard } from "@/components/bank-info-guard";
+import { QrUpload } from "@/components/qr-upload";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  CreditCard,
-  User,
+  LayoutDashboard,
+  History as HistoryIcon,
+  Wallet,
   Send,
-  Info,
-  DollarSign,
-  AlertCircle,
-  LogOut,
+  ArrowRight,
+  ArrowUpRight,
+  Search,
+  ShieldCheck,
+  Globe2,
+  User,
+  CreditCard,
+  Banknote,
+  Activity,
+  Settings,
   Building2,
+  Save,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-type Step = "amount" | "receiver" | "review";
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
-export default function SendMoneyPage() {
+type Tab = "overview" | "history" | "pools" | "settings";
+
+const STATUS_COLORS: Record<string, string> = {
+  pending_agent: "bg-indigo-50 text-indigo-600",
+  funded:        "bg-amber-50 text-amber-600",
+  processing:    "bg-blue-50 text-blue-600",
+  completed:     "bg-emerald-50 text-emerald-600",
+  expired:       "bg-red-50 text-red-600",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_agent: "Waiting Agent",
+  funded:        "Pay Now",
+  processing:    "Processing",
+  completed:     "Completed",
+  expired:       "Expired",
+};
+
+export default function SenderDashboard() {
   const router = useRouter();
-  const { address, bankInfo, disconnect } = useWallet();
-  const [step, setStep] = useState<Step>("amount");
+  const { address, isConnected } = useWallet();
+  const { isBankInfoComplete, loading: profileLoading } = useProfile();
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
+
+  // Form State
   const [vndAmount, setVndAmount] = useState<string>("");
   const [receiverName, setReceiverName] = useState("");
   const [receiverAccount, setReceiverAccount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const parsed = parseFloat(vndAmount);
-  const preview = !isNaN(parsed) && parsed > 0 ? calculateAmounts(parsed) : null;
+  // Real-time Data
+  const [availableUsdc, setAvailableUsdc] = useState<number>(0);
+  const [totalCollateral, setTotalCollateral] = useState<number>(0);
+  const [remittances, setRemittances] = useState<any[]>([]);
 
-  async function handleSubmit() {
+  // Settings state
+  const [settingsBankName, setSettingsBankName] = useState("");
+  const [settingsAccountNumber, setSettingsAccountNumber] = useState("");
+  const [settingsAccountHolder, setSettingsAccountHolder] = useState("");
+  const [settingsQrUrl, setSettingsQrUrl] = useState<string | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  const SENDER_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
+
+  const parsedAmount = parseFloat(vndAmount);
+  const amounts = !isNaN(parsedAmount) && parsedAmount > 0 ? calculateAmounts(parsedAmount) : null;
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [poolRes, histRes] = await Promise.all([
+        fetch("/api/agent/balance"),
+        fetch("/api/remittance"),
+      ]);
+      if (poolRes.ok) {
+        const data = await poolRes.json();
+        setAvailableUsdc(data.availableUsdc);
+        setTotalCollateral(data.totalCollateral);
+      }
+      if (histRes.ok) {
+        const data = await histRes.json();
+        setRemittances(data.remittances ?? []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    const id = setInterval(fetchData, 5000);
+    return () => clearInterval(id);
+  }, [fetchData]);
+
+  // Load profile when settings tab opens
+  useEffect(() => {
+    if (activeTab !== "settings" || !address) return;
+    setSettingsLoading(true);
+    fetch(`/api/profile?wallet=${address}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setSettingsBankName(data.bankName ?? "");
+          setSettingsAccountNumber(data.accountNumber ?? "");
+          setSettingsAccountHolder(data.accountHolder ?? "");
+          setSettingsQrUrl(data.qrImageUrl ?? null);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setSettingsLoading(false));
+  }, [activeTab, address]);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!address) return;
+    setSettingsSaving(true);
+    setSettingsError(null);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress: address,
+          role: "sender",
+          bankName: settingsBankName || null,
+          accountNumber: settingsAccountNumber || null,
+          accountHolder: settingsAccountHolder || null,
+          qrImageUrl: settingsQrUrl || null,
+        }),
+      });
+      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); }
+      else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
+    } catch { setSettingsError("Network error"); }
+    finally { setSettingsSaving(false); }
+  };
+
+  const handleStartRemittance = async () => {
+    if (!amounts || !receiverName || !receiverAccount) return;
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/remittance/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vndAmount: parsed, receiverName, receiverAccount }),
+        body: JSON.stringify({ vndAmount: parsedAmount, receiverName, receiverAccount }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        if (data.code === "INSUFFICIENT_LIQUIDITY") {
-          setError(
-            `Insufficient liquidity. Required ${data.details?.required?.toFixed(4)} USDC, available ${data.details?.available?.toFixed(4)} USDC.`
-          );
-        } else {
-          setError(data.error ?? "Something went wrong.");
-        }
-        setStep("amount");
-        return;
+      if (res.ok) {
+        // Always redirect to tx page — status will be pending_agent
+        router.push(`/tx/${data.txId}`);
+      } else {
+        setError(data.error ?? "Failed to create request");
       }
-      router.push(`/tx/${data.txId}`);
     } catch {
-      setError("Cannot connect to server.");
-      setStep("amount");
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
-
-  const steps = [
-    { id: "amount", label: "Amount" },
-    { id: "receiver", label: "Receiver" },
-    { id: "review", label: "Review" },
-  ];
-  const currentIdx = steps.findIndex((s) => s.id === step);
+  };
 
   return (
-    <main className="min-h-screen bg-[#f9f9ff] flex flex-col">
-      {/* Header */}
-      <nav className="h-20 bg-white border-b border-outline/10 px-8 flex items-center justify-between sticky top-0 z-20">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() =>
-              step === "amount"
-                ? router.push("/")
-                : setStep(step === "receiver" ? "amount" : "receiver")
-            }
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Send Money</h1>
-            {bankInfo && (
-              <p className="text-xs text-gray-400">
-                {bankInfo.bankName} · {bankInfo.accountNumber}
-              </p>
-            )}
+    <main className="min-h-screen bg-[#f9f9ff] flex">
+      {/* ── Sidebar ── */}
+      <aside className="w-72 bg-white border-r border-outline/5 p-8 flex-col gap-10 hidden xl:flex">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <Globe2 className="w-6 h-6 text-white" />
+          </div>
+          <span className="font-bold text-xl text-gray-900 tracking-tight">STL Remit</span>
+        </div>
+
+        <nav className="flex flex-col gap-2">
+          {(["overview", "history", "pools", "settings"] as Tab[]).map((tab) => {
+            const icons: Record<Tab, any> = {
+              overview: LayoutDashboard,
+              history: HistoryIcon,
+              pools: Activity,
+              settings: Settings,
+            };
+            const Icon = icons[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all capitalize",
+                  activeTab === tab ? "bg-primary/5 text-primary shadow-sm" : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                )}
+              >
+                <Icon className="w-5 h-5" />{tab}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto bg-gray-900 rounded-[32px] p-6 text-white space-y-4 relative overflow-hidden">
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-primary/20 rounded-full blur-2xl" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Secure Escrow</span>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Funds are protected by a Soroban smart contract. Agent must lock USDC before you pay.
+            </p>
           </div>
         </div>
+      </aside>
 
-        {/* Stepper */}
-        <div className="hidden md:flex items-center gap-4">
-          {steps.map((s, idx) => (
-            <div key={s.id} className="flex items-center gap-2">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  step === s.id
-                    ? "bg-primary text-white"
-                    : currentIdx > idx
-                    ? "bg-emerald-500 text-white"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-              >
-                {currentIdx > idx ? <Check className="w-3.5 h-3.5" /> : idx + 1}
+      {/* ── Main ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-24 bg-white/80 backdrop-blur-md border-b border-outline/5 px-8 flex items-center justify-between sticky top-0 z-30">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeTab}</h1>
+            <p className="text-xs text-gray-400 font-medium mt-1">Stellar Blockchain · Testnet</p>
+          </div>
+          {isConnected && <WalletMenu />}
+        </header>
+
+        <div className="p-8 lg:p-12 space-y-10 overflow-y-auto max-w-7xl mx-auto w-full">
+
+          {/* ── BANK INFO GUARD ── */}
+          {!profileLoading && !isBankInfoComplete("sender") && activeTab !== "settings" && (
+            <BankInfoGuard role="sender" onGoToSettings={() => setActiveTab("settings")} />
+          )}
+
+          {/* ── OVERVIEW TAB ── */}
+          {activeTab === "overview" && (profileLoading || isBankInfoComplete("sender")) && (
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+              {/* Left: Form */}
+              <div className="xl:col-span-2 space-y-8">
+                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 lg:p-14">
+                  <div className="space-y-12">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">New Remittance</h2>
+                        <p className="text-sm text-gray-400">Send VND to Philippines via escrow-protected transfer.</p>
+                      </div>
+                      <div className="w-14 h-14 bg-primary/5 rounded-[20px] flex items-center justify-center text-primary">
+                        <Banknote className="w-7 h-7" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                      {/* Amount */}
+                      <div className="space-y-8">
+                        <div className="relative group">
+                          <label className="absolute left-7 top-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-focus-within:text-primary transition-colors">
+                            VND Amount
+                          </label>
+                          <input
+                            type="number"
+                            value={vndAmount}
+                            onChange={(e) => setVndAmount(e.target.value)}
+                            placeholder="0"
+                            className="w-full bg-gray-50 border-none rounded-[32px] px-7 pt-12 pb-7 text-4xl font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-gray-200"
+                          />
+                          <div className="absolute right-7 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-outline/5 font-bold text-sm">VND</div>
+                        </div>
+
+                        {amounts && (
+                          <div className="bg-emerald-50/50 rounded-3xl p-8 border border-emerald-100/50 space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recipient Gets</span>
+                              <span className="text-2xl font-bold text-emerald-700">{amounts.phpPayout.toLocaleString()} PHP</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-4 border-t border-emerald-100/30">
+                              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">USDC to Lock</span>
+                              <span className="text-lg font-bold text-emerald-700">{amounts.usdcEquivalent.toFixed(4)} USDC</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Receiver */}
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Receiver Full Name</label>
+                          <div className="relative">
+                            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                            <input
+                              type="text"
+                              value={receiverName}
+                              onChange={(e) => setReceiverName(e.target.value)}
+                              placeholder="Juan Dela Cruz"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">GCash / Account No.</label>
+                          <div className="relative">
+                            <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                            <input
+                              type="text"
+                              value={receiverAccount}
+                              onChange={(e) => setReceiverAccount(e.target.value)}
+                              placeholder="09XXXXXXXXX"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          disabled={!amounts || !receiverName || !receiverAccount || loading}
+                          onClick={handleStartRemittance}
+                          className="w-full btn-primary h-16 rounded-[24px] font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
+                        >
+                          {loading ? (
+                            <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending Request...</>
+                          ) : (
+                            <>Send Request <ArrowRight className="w-5 h-5" /></>
+                          )}
+                        </button>
+                        {error && <p className="text-center text-xs text-red-500 font-bold mt-2">⚠️ {error}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
+                    <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary"><Wallet className="w-6 h-6" /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Agent Pool</p>
+                      <p className="text-2xl font-bold text-gray-900">{availableUsdc.toFixed(2)} <span className="text-sm font-medium text-gray-300">USDC</span></p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
+                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600"><Send className="w-6 h-6" /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active</p>
+                      <p className="text-2xl font-bold text-gray-900">{remittances.filter(r => ["pending_agent","funded","processing"].includes(r.status)).length}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600"><HistoryIcon className="w-6 h-6" /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Completed</p>
+                      <p className="text-2xl font-bold text-gray-900">{remittances.filter(r => r.status === "completed").length}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className={`text-sm font-semibold ${step === s.id ? "text-gray-900" : "text-gray-400"}`}>
-                {s.label}
-              </span>
-              {idx < steps.length - 1 && <div className="w-6 h-[2px] bg-gray-100" />}
-            </div>
-          ))}
-        </div>
 
-        <button
-          onClick={disconnect}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-red-500 transition-colors px-3 py-2 rounded-xl hover:bg-red-50"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">Disconnect</span>
-        </button>
-      </nav>
+              {/* Right: Recent activity */}
+              <div className="space-y-8">
+                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-8">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-gray-900">Recent Activity</h3>
+                    <button onClick={() => setActiveTab("history")} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">View All</button>
+                  </div>
+                  <div className="space-y-4">
+                    {remittances.slice(0, 5).map((r) => (
+                      <div
+                        key={r.txId}
+                        onClick={() => router.push(`/tx/${r.txId}`)}
+                        className="p-5 bg-gray-50 rounded-3xl border border-transparent hover:border-primary/20 hover:bg-white transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={cn("px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest", STATUS_COLORS[r.status] ?? "bg-gray-50 text-gray-400")}>
+                            {STATUS_LABELS[r.status] ?? r.status}
+                          </span>
+                          <span className="text-[10px] font-medium text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <p className="font-bold text-gray-900 group-hover:text-primary transition-colors">{r.receiverName}</p>
+                        <p className="text-xs text-gray-400 mt-1">{Number(r.vndAmount).toLocaleString()} VND → {Number(r.phpPayout).toFixed(0)} PHP</p>
+                      </div>
+                    ))}
+                    {remittances.length === 0 && (
+                      <div className="py-10 text-center space-y-3">
+                        <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-200"><HistoryIcon className="w-6 h-6" /></div>
+                        <p className="text-xs text-gray-400 font-medium">No activity yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="max-w-xl w-full space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex gap-3 items-start">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 font-medium">{error}</p>
+                <div className="bg-indigo-600 rounded-[40px] p-8 text-white space-y-6 relative overflow-hidden">
+                  <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+                  <div className="relative z-10">
+                    <h3 className="font-bold text-lg">Exchange Rates</h3>
+                    <div className="mt-4 space-y-3">
+                      <div className="flex justify-between items-center text-sm font-medium border-b border-white/10 pb-3">
+                        <span className="text-white/60">1 USDC</span>
+                        <span>{EXCHANGE_RATES.USDC_TO_PHP} PHP</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-medium pt-1">
+                        <span className="text-white/60">1 USDC</span>
+                        <span>{Math.round(1 / EXCHANGE_RATES.VND_TO_USDC).toLocaleString()} VND</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          <div className="bg-white rounded-[32px] premium-shadow border border-outline/5 overflow-hidden">
-            {/* Step: Amount */}
-            {step === "amount" && (
-              <div className="p-10 space-y-8">
-                <div className="space-y-2 text-center">
-                  <h2 className="text-3xl font-bold text-gray-900">How much to send?</h2>
-                  <p className="text-gray-500">Enter the amount in VND</p>
+          {/* ── HISTORY TAB ── */}
+          {activeTab === "history" && (profileLoading || isBankInfoComplete("sender")) && (
+            <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
+              <div className="p-10 border-b border-outline/5 flex items-center justify-between bg-gray-50/30">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Transaction History</h2>
+                  <p className="text-sm text-gray-400 mt-1">All your remittance records.</p>
                 </div>
+                <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-outline/5 shadow-sm min-w-[280px]">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <input type="text" placeholder="Search by name or ID..." className="bg-transparent border-none text-sm font-medium focus:ring-0 w-full" />
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50/50">
+                    <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                      <th className="px-10 py-6">Date / ID</th>
+                      <th className="px-10 py-6">Receiver</th>
+                      <th className="px-10 py-6">Amount</th>
+                      <th className="px-10 py-6">Status</th>
+                      <th className="px-10 py-6 text-right">View</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline/5">
+                    {remittances.map((r) => (
+                      <tr key={r.txId} className="hover:bg-gray-50/30 transition-colors group">
+                        <td className="px-10 py-7">
+                          <p className="text-sm font-bold text-gray-900">{new Date(r.createdAt).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-gray-300 font-mono mt-1">{r.txId.slice(0, 14)}...</p>
+                        </td>
+                        <td className="px-10 py-7">
+                          <p className="text-sm font-bold text-gray-900">{r.receiverName}</p>
+                          <p className="text-xs text-gray-400 mt-1">{r.receiverAccount}</p>
+                        </td>
+                        <td className="px-10 py-7">
+                          <p className="text-sm font-bold text-gray-900">{Number(r.vndAmount).toLocaleString()} VND</p>
+                          <p className="text-xs text-emerald-600 font-bold mt-1">{Number(r.phpPayout).toFixed(2)} PHP</p>
+                        </td>
+                        <td className="px-10 py-7">
+                          <span className={cn("inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider", STATUS_COLORS[r.status] ?? "bg-gray-50 text-gray-400")}>
+                            {STATUS_LABELS[r.status] ?? r.status}
+                          </span>
+                        </td>
+                        <td className="px-10 py-7 text-right">
+                          <button onClick={() => router.push(`/tx/${r.txId}`)} className="p-3 bg-gray-50 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20">
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {remittances.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-10 py-32 text-center">
+                          <div className="flex flex-col items-center gap-4 text-gray-300">
+                            <HistoryIcon className="w-12 h-12" />
+                            <p className="font-bold">No transactions found</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-                {/* Sender bank info display */}
-                {bankInfo && (
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-outline/5">
-                    <Building2 className="w-4 h-4 text-gray-400 shrink-0" />
-                    <div className="text-sm">
-                      <span className="font-semibold text-gray-700">{bankInfo.bankName}</span>
-                      <span className="text-gray-400 mx-2">·</span>
-                      <span className="font-mono text-gray-600">{bankInfo.accountNumber}</span>
-                      <span className="text-gray-400 mx-2">·</span>
-                      <span className="text-gray-600">{bankInfo.accountHolder}</span>
+          {/* ── POOLS TAB ── */}
+          {activeTab === "pools" && (profileLoading || isBankInfoComplete("sender")) && (
+            <div className="space-y-10">
+              <div className="bg-primary rounded-[48px] p-16 text-white relative overflow-hidden shadow-2xl shadow-primary/20">
+                <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px]" />
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                  <div className="space-y-8">
+                    <div className="inline-flex items-center gap-3 px-5 py-2 bg-white/10 rounded-full backdrop-blur-md border border-white/10">
+                      <ShieldCheck className="w-5 h-5" />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em]">Escrow Protected Pool</span>
                     </div>
-                  </div>
-                )}
-
-                <div className="space-y-6">
-                  <div className="relative">
-                    <label className="absolute left-6 top-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                      You Send
-                    </label>
-                    <input
-                      type="number"
-                      value={vndAmount}
-                      onChange={(e) => setVndAmount(e.target.value)}
-                      placeholder="0"
-                      className="w-full bg-gray-50 border-none rounded-3xl px-6 pt-10 pb-6 text-3xl font-bold text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-200"
-                    />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white px-3 py-2 rounded-xl shadow-sm border border-outline/5">
-                      <span className="text-sm font-bold text-gray-900">VND</span>
-                    </div>
-                  </div>
-
-                  {preview && (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4 px-2">
-                        <div className="flex-1 h-[1px] bg-gray-100" />
-                        <div className="p-2 bg-primary/5 rounded-full">
-                          <ArrowRight className="w-4 h-4 text-primary rotate-90" />
-                        </div>
-                        <div className="flex-1 h-[1px] bg-gray-100" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-5 rounded-3xl border border-outline/5 space-y-1">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">USDC Escrow</p>
-                          <p className="text-xl font-bold text-gray-900">{preview.usdcEquivalent.toFixed(4)}</p>
-                        </div>
-                        <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100 space-y-1">
-                          <p className="text-[10px] font-bold text-emerald-600 uppercase">Receiver Gets</p>
-                          <p className="text-xl font-bold text-emerald-700">{preview.phpPayout.toFixed(2)} PHP</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 px-5 py-3.5 bg-primary/5 rounded-2xl">
-                        <Info className="w-4 h-4 text-primary shrink-0" />
-                        <p className="text-xs text-primary font-medium">Fixed rate · No hidden fees</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    disabled={!parsed || parsed < 1000}
-                    onClick={() => setStep("receiver")}
-                    className="w-full btn-primary h-14 rounded-2xl text-base flex items-center justify-center gap-2 group disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Continue
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step: Receiver */}
-            {step === "receiver" && (
-              <div className="p-10 space-y-8">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-gray-900">Who is receiving?</h2>
-                  <p className="text-gray-500">Enter the receiver&apos;s details in Philippines</p>
-                </div>
-
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5" /> Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={receiverName}
-                      onChange={(e) => setReceiverName(e.target.value)}
-                      placeholder="Juan dela Cruz"
-                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2 flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5" /> GCash / Account Number
-                    </label>
-                    <input
-                      type="text"
-                      value={receiverAccount}
-                      onChange={(e) => setReceiverAccount(e.target.value)}
-                      placeholder="09XXXXXXXXX"
-                      className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
-                    />
-                  </div>
-
-                  <div className="flex gap-4 pt-2">
-                    <button onClick={() => setStep("amount")} className="flex-1 btn-secondary h-14 rounded-2xl">
-                      Back
-                    </button>
-                    <button
-                      disabled={!receiverName || !receiverAccount}
-                      onClick={() => setStep("review")}
-                      className="flex-[2] btn-primary h-14 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Review Order
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step: Review */}
-            {step === "review" && (
-              <div className="p-10 space-y-8">
-                <div className="space-y-2 text-center">
-                  <h2 className="text-3xl font-bold text-gray-900">Review & Send</h2>
-                  <p className="text-gray-500">Confirm before creating the escrow</p>
-                </div>
-
-                <div className="bg-gray-50 rounded-3xl p-8 space-y-5 border border-outline/5">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">You Send</p>
-                      <p className="text-2xl font-bold text-gray-900">{parsed.toLocaleString()} VND</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">They Receive</p>
-                      <p className="text-2xl font-bold text-emerald-700">{preview?.phpPayout.toFixed(2)} PHP</p>
-                    </div>
-                  </div>
-
-                  <div className="h-[1px] bg-gray-200" />
-
-                  {bankInfo && (
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">From (Sender)</p>
-                      <p className="text-sm text-gray-700">
-                        {bankInfo.accountHolder} · {bankInfo.bankName} · <span className="font-mono">{bankInfo.accountNumber}</span>
+                      <h2 className="text-5xl font-bold tracking-tight">Smart Contract<br />Liquidity</h2>
+                      <p className="text-lg text-white/70 leading-relaxed max-w-md">
+                        Real-time transparency of USDC locked in the Soroban smart contract.
                       </p>
                     </div>
-                  )}
-
-                  <div className="h-[1px] bg-gray-200" />
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Receiver</p>
-                      <p className="font-semibold text-gray-900 mt-1">{receiverName}</p>
+                  </div>
+                  <div className="bg-white rounded-[40px] p-10 text-gray-900 shadow-2xl space-y-10">
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Committed</p>
+                      <p className="text-6xl font-bold tracking-tighter text-primary">{totalCollateral.toFixed(2)} <span className="text-2xl font-medium text-gray-300">USDC</span></p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
-                      <p className="font-semibold text-gray-900 font-mono mt-1">{receiverAccount}</p>
+                    <div className="h-[2px] bg-gray-50" />
+                    <div className="grid grid-cols-2 gap-10">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Available</p>
+                        <p className="text-3xl font-bold">{availableUsdc.toFixed(2)}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500" /> Reserved</p>
+                        <p className="text-3xl font-bold">{(totalCollateral - availableUsdc).toFixed(2)}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-3">
-                  <button
-                    disabled={loading}
-                    onClick={handleSubmit}
-                    className="w-full btn-primary h-16 rounded-2xl text-lg flex items-center justify-center gap-3 group shadow-lg shadow-primary/20 disabled:opacity-60"
-                  >
-                    <Send className={`w-5 h-5 ${loading ? "animate-pulse" : "group-hover:-translate-y-0.5 transition-transform"}`} />
-                    {loading ? "Creating Escrow..." : "Confirm & Send"}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white p-10 rounded-[40px] premium-shadow border border-outline/5 space-y-6">
+                  <h3 className="text-xl font-bold text-gray-900">How It Works</h3>
+                  <div className="space-y-4">
+                    {[
+                      { title: "1. Send Request", desc: "You submit a remittance request. No payment yet." },
+                      { title: "2. Agent Accepts", desc: "Agent reviews and locks USDC in the smart contract." },
+                      { title: "3. Pay VND (5 min)", desc: "You transfer VND to agent's bank within 5 minutes." },
+                      { title: "4. PHP Delivered", desc: "Agent pays PHP to receiver and confirms on-chain." },
+                    ].map((s, i) => (
+                      <div key={i} className="flex gap-5">
+                        <div className="w-10 h-10 bg-gray-50 rounded-2xl flex items-center justify-center font-bold text-gray-400 shrink-0 text-sm">{i + 1}</div>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">{s.title}</p>
+                          <p className="text-xs text-gray-400 mt-1 leading-relaxed">{s.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white p-10 rounded-[40px] premium-shadow border border-outline/5 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
+                    <Globe2 className="w-10 h-10" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-gray-900">Decentralized Trust</h3>
+                    <p className="text-xs text-gray-400 max-w-xs leading-relaxed mx-auto">
+                      All pool operations are visible on-chain. No central authority holds your funds.
+                    </p>
+                  </div>
+                  <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline flex items-center gap-2">
+                    View Contract on Stellar Expert <ArrowUpRight className="w-3 h-3" />
                   </button>
-                  <p className="text-center text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">
-                    Secured by Soroban Smart Contract
-                  </p>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* ── SETTINGS TAB ── */}
+          {activeTab === "settings" && (
+            <div className="max-w-2xl space-y-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+                <p className="text-sm text-gray-400 mt-1">Your Vietnamese bank account for VND transfers.</p>
+              </div>
+
+              {settingsLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                </div>
+              ) : (
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5" /> Vietnamese Bank
+                      </label>
+                      <select
+                        value={settingsBankName}
+                        onChange={e => setSettingsBankName(e.target.value)}
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
+                      >
+                        <option value="">Select bank...</option>
+                        {SENDER_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5" /> Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsAccountNumber}
+                        onChange={e => setSettingsAccountNumber(e.target.value)}
+                        placeholder="0123456789"
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" /> Account Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsAccountHolder}
+                        onChange={e => setSettingsAccountHolder(e.target.value)}
+                        placeholder="Full name as on bank account"
+                        className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
+
+                    {/* QR Upload */}
+                    {address && (
+                      <QrUpload
+                        currentUrl={settingsQrUrl}
+                        walletAddress={address}
+                        field="qr"
+                        label="Bank QR Code (optional)"
+                        onUploaded={(url) => setSettingsQrUrl(url || null)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-3">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Connected Wallet</p>
+                    <p className="text-sm font-mono text-gray-700 break-all">{address}</p>
+                  </div>
+
+                  {settingsError && <p className="text-sm text-red-500 font-bold">⚠️ {settingsError}</p>}
+
+                  <button
+                    type="submit"
+                    disabled={settingsSaving}
+                    className="w-full btn-primary h-16 rounded-[24px] font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {settingsSaving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> :
+                     settingsSaved  ? <><CheckCircle2 className="w-5 h-5" /> Saved!</> :
+                     <><Save className="w-5 h-5" /> Save Settings</>}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
     </main>

@@ -7,6 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const remittanceStatusEnum = pgEnum("remittance_status", [
+  "pending_agent",
   "funded",
   "processing",
   "completed",
@@ -44,6 +45,26 @@ export const agentState = pgTable("agent_state", {
   reservedUsdc: numeric("reserved_usdc", { precision: 20, scale: 7 })
     .notNull()
     .default("0"),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ── User Profiles ─────────────────────────────────────────────────────────────
+// Keyed by wallet address. Stores bank/payout info for all roles.
+export const userProfiles = pgTable("user_profiles", {
+  walletAddress: text("wallet_address").primaryKey(),
+  role: text("role").notNull(),
+  // Bank / payout info
+  bankName: text("bank_name"),
+  accountNumber: text("account_number"),
+  accountHolder: text("account_holder"),
+  qrImageUrl: text("qr_image_url"),          // Cloudinary URL for QR code
+  // Agent-specific
+  agentBankName: text("agent_bank_name"),
+  agentAccountNumber: text("agent_account_number"),
+  agentAccountHolder: text("agent_account_holder"),
+  agentQrImageUrl: text("agent_qr_image_url"), // Cloudinary URL for agent QR
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
