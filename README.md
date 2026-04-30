@@ -106,11 +106,11 @@ GB752OFJ254RLVYQQ5EYTQIA7MFECZCR4X7RQCET4PLJODBXLOU7FRNH
 
 **1. Improvement by kait110204@gmail.com**
 - **Issue**: Email-related functionality
-- **Fix**: [Commit b374944795b50fa6db9e93118ee1f257b6e09947](https://github.com/your-repo/commit/b374944795b50fa6db9e93118ee1f257b6e09947)
+- **Fix**: [Commit b374944795b50fa6db9e93118ee1f257b6e09947](https://github.com/tuananhh209/STLRemit/commit/b374944795b50fa6db9e93118ee1f257b6e09947)
 
 **2. Improvement by wisoka1423@gmail.com**
 - **Issue**: UX/Performance optimization
-- **Fix**: [Commit 4d2e2928a5f6e4bfa4d9c4affaf4230ae682031b](https://github.com/your-repo/commit/4d2e2928a5f6e4bfa4d9c4affaf4230ae682031b)
+- **Fix**: [Commit 4d2e2928a5f6e4bfa4d9c4affaf4230ae682031b](https://github.com/tuananhh209/STLRemit/commit/4d2e2928a5f6e4bfa4d9c4affaf4230ae682031b)
 
 ### Planned Improvements:
 - Mobile wallet optimization
@@ -129,8 +129,9 @@ GB752OFJ254RLVYQQ5EYTQIA7MFECZCR4X7RQCET4PLJODBXLOU7FRNH
 ### Setup:
 
 ```bash
-# Clone repository
 git clone <repository-url>
+# Clone repository
+git clone https://github.com/tuananhh209/STLRemit.git
 cd stlremit
 
 # Install dependencies
@@ -229,8 +230,8 @@ stlremit/
 
 ## Support
 
-For issues or questions:
-- Check the [GitHub Issues](https://github.com/your-repo/issues)
+- For issues or questions:
+- Check the [GitHub Issues](https://github.com/tuananhh209/STLRemit/issues)
 - Review [Feedback Sheet](https://docs.google.com/spreadsheets/d/1C4nx9vrrxJrWqZYkJXC9dMDBzJulSW2AuJ-5wOiwir8/edit)
 - Contact: [Email Support]
 
