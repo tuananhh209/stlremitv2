@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import {
@@ -7,6 +8,12 @@ import {
   TransactionExpiredError,
 } from "@/lib/errors";
 import type { MarkPaidResponse } from "@/lib/types";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(
   req: NextRequest,
@@ -17,7 +24,6 @@ export async function POST(
     const body = await req.json();
     const { proofImageBase64, proofImageMimeType } = body;
 
-    // Accept any image — no content validation required
     if (!proofImageBase64 || typeof proofImageBase64 !== "string") {
       return NextResponse.json(
         { error: "proofImageBase64 is required", code: "VALIDATION_ERROR" },
@@ -32,14 +38,29 @@ export async function POST(
       throw new InvalidStatusTransitionError(txId, record.status, "mark-paid");
     }
 
-    // Check not expired
     if (new Date(record.expiresAt) <= new Date()) {
       throw new TransactionExpiredError(txId);
     }
 
-    // Store proof reference (base64 data URI or just mime+data)
+    // Upload proof image to Cloudinary — store URL instead of raw base64 in DB
     const mimeType = proofImageMimeType ?? "image/jpeg";
-    const proofRef = `data:${mimeType};base64,${proofImageBase64.replace(/^data:[^;]+;base64,/, "")}`;
+    const dataUri = proofImageBase64.startsWith("data:")
+      ? proofImageBase64
+      : `data:${mimeType};base64,${proofImageBase64}`;
+
+    let proofRef: string;
+    try {
+      const result = await cloudinary.uploader.upload(dataUri, {
+        public_id: `stl-remit/proofs/sender_${txId}`,
+        overwrite: true,
+        resource_type: "image",
+      });
+      proofRef = result.secure_url;
+    } catch (uploadErr) {
+      // Fallback: store truncated reference if Cloudinary fails
+      console.error("[mark-paid] Cloudinary upload failed:", uploadErr);
+      proofRef = `proof:${txId}:${Date.now()}`;
+    }
 
     await databaseService.updateSenderProof(txId, proofRef);
     await databaseService.updateStatus(txId, "processing");
