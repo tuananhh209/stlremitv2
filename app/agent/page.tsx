@@ -241,12 +241,60 @@ export default function AgentDashboard() {
   }
 
   async function handleAccept(txId: string) {
+    if (!address) return;
     setAcceptingId(txId);
     try {
-      const res = await fetch(`/api/remittance/${txId}/accept`, { method: "POST" });
-      if (res.ok) fetchAll();
-    } catch { /* ignore */ }
-    finally { setAcceptingId(null); }
+      // Step 1: Build unsigned accept tx (locks USDC for this specific request)
+      const buildRes = await fetch("/api/agent/build-accept-tx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txId, agentPublicKey: address }),
+      });
+      if (!buildRes.ok) {
+        const d = await buildRes.json();
+        alert(`Failed to build transaction: ${d.error}`);
+        return;
+      }
+      const { xdr } = await buildRes.json();
+
+      // Step 2: Agent signs with wallet (Freighter/Rabet popup)
+      let signedXdr: string;
+      try {
+        signedXdr = await sign(xdr, "TESTNET");
+      } catch (err: any) {
+        alert(`Signing cancelled: ${err?.message ?? err}`);
+        return;
+      }
+
+      // Step 3: Submit signed tx to Stellar
+      const submitRes = await fetch("/api/stellar/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signedXdr }),
+      });
+      if (!submitRes.ok) {
+        const d = await submitRes.json();
+        alert(`Transaction failed: ${d.error}`);
+        return;
+      }
+      const { txHash } = await submitRes.json();
+
+      // Step 4: Update DB — status → funded, start 5-min timer
+      const acceptRes = await fetch(`/api/remittance/${txId}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stellarTxHash: txHash }),
+      });
+      if (acceptRes.ok) fetchAll();
+      else {
+        const d = await acceptRes.json();
+        alert(`DB update failed: ${d.error}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err?.message ?? "Unknown error"}`);
+    } finally {
+      setAcceptingId(null);
+    }
   }
 
   async function handleConfirmPayout(txId: string) {

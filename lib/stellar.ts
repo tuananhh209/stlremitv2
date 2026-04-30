@@ -187,31 +187,28 @@ export class StellarService {
 
   async reserveCollateral(
     txId: string,
-    usdcAmount: number
+    usdcAmount: number,
+    receiverWallet?: string,
   ): Promise<ReserveCollateralResult> {
-    const balance = await this.getContractBalance();
-    if (balance.available < usdcAmount) {
-      throw new InsufficientLiquidityError(usdcAmount, balance.available);
-    }
-
     const amount = toContractAmount(usdcAmount);
+    const receiver = receiverWallet ?? this.agentKeypair.publicKey(); // fallback
     const args = [
+      new Address(this.agentKeypair.publicKey()).toScVal(),
       nativeToScVal(txId, { type: "string" }),
       nativeToScVal(amount, { type: "i128" }),
-      new Address(this.agentKeypair.publicKey()).toScVal(),
+      new Address(receiver).toScVal(),
     ];
-
-    const { txHash } = await this.invokeContract("reserve", args, txId);
+    const { txHash } = await this.invokeContract("accept", args, txId);
     return { txHash };
   }
 
   async confirmPayout(txId: string): Promise<ConfirmPayoutResult> {
+    // Legacy: server-side confirm (not used in new flow — receiver signs directly)
     const args = [
       nativeToScVal(txId, { type: "string" }),
       new Address(this.agentKeypair.publicKey()).toScVal(),
     ];
-
-    const { txHash, returnValue } = await this.invokeContract("confirm", args);
+    const { txHash, returnValue } = await this.invokeContract("receiver_confirm", args);
     const releasedRaw = scValToNative(returnValue) as bigint;
     const releasedUsdc = fromContractAmount(releasedRaw);
     return { txHash, releasedUsdc };
@@ -232,26 +229,13 @@ export class StellarService {
     const amount = toContractAmount(usdcAmount);
     const account = await this.server.getAccount(publicKey);
     const escrowContract = new Contract(this.contractId);
-    const usdcContract = new Contract(STELLAR_CONFIG.USDC_TOKEN_ID);
 
-    // Build tx with 2 operations:
-    // 1. approve: agent allows escrow contract to spend USDC (token.approve)
-    // 2. fund: escrow contract pulls USDC from agent
+    // Single operation: fund(agent, amount)
+    // Soroban captures nested token.transfer auth from agent.require_auth()
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
       networkPassphrase: Networks.TESTNET,
     })
-      // op1: approve escrow to spend `amount` USDC
-      .addOperation(
-        usdcContract.call(
-          "approve",
-          new Address(publicKey).toScVal(),           // from (agent)
-          new Address(this.contractId).toScVal(),     // spender (escrow)
-          nativeToScVal(amount, { type: "i128" }),    // amount
-          nativeToScVal(535680, { type: "u32" }),     // expiration_ledger (~30 days)
-        )
-      )
-      // op2: fund escrow (escrow will transfer from agent)
       .addOperation(
         escrowContract.call(
           "fund",
@@ -264,13 +248,77 @@ export class StellarService {
 
     const simResult = await this.server.simulateTransaction(tx);
     if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new StellarTransactionError(
-        "SIMULATION_FAILED",
-        undefined,
-        simResult.error
-      );
+      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
     }
+    return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
+  }
 
+  /**
+   * Build accept tx: agent locks USDC for a specific remittance request.
+   * accept(agent, tx_id, amount, receiver)
+   * Single op — agent signs once, USDC locked atomically.
+   */
+  async buildAcceptTx(
+    agentPublicKey: string,
+    txId: string,
+    usdcAmount: number,
+    receiverWallet: string,
+  ): Promise<string> {
+    const amount = toContractAmount(usdcAmount);
+    const account = await this.server.getAccount(agentPublicKey);
+    const contract = new Contract(this.contractId);
+
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: Networks.TESTNET,
+    })
+      .addOperation(
+        contract.call(
+          "accept",
+          new Address(agentPublicKey).toScVal(),
+          nativeToScVal(txId, { type: "string" }),
+          nativeToScVal(amount, { type: "i128" }),
+          new Address(receiverWallet).toScVal(),
+        )
+      )
+      .setTimeout(30)
+      .build();
+
+    const simResult = await this.server.simulateTransaction(tx);
+    if (StellarRpc.Api.isSimulationError(simResult)) {
+      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
+    }
+    return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
+  }
+
+  /**
+   * Build receiver_confirm tx: receiver signs to confirm PHP received → releases USDC to agent.
+   */
+  async buildReceiverConfirmTx(
+    receiverPublicKey: string,
+    txId: string,
+  ): Promise<string> {
+    const account = await this.server.getAccount(receiverPublicKey);
+    const contract = new Contract(this.contractId);
+
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
+      networkPassphrase: Networks.TESTNET,
+    })
+      .addOperation(
+        contract.call(
+          "receiver_confirm",
+          nativeToScVal(txId, { type: "string" }),
+          new Address(receiverPublicKey).toScVal(),
+        )
+      )
+      .setTimeout(30)
+      .build();
+
+    const simResult = await this.server.simulateTransaction(tx);
+    if (StellarRpc.Api.isSimulationError(simResult)) {
+      throw new StellarTransactionError("SIMULATION_FAILED", undefined, simResult.error);
+    }
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
 

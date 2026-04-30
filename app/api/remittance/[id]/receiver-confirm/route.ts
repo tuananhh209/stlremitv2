@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
-import { EXCHANGE_RATES } from "@/lib/config";
 
 /**
- * POST /api/remittance/[id]/accept
- * Called AFTER agent has signed & submitted the accept tx on-chain.
- * Updates DB: status → funded, expiresAt = now + 300s, stores txHash.
+ * POST /api/remittance/[id]/receiver-confirm
+ * Called AFTER receiver signed & submitted receiver_confirm tx on-chain.
+ * Updates DB: status → completed, stores txHash.
  *
  * Body: { stellarTxHash: string }
  */
@@ -23,19 +22,16 @@ export async function POST(
     const record = await databaseService.getRemittance(txId);
     if (!record) throw new NotFoundError(txId);
 
-    if (record.status !== "pending_agent") {
-      throw new InvalidStatusTransitionError(txId, record.status, "accept");
+    if (record.status !== "processing") {
+      throw new InvalidStatusTransitionError(txId, record.status, "receiver-confirm");
     }
 
-    // Set expiresAt = now + 5 min (payment window starts when agent accepts)
-    const updated = await databaseService.acceptRemittance(txId, stellarTxHash);
+    await databaseService.updateStatus(txId, "completed");
+    if (stellarTxHash) {
+      await databaseService.updateStellarTxHash(txId, stellarTxHash);
+    }
 
-    return NextResponse.json({
-      txId: updated.txId,
-      status: updated.status,
-      expiresAt: updated.expiresAt,
-      stellarTxHash,
-    });
+    return NextResponse.json({ txId, status: "completed", stellarTxHash });
   } catch (err) {
     return errorResponse(err);
   }

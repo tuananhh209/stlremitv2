@@ -10,7 +10,7 @@ import type { RemittanceRecord } from "@/lib/types";
 import {
   Clock, CheckCircle2, AlertCircle, ExternalLink,
   Inbox, User, Building2, CreditCard, Settings,
-  Save, Loader2,
+  Save, Loader2, ShieldCheck,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -29,7 +29,7 @@ const RECEIVER_BANKS = ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank
 
 export default function ReceiverDashboard() {
   const router = useRouter();
-  const { address, bankInfo, role } = useWallet();
+  const { address, bankInfo, role, sign } = useWallet();
   const { isBankInfoComplete, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const [activeTab, setActiveTab] = useState<"transfers" | "settings">("transfers");
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
@@ -50,6 +50,8 @@ export default function ReceiverDashboard() {
   const [sSaving, setSSaving] = useState(false);
   const [sSaved, setSSaved] = useState(false);
   const [sError, setSError] = useState<string | null>(null);
+
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -107,6 +109,59 @@ export default function ReceiverDashboard() {
     } catch { setSError("Network error"); }
     finally { setSSaving(false); }
   };
+
+  async function handleReceiverConfirm(txId: string) {
+    if (!address) return;
+    setConfirmingId(txId);
+    try {
+      // Step 1: Build unsigned receiver_confirm tx
+      const buildRes = await fetch(`/api/remittance/${txId}/build-receiver-confirm-tx`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverPublicKey: address }),
+      });
+      if (!buildRes.ok) {
+        const d = await buildRes.json();
+        alert(`Failed to build transaction: ${d.error}`);
+        return;
+      }
+      const { xdr } = await buildRes.json();
+
+      // Step 2: Receiver signs with wallet
+      let signedXdr: string;
+      try {
+        signedXdr = await sign(xdr, "TESTNET");
+      } catch (err: any) {
+        alert(`Signing cancelled: ${err?.message ?? err}`);
+        return;
+      }
+
+      // Step 3: Submit to Stellar
+      const submitRes = await fetch("/api/stellar/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signedXdr }),
+      });
+      if (!submitRes.ok) {
+        const d = await submitRes.json();
+        alert(`Transaction failed: ${d.error}`);
+        return;
+      }
+      const { txHash } = await submitRes.json();
+
+      // Step 4: Update DB → completed
+      await fetch(`/api/remittance/${txId}/receiver-confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stellarTxHash: txHash }),
+      });
+      fetchAll();
+    } catch (err: any) {
+      alert(`Error: ${err?.message ?? "Unknown error"}`);
+    } finally {
+      setConfirmingId(null);
+    }
+  }
 
   const pending = remittances.filter(r => r.status === "processing");
   const completed = remittances.filter(r => r.status === "completed");
@@ -196,6 +251,19 @@ export default function ReceiverDashboard() {
                           <p className="font-bold text-emerald-600 text-lg">{r.phpPayout.toFixed(2)} PHP</p>
                           <p className="text-xs text-gray-400">from {r.vndAmount.toLocaleString()} VND</p>
                         </div>
+                        {r.status === "processing" && (
+                          <button
+                            onClick={() => handleReceiverConfirm(r.txId)}
+                            disabled={confirmingId === r.txId}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-emerald-100 transition-all disabled:opacity-50 shrink-0"
+                          >
+                            {confirmingId === r.txId ? (
+                              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Signing...</>
+                            ) : (
+                              <><ShieldCheck className="w-3.5 h-3.5" /> Confirm Received</>
+                            )}
+                          </button>
+                        )}
                         {r.stellarTxHash && r.status === "completed" && (
                           <a href={`https://stellar.expert/explorer/testnet/tx/${r.stellarTxHash}`} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-300 hover:text-primary transition-colors">
                             <ExternalLink className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import { eq, lt, and } from "drizzle-orm";
 import { db } from "./db-client";
-import { remittanceRequests, agentState } from "./schema";
+import { remittanceRequests, agentState, userProfiles } from "./schema";
 import type { RemittanceRecord, RemittanceStatus } from "./types";
 import { EXCHANGE_RATES } from "./config";
 
@@ -162,6 +162,19 @@ export const databaseService = {
         )
       );
     return rows.map(rowToRecord);
+  },
+
+  /**
+   * Get receiver's wallet address by their account number.
+   * Used when agent accepts to pass receiver address to smart contract.
+   */
+  async getReceiverWallet(receiverAccount: string): Promise<string | null> {
+    const [row] = await db
+      .select({ walletAddress: userProfiles.walletAddress })
+      .from(userProfiles)
+      .where(eq(userProfiles.accountNumber, receiverAccount))
+      .limit(1);
+    return row?.walletAddress ?? null;
   },
 
   // ── Agent state helpers ────────────────────────────────────────────────────
