@@ -294,7 +294,8 @@ export default function AgentDashboard() {
 
         <div className="p-8 lg:p-12 space-y-10 overflow-y-auto max-w-7xl mx-auto w-full">
 
-          {/* ── Stats Bar (always visible) ── */}
+          {/* ── Stats Bar — only show when bank is set up ── */}
+          {isBankInfoComplete("agent") && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-[40px] premium-shadow border border-outline/5 flex items-center justify-between">
               <div className="space-y-2">
@@ -325,6 +326,7 @@ export default function AgentDashboard() {
               </form>
             </div>
           </div>
+          )} {/* end stats bar guard */}
 
           {/* ── BANK INFO GUARD ── */}
           {!isBankInfoComplete("agent") && activeNav !== "settings" && (
