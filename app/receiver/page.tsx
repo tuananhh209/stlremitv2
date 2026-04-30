@@ -203,7 +203,7 @@ export default function ReceiverDashboard() {
 
         {/* ── SETTINGS TAB ── */}
         {activeTab === "settings" && (
-          <div className="max-w-2xl space-y-8">
+          <div className="space-y-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
               <p className="text-sm text-gray-400 mt-1">Your Philippine payout account for receiving PHP.</p>
@@ -214,44 +214,80 @@ export default function ReceiverDashboard() {
                 <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
             ) : (
-              <form onSubmit={handleSaveSettings} className="space-y-6">
-                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <Building2 className="w-3.5 h-3.5" /> Philippine Bank / E-Wallet
-                    </label>
-                    <select value={sBankName} onChange={e => setSBankName(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all">
-                      <option value="">Select bank...</option>
-                      {RECEIVER_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                    </select>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-start">
+
+                {/* ── Left: Form ── */}
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5" /> Philippine Bank / E-Wallet
+                      </label>
+                      <select value={sBankName} onChange={e => setSBankName(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all">
+                        <option value="">Select bank...</option>
+                        {RECEIVER_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5" /> Account Number
+                      </label>
+                      <input type="text" value={sAccountNumber} onChange={e => setSAccountNumber(e.target.value)} placeholder="09XXXXXXXXX" className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" /> Account Holder Name
+                      </label>
+                      <input type="text" value={sAccountHolder} onChange={e => setSAccountHolder(e.target.value)} placeholder="Full name as on bank account" className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5" /> Account Number
-                    </label>
-                    <input type="text" value={sAccountNumber} onChange={e => setSAccountNumber(e.target.value)} placeholder="09XXXXXXXXX" className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all" />
+
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-3">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Connected Wallet</p>
+                    <p className="text-sm font-mono text-gray-700 break-all">{address}</p>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5" /> Account Holder Name
-                    </label>
-                    <input type="text" value={sAccountHolder} onChange={e => setSAccountHolder(e.target.value)} placeholder="Full name as on bank account" className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all" />
+
+                  {sError && <p className="text-sm text-red-500 font-bold">⚠️ {sError}</p>}
+
+                  <button type="submit" disabled={sSaving} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-bold text-sm shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 transition-all">
+                    {sSaving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> :
+                     sSaved  ? <><CheckCircle2 className="w-5 h-5" /> Saved!</> :
+                     <><Save className="w-5 h-5" /> Save Settings</>}
+                  </button>
+                </form>
+
+                {/* ── Right: Live Preview Card ── */}
+                <div className="sticky top-24 space-y-4">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Live Preview</p>
+                  <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
+                    <div className="bg-emerald-600 px-8 pt-8 pb-6">
+                      <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Payout Account</p>
+                      <p className="text-2xl font-bold text-white">
+                        {sBankName || <span className="text-white/30">Bank name</span>}
+                      </p>
+                    </div>
+                    <div className="p-8 space-y-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                          <CreditCard className="w-3 h-3" /> Account Number
+                        </p>
+                        <p className={cn("text-2xl font-mono font-bold tracking-wider", sAccountNumber ? "text-gray-900" : "text-gray-200")}>
+                          {sAccountNumber || "0000 0000 000"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                          <User className="w-3 h-3" /> Account Holder
+                        </p>
+                        <p className={cn("text-lg font-bold", sAccountHolder ? "text-gray-900" : "text-gray-200")}>
+                          {sAccountHolder || "Full name"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-3">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Connected Wallet</p>
-                  <p className="text-sm font-mono text-gray-700 break-all">{address}</p>
-                </div>
-
-                {sError && <p className="text-sm text-red-500 font-bold">⚠️ {sError}</p>}
-
-                <button type="submit" disabled={sSaving} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-bold text-sm shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50 transition-all">
-                  {sSaving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> :
-                   sSaved  ? <><CheckCircle2 className="w-5 h-5" /> Saved!</> :
-                   <><Save className="w-5 h-5" /> Save Settings</>}
-                </button>
-              </form>
+              </div>
             )}
           </div>
         )}
