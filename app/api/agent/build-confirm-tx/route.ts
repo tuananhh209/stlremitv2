@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stellarService } from "@/lib/stellar";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { publicKey, txId } = await req.json();

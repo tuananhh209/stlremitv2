@@ -3,6 +3,8 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/remittance/[id]/receiver-confirm
  * Called AFTER receiver signed & submitted receiver_confirm tx on-chain.

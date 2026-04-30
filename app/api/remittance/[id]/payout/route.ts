@@ -3,6 +3,8 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/remittance/[id]/payout
  * Called by Agent after they have paid PHP to the Receiver.

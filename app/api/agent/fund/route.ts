@@ -4,6 +4,8 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import type { AgentFundResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/agent/fund
  * Called AFTER the wallet-signed transaction has been submitted on-chain.

@@ -4,6 +4,8 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/remittance/[id]/build-receiver-confirm-tx
  * Build unsigned XDR for receiver to confirm they received PHP.

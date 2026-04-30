@@ -4,6 +4,8 @@ import { userProfiles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { errorResponse } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/agent/profile
  * Returns the agent's bank info (agentBankName, agentAccountNumber, etc.)

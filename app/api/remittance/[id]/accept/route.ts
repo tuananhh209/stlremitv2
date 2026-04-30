@@ -4,6 +4,8 @@ import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 import { EXCHANGE_RATES } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/remittance/[id]/accept
  * Called AFTER agent has signed & submitted the accept tx on-chain.

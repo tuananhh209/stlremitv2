@@ -4,6 +4,8 @@ import { userProfiles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { errorResponse } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/profile?wallet=GXXX
 export async function GET(req: NextRequest) {
   try {

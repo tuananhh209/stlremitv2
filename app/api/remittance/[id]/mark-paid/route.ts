@@ -9,6 +9,8 @@ import {
 } from "@/lib/errors";
 import type { MarkPaidResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
