@@ -97,7 +97,7 @@ type NavTab = "overview" | "requests" | "history" | "pools" | "settings";
 export default function AgentDashboard() {
   const router = useRouter();
   const { address, role } = useWallet();
-  const { isBankInfoComplete, loading: profileLoading } = useProfile();
+  const { isBankInfoComplete, loading: profileLoading, refetch: refetchProfile } = useProfile();
 
   // Role guard
   useEffect(() => {
@@ -178,7 +178,7 @@ export default function AgentDashboard() {
           agentQrImageUrl: settingsQrUrl || null,
         }),
       });
-      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); }
+      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); refetchProfile(); }
       else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
     } catch { setSettingsError("Network error"); }
     finally { setSettingsSaving(false); }
@@ -327,12 +327,12 @@ export default function AgentDashboard() {
           </div>
 
           {/* ── BANK INFO GUARD ── */}
-          {!profileLoading && !isBankInfoComplete("agent") && activeNav !== "settings" && (
+          {!isBankInfoComplete("agent") && activeNav !== "settings" && (
             <BankInfoGuard role="agent" onGoToSettings={() => setActiveNav("settings")} />
           )}
 
           {/* ── TAB: REQUESTS ── */}
-          {activeNav === "requests" && (profileLoading || isBankInfoComplete("agent")) && (
+          {activeNav === "requests" && isBankInfoComplete("agent") && (
             <div className="space-y-6">
               {pendingRequests.length === 0 ? (
                 <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 py-32 flex flex-col items-center gap-4 text-gray-200">
@@ -400,7 +400,7 @@ export default function AgentDashboard() {
           )}
 
           {/* ── TAB: OVERVIEW (active remittances) ── */}
-          {activeNav === "overview" && (profileLoading || isBankInfoComplete("agent")) && (
+          {activeNav === "overview" && isBankInfoComplete("agent") && (
             <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
               <div className="px-10 py-8 border-b border-outline/5 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900">Active Remittances</h2>
@@ -470,7 +470,7 @@ export default function AgentDashboard() {
           )}
 
           {/* ── TAB: HISTORY ── */}
-          {activeNav === "history" && (profileLoading || isBankInfoComplete("agent")) && (
+          {activeNav === "history" && isBankInfoComplete("agent") && (
             <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
               <div className="px-10 py-8 border-b border-outline/5">
                 <h2 className="text-xl font-bold text-gray-900">Completed Transfers</h2>
@@ -506,7 +506,7 @@ export default function AgentDashboard() {
           )}
 
           {/* ── TAB: POOLS ── */}
-          {activeNav === "pools" && (profileLoading || isBankInfoComplete("agent")) && (
+          {activeNav === "pools" && isBankInfoComplete("agent") && (
             <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-12 space-y-12">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-indigo-50 rounded-[32px] flex items-center justify-center text-indigo-600"><Wallet className="w-10 h-10" /></div>

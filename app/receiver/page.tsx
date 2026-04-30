@@ -30,7 +30,7 @@ const RECEIVER_BANKS = ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank
 export default function ReceiverDashboard() {
   const router = useRouter();
   const { address, bankInfo, role } = useWallet();
-  const { isBankInfoComplete, loading: profileLoading } = useProfile();
+  const { isBankInfoComplete, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const [activeTab, setActiveTab] = useState<"transfers" | "settings">("transfers");
   const [remittances, setRemittances] = useState<RemittanceRecord[]>([]);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -102,7 +102,7 @@ export default function ReceiverDashboard() {
           accountHolder: sAccountHolder || null,
         }),
       });
-      if (res.ok) { setSSaved(true); setTimeout(() => setSSaved(false), 3000); }
+      if (res.ok) { setSSaved(true); setTimeout(() => setSSaved(false), 3000); refetchProfile(); }
       else { const d = await res.json(); setSError(d.error ?? "Failed to save"); }
     } catch { setSError("Network error"); }
     finally { setSSaving(false); }
@@ -145,12 +145,12 @@ export default function ReceiverDashboard() {
       <div className="max-w-4xl mx-auto p-8 space-y-8">
 
         {/* ── TRANSFERS TAB ── */}
-        {activeTab === "transfers" && !profileLoading && !isBankInfoComplete("receiver") && (
+        {activeTab === "transfers" && !isBankInfoComplete("receiver") && (
           <BankInfoGuard role="receiver" onGoToSettings={() => setActiveTab("settings")} />
         )}
 
         {/* ── TRANSFERS TAB ── */}
-        {activeTab === "transfers" && (profileLoading || isBankInfoComplete("receiver")) && (
+        {activeTab === "transfers" && isBankInfoComplete("receiver") && (
           <>
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

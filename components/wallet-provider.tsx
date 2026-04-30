@@ -65,6 +65,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const disconnect = () => {
+    // Clear profile cache for current address before resetting state
+    if (address && typeof window !== "undefined") {
+      try { localStorage.removeItem(`stl_profile_${address}`); } catch { /* ignore */ }
+    }
     setAddress(null);
     setWalletType(null);
     setRoleState(null);

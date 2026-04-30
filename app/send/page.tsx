@@ -57,7 +57,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function SenderDashboard() {
   const router = useRouter();
   const { address, isConnected, role } = useWallet();
-  const { isBankInfoComplete, loading: profileLoading } = useProfile();
+  const { isBankInfoComplete, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   // Role guard — if wrong role, redirect to root
@@ -154,7 +154,7 @@ export default function SenderDashboard() {
           qrImageUrl: settingsQrUrl || null,
         }),
       });
-      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); }
+      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); refetchProfile(); }
       else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
     } catch { setSettingsError("Network error"); }
     finally { setSettingsSaving(false); }
@@ -246,12 +246,12 @@ export default function SenderDashboard() {
         <div className="p-8 lg:p-12 space-y-10 overflow-y-auto max-w-7xl mx-auto w-full">
 
           {/* ── BANK INFO GUARD ── */}
-          {!profileLoading && !isBankInfoComplete("sender") && activeTab !== "settings" && (
+          {!isBankInfoComplete("sender") && activeTab !== "settings" && (
             <BankInfoGuard role="sender" onGoToSettings={() => setActiveTab("settings")} />
           )}
 
           {/* ── OVERVIEW TAB ── */}
-          {activeTab === "overview" && (profileLoading || isBankInfoComplete("sender")) && (
+          {activeTab === "overview" && isBankInfoComplete("sender") && (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
               {/* Left: Form */}
               <div className="xl:col-span-2 space-y-8">
@@ -424,7 +424,7 @@ export default function SenderDashboard() {
           )}
 
           {/* ── HISTORY TAB ── */}
-          {activeTab === "history" && (profileLoading || isBankInfoComplete("sender")) && (
+          {activeTab === "history" && isBankInfoComplete("sender") && (
             <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 overflow-hidden">
               <div className="p-10 border-b border-outline/5 flex items-center justify-between bg-gray-50/30">
                 <div>
@@ -491,7 +491,7 @@ export default function SenderDashboard() {
           )}
 
           {/* ── POOLS TAB ── */}
-          {activeTab === "pools" && (profileLoading || isBankInfoComplete("sender")) && (
+          {activeTab === "pools" && isBankInfoComplete("sender") && (
             <div className="space-y-10">
               <div className="bg-primary rounded-[48px] p-16 text-white relative overflow-hidden shadow-2xl shadow-primary/20">
                 <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px]" />
