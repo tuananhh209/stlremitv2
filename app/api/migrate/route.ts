@@ -46,12 +46,19 @@ export async function GET() {
     `;
     const existingCols = cols.map((r: any) => r.column_name);
 
-    for (const col of ["receiver_wallet", "sender_wallet", "sender_name", "agent_wallet"]) {
-      if (!existingCols.includes(col)) {
-        await sql(`ALTER TABLE "remittance_requests" ADD COLUMN "${col}" text`);
-        results.push(`Added column: ${col}`);
+    const missingCols = [
+      { name: "receiver_wallet", run: () => sql`ALTER TABLE "remittance_requests" ADD COLUMN "receiver_wallet" text` },
+      { name: "sender_wallet",   run: () => sql`ALTER TABLE "remittance_requests" ADD COLUMN "sender_wallet" text` },
+      { name: "sender_name",     run: () => sql`ALTER TABLE "remittance_requests" ADD COLUMN "sender_name" text` },
+      { name: "agent_wallet",    run: () => sql`ALTER TABLE "remittance_requests" ADD COLUMN "agent_wallet" text` },
+    ];
+
+    for (const col of missingCols) {
+      if (!existingCols.includes(col.name)) {
+        await col.run();
+        results.push(`Added column: ${col.name}`);
       } else {
-        results.push(`Column '${col}' already exists`);
+        results.push(`Column '${col.name}' already exists`);
       }
     }
 
