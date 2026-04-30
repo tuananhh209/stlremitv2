@@ -96,7 +96,7 @@ type NavTab = "overview" | "requests" | "history" | "pools" | "settings";
 
 export default function AgentDashboard() {
   const router = useRouter();
-  const { address, role } = useWallet();
+  const { address, role, sign } = useWallet();
   const { isBankInfoComplete, loading: profileLoading, refetch: refetchProfile } = useProfile();
 
   // Role guard
@@ -187,17 +187,57 @@ export default function AgentDashboard() {
   async function handleDeposit(e: React.FormEvent) {
     e.preventDefault();
     const amount = parseFloat(depositAmount);
-    if (!amount || amount <= 0) return;
+    if (!amount || amount <= 0 || !address) return;
     setDepositLoading(true);
     try {
-      const res = await fetch("/api/agent/fund", {
+      // Step 1: Build unsigned transaction XDR on server
+      const buildRes = await fetch("/api/agent/build-fund-tx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicKey: address, usdcAmount: amount }),
+      });
+      if (!buildRes.ok) {
+        const d = await buildRes.json();
+        alert(`Failed to build transaction: ${d.error}`);
+        return;
+      }
+      const { xdr } = await buildRes.json();
+
+      // Step 2: Sign with connected wallet (Freighter / Rabet)
+      let signedXdr: string;
+      try {
+        signedXdr = await sign(xdr, "TESTNET");
+      } catch (err: any) {
+        alert(`Wallet signing cancelled or failed: ${err?.message ?? err}`);
+        return;
+      }
+
+      // Step 3: Submit signed transaction
+      const submitRes = await fetch("/api/stellar/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signedXdr }),
+      });
+      if (!submitRes.ok) {
+        const d = await submitRes.json();
+        alert(`Transaction failed: ${d.error}`);
+        return;
+      }
+
+      // Step 4: Update DB balance
+      await fetch("/api/agent/fund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usdcAmount: amount }),
       });
-      if (res.ok) { setDepositAmount(""); fetchAll(); }
-    } catch { /* ignore */ }
-    finally { setDepositLoading(false); }
+
+      setDepositAmount("");
+      fetchAll();
+    } catch (err: any) {
+      alert(`Error: ${err?.message ?? "Unknown error"}`);
+    } finally {
+      setDepositLoading(false);
+    }
   }
 
   async function handleAccept(txId: string) {

@@ -4,6 +4,11 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import type { AgentFundResponse } from "@/lib/types";
 
+/**
+ * POST /api/agent/fund
+ * Called AFTER the wallet-signed transaction has been submitted on-chain.
+ * Queries the contract for the latest balance and syncs it to DB.
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -16,13 +21,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fund contract on-chain
-    const { txHash, newBalance } = await stellarService.fundContract(usdcAmount);
+    // Query actual on-chain balance (source of truth)
+    const { total } = await stellarService.getContractBalance();
 
-    // Update DB agent state
-    await databaseService.updateAgentCollateral(newBalance);
+    // Sync to DB
+    await databaseService.updateAgentCollateral(total);
 
-    const response: AgentFundResponse = { newBalance, stellarTxHash: txHash };
+    const response: AgentFundResponse = {
+      newBalance: total,
+      stellarTxHash: "", // already submitted by client
+    };
     return NextResponse.json(response);
   } catch (err) {
     return errorResponse(err);
