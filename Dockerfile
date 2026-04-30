@@ -10,16 +10,19 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+
+# Force cache invalidation on every build
+ARG CACHEBUST=1
+RUN echo "Cache bust: $CACHEBUST"
+
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Public build-time vars
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 
-# Dummy placeholders so Next.js build doesn't crash on missing env vars.
-# Real secrets are injected at RUNTIME by Railway — never baked into image.
+# Dummy placeholders — real values injected at runtime by Railway
 ENV DATABASE_URL="postgresql://x:x@x/x?sslmode=require"
 ENV ESCROW_CONTRACT_ID="CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 ENV AGENT_SECRET_KEY="SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -47,10 +50,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-# Railway sets PORT automatically — Next.js standalone reads it
 ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 3000
 
-# Use shell form so $PORT is expanded at runtime
-CMD node server.js
+CMD ["node", "server.js"]
