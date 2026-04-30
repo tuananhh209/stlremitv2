@@ -14,9 +14,10 @@ export interface RemittanceRecord {
   phpPayout: number;
   receiverName: string;
   receiverAccount: string;
+  receiverWallet: string | null;   // Stellar wallet of receiver
   status: RemittanceStatus;
-  createdAt: string; // ISO timestamp
-  expiresAt: string; // ISO timestamp
+  createdAt: string;
+  expiresAt: string;
   senderProofRef: string | null;
   agentProofRef: string | null;
   stellarTxHash: string | null;
@@ -34,6 +35,7 @@ export interface CreateRemittanceRequest {
   vndAmount: number;
   receiverName: string;
   receiverAccount: string;
+  receiverWallet?: string;   // optional Stellar wallet of receiver
 }
 
 export interface CreateRemittanceResponse {

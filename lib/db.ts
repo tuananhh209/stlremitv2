@@ -14,6 +14,7 @@ function rowToRecord(row: typeof remittanceRequests.$inferSelect): RemittanceRec
     phpPayout: Number(row.phpPayout),
     receiverName: row.receiverName,
     receiverAccount: row.receiverAccount,
+    receiverWallet: row.receiverWallet ?? null,
     status: row.status as RemittanceStatus,
     createdAt: row.createdAt.toISOString(),
     expiresAt: row.expiresAt.toISOString(),
@@ -32,6 +33,7 @@ export interface CreateRemittanceData {
   phpPayout: number;
   receiverName: string;
   receiverAccount: string;
+  receiverWallet?: string;
   stellarTxHash?: string;
 }
 
@@ -56,6 +58,7 @@ export const databaseService = {
         phpPayout: data.phpPayout.toString(),
         receiverName: data.receiverName,
         receiverAccount: data.receiverAccount,
+        receiverWallet: data.receiverWallet ?? null,
         status: data.status || "pending_agent",
         createdAt: now,
         expiresAt,

@@ -7,7 +7,7 @@ import { errorResponse } from "@/lib/api-helpers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { vndAmount, receiverName, receiverAccount } = body;
+    const { vndAmount, receiverName, receiverAccount, receiverWallet } = body;
 
     if (!vndAmount || typeof vndAmount !== "number" || vndAmount <= 0) {
       return NextResponse.json(
@@ -27,12 +27,16 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    if (!receiverWallet || typeof receiverWallet !== "string" || !receiverWallet.trim()) {
+      return NextResponse.json(
+        { error: "receiverWallet (Stellar address) is required", code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
 
     const { usdcEquivalent, phpPayout } = calculateAmounts(vndAmount);
     const txId = uuidv4();
 
-    // Create with status pending_agent — no USDC lock yet.
-    // USDC is locked when agent accepts via POST /api/remittance/[id]/accept
     const record = await databaseService.createRemittance({
       txId,
       vndAmount,
@@ -40,6 +44,7 @@ export async function POST(req: NextRequest) {
       phpPayout,
       receiverName: receiverName.trim(),
       receiverAccount: receiverAccount.trim(),
+      receiverWallet: receiverWallet.trim(),
       status: "pending_agent",
     });
 

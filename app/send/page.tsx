@@ -71,6 +71,7 @@ export default function SenderDashboard() {
   const [vndAmount, setVndAmount] = useState<string>("");
   const [receiverName, setReceiverName] = useState("");
   const [receiverAccount, setReceiverAccount] = useState("");
+  const [receiverWallet, setReceiverWallet] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,14 +162,14 @@ export default function SenderDashboard() {
   };
 
   const handleStartRemittance = async () => {
-    if (!amounts || !receiverName || !receiverAccount) return;
+    if (!amounts || !receiverName || !receiverAccount || !receiverWallet) return;
     setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/remittance/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vndAmount: parsedAmount, receiverName, receiverAccount }),
+        body: JSON.stringify({ vndAmount: parsedAmount, receiverName, receiverAccount, receiverWallet }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -327,8 +328,23 @@ export default function SenderDashboard() {
                           </div>
                         </div>
 
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Receiver Stellar Wallet</label>
+                          <div className="relative">
+                            <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                            <input
+                              type="text"
+                              value={receiverWallet}
+                              onChange={(e) => setReceiverWallet(e.target.value.trim())}
+                              placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-xs font-mono text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                            />
+                          </div>
+                          <p className="text-[10px] text-gray-400 ml-3">Ask receiver for their Stellar wallet address</p>
+                        </div>
+
                         <button
-                          disabled={!amounts || !receiverName || !receiverAccount || loading}
+                          disabled={!amounts || !receiverName || !receiverAccount || !receiverWallet || loading}
                           onClick={handleStartRemittance}
                           className="w-full btn-primary h-16 rounded-[24px] font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
                         >

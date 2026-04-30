@@ -24,6 +24,7 @@ export const remittanceRequests = pgTable("remittance_requests", {
   phpPayout: numeric("php_payout", { precision: 20, scale: 2 }).notNull(),
   receiverName: text("receiver_name").notNull(),
   receiverAccount: text("receiver_account").notNull(),
+  receiverWallet: text("receiver_wallet"),   // Stellar wallet address of receiver (for contract)
   status: remittanceStatusEnum("status").notNull().default("funded"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

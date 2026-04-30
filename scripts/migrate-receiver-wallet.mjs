@@ -1,0 +1,28 @@
+import { neon } from "@neondatabase/serverless";
+import { readFileSync } from "fs";
+
+const envContent = readFileSync(".env.local", "utf-8");
+const dbUrl = envContent.split("\n").find(l => l.startsWith("DATABASE_URL="))?.replace("DATABASE_URL=", "").trim();
+if (!dbUrl) { console.error("DATABASE_URL not found"); process.exit(1); }
+
+const sql = neon(dbUrl);
+
+async function run(label, query) {
+  try {
+    await sql.query(query);
+    console.log("✓", label);
+  } catch (err) {
+    if (err.message.includes("already exists") || err.message.includes("duplicate")) {
+      console.log("~ already exists:", label);
+    } else {
+      console.error("✗", label, "→", err.message);
+    }
+  }
+}
+
+await run(
+  "Add receiver_wallet column to remittance_requests",
+  `ALTER TABLE remittance_requests ADD COLUMN IF NOT EXISTS receiver_wallet text`
+);
+
+console.log("\nMigration complete!");
