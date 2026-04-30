@@ -3,6 +3,8 @@ import { stellarService } from "@/lib/stellar";
 import { errorResponse } from "@/lib/api-helpers";
 import type { AgentBalanceResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const { total, available } = await stellarService.getContractBalance();

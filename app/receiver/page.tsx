@@ -67,7 +67,7 @@ export default function ReceiverDashboard() {
 
   useEffect(() => {
     fetchAll();
-    pollingRef.current = setInterval(fetchAll, 5000);
+    pollingRef.current = setInterval(fetchAll, 2000);
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [fetchAll]);
 

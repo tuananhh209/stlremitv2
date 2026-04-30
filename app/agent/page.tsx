@@ -136,6 +136,14 @@ export default function AgentDashboard() {
     } catch { /* ignore */ }
   }, []);
 
+  // Trigger timeout check every 30s to auto-refund expired transactions
+  useEffect(() => {
+    const checkTimeouts = () => fetch("/api/cron/check-timeouts", { method: "POST" }).catch(() => {});
+    checkTimeouts(); // run immediately on mount
+    const id = setInterval(checkTimeouts, 30000);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     fetchAll();
     // Poll every 2s for near-realtime updates

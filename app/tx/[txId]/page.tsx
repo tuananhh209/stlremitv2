@@ -115,8 +115,16 @@ export default function TransactionStatusPage() {
   useEffect(() => {
     fetchRecord();
     fetchAgentBank();
-    pollingRef.current = setInterval(fetchRecord, 3000);
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+    pollingRef.current = setInterval(fetchRecord, 2000);
+
+    // Re-fetch immediately when tab becomes visible
+    const onVisible = () => { if (document.visibilityState === "visible") fetchRecord(); };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchRecord, fetchAgentBank]);
 
   useEffect(() => {
@@ -124,6 +132,13 @@ export default function TransactionStatusPage() {
       timerRef.current = setInterval(() => setTimeRemaining(p => Math.max(0, p - 1)), 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [record?.status, timeRemaining]);
+
+  // When timer hits 0 on funded status → trigger refund immediately
+  useEffect(() => {
+    if (record?.status === "funded" && timeRemaining === 0) {
+      fetch("/api/cron/check-timeouts", { method: "POST" }).catch(() => {});
+    }
   }, [record?.status, timeRemaining]);
 
   const handleUploadProof = async (e: React.FormEvent) => {
