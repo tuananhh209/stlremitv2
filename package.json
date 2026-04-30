@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -p ${PORT:-3000}",
+    "start": "node server.js",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
