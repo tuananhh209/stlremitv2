@@ -62,7 +62,7 @@ export const databaseService = {
         status: data.status || "pending_agent",
         createdAt: now,
         expiresAt,
-        stellarTxHash: data.stellarTxHash ?? null,
+        ...(data.stellarTxHash ? { stellarTxHash: data.stellarTxHash } : {}),
       })
       .returning();
 

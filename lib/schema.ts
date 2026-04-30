@@ -24,7 +24,6 @@ export const remittanceRequests = pgTable("remittance_requests", {
   phpPayout: numeric("php_payout", { precision: 20, scale: 2 }).notNull(),
   receiverName: text("receiver_name").notNull(),
   receiverAccount: text("receiver_account").notNull(),
-  receiverWallet: text("receiver_wallet"),   // Stellar wallet address of receiver (for contract)
   status: remittanceStatusEnum("status").notNull().default("funded"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -33,6 +32,8 @@ export const remittanceRequests = pgTable("remittance_requests", {
   senderProofRef: text("sender_proof_ref"),
   agentProofRef: text("agent_proof_ref"),
   stellarTxHash: text("stellar_tx_hash"),
+  // Added via ALTER TABLE — must be last to match DB column order
+  receiverWallet: text("receiver_wallet"),
 });
 
 export const agentState = pgTable("agent_state", {

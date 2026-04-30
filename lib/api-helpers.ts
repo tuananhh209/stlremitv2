@@ -78,6 +78,7 @@ export function errorResponse(
   // Generic error
   const message =
     error instanceof Error ? error.message : "Internal server error";
+  console.error("[errorResponse] Unhandled error:", error);
   return NextResponse.json(
     { error: message, code: "STELLAR_ERROR" },
     { status: 500 }
