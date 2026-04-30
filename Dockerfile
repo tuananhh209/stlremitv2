@@ -13,12 +13,31 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build args for env vars needed at build time (public vars only)
+# Build-time env vars (passed from Railway as build args)
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+
+# Provide dummy values for server-side vars so Next.js build doesn't crash.
+# Real values are injected at runtime via Railway environment variables.
+ARG DATABASE_URL="postgresql://placeholder:placeholder@placeholder/placeholder"
+ARG ESCROW_CONTRACT_ID="CPLACEHOLDER"
+ARG AGENT_SECRET_KEY="SPLACEHOLDER"
+ARG AGENT_PUBLIC_KEY="GPLACEHOLDER"
+ARG CLOUDINARY_CLOUD_NAME="placeholder"
+ARG CLOUDINARY_API_KEY="placeholder"
+ARG CLOUDINARY_API_SECRET="placeholder"
+ARG USDC_TOKEN_ID="CPLACEHOLDER"
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV ESCROW_CONTRACT_ID=${ESCROW_CONTRACT_ID}
+ENV AGENT_SECRET_KEY=${AGENT_SECRET_KEY}
+ENV AGENT_PUBLIC_KEY=${AGENT_PUBLIC_KEY}
+ENV CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+ENV CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+ENV CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+ENV USDC_TOKEN_ID=${USDC_TOKEN_ID}
 
 RUN npm run build
 
@@ -29,18 +48,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy standalone build output
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-# Railway injects PORT automatically
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
