@@ -230,19 +230,35 @@ export class StellarService {
 
   async buildFundTx(publicKey: string, usdcAmount: number): Promise<string> {
     const amount = toContractAmount(usdcAmount);
-    const args = [
-      new Address(publicKey).toScVal(),
-      nativeToScVal(amount, { type: "i128" }),
-    ];
-
     const account = await this.server.getAccount(publicKey);
-    const contract = new Contract(this.contractId);
+    const escrowContract = new Contract(this.contractId);
+    const usdcContract = new Contract(STELLAR_CONFIG.USDC_TOKEN_ID);
 
+    // Build tx with 2 operations:
+    // 1. approve: agent allows escrow contract to spend USDC (token.approve)
+    // 2. fund: escrow contract pulls USDC from agent
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
       networkPassphrase: Networks.TESTNET,
     })
-      .addOperation(contract.call("fund", ...args))
+      // op1: approve escrow to spend `amount` USDC
+      .addOperation(
+        usdcContract.call(
+          "approve",
+          new Address(publicKey).toScVal(),           // from (agent)
+          new Address(this.contractId).toScVal(),     // spender (escrow)
+          nativeToScVal(amount, { type: "i128" }),    // amount
+          nativeToScVal(535680, { type: "u32" }),     // expiration_ledger (~30 days)
+        )
+      )
+      // op2: fund escrow (escrow will transfer from agent)
+      .addOperation(
+        escrowContract.call(
+          "fund",
+          new Address(publicKey).toScVal(),
+          nativeToScVal(amount, { type: "i128" }),
+        )
+      )
       .setTimeout(30)
       .build();
 
