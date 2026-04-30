@@ -128,8 +128,8 @@ export default function AgentDashboard() {
   const fetchAll = useCallback(async () => {
     try {
       const [rRes, bRes] = await Promise.all([
-        fetch("/api/remittance"),
-        fetch("/api/agent/balance"),
+        fetch("/api/remittance", { cache: "no-store" }),
+        fetch("/api/agent/balance", { cache: "no-store" }),
       ]);
       if (rRes.ok) { const d = await rRes.json(); setRemittances(d.remittances ?? []); }
       if (bRes.ok) { const d = await bRes.json(); setBalance(d); }
@@ -138,8 +138,17 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     fetchAll();
-    const id = setInterval(fetchAll, 4000);
-    return () => clearInterval(id);
+    // Poll every 2s for near-realtime updates
+    const id = setInterval(fetchAll, 2000);
+
+    // Also re-fetch immediately when tab becomes visible
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAll(); };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchAll]);
 
   // Load profile when settings tab opens
@@ -428,7 +437,10 @@ export default function AgentDashboard() {
                 <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 py-32 flex flex-col items-center gap-4 text-gray-200">
                   <Inbox className="w-16 h-16" />
                   <p className="font-bold text-gray-400 text-lg">No pending requests</p>
-                  <p className="text-sm text-gray-300">New sender requests will appear here</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-300 font-medium">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Listening for new requests...
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
