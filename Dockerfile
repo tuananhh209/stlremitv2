@@ -2,7 +2,6 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
 COPY package.json package-lock.json ./
 RUN npm ci --frozen-lockfile
 
@@ -15,29 +14,20 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build-time env vars (passed from Railway as build args)
+# Public build-time vars
 ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 
-# Provide dummy values for server-side vars so Next.js build doesn't crash.
-# Real values are injected at runtime via Railway environment variables.
-ARG DATABASE_URL="postgresql://placeholder:placeholder@placeholder/placeholder"
-ARG ESCROW_CONTRACT_ID="CPLACEHOLDER"
-ARG AGENT_SECRET_KEY="SPLACEHOLDER"
-ARG AGENT_PUBLIC_KEY="GPLACEHOLDER"
-ARG CLOUDINARY_CLOUD_NAME="placeholder"
-ARG CLOUDINARY_API_KEY="placeholder"
-ARG CLOUDINARY_API_SECRET="placeholder"
-ARG USDC_TOKEN_ID="CPLACEHOLDER"
-
-ENV DATABASE_URL=${DATABASE_URL}
-ENV ESCROW_CONTRACT_ID=${ESCROW_CONTRACT_ID}
-ENV AGENT_SECRET_KEY=${AGENT_SECRET_KEY}
-ENV AGENT_PUBLIC_KEY=${AGENT_PUBLIC_KEY}
-ENV CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-ENV CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-ENV CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
-ENV USDC_TOKEN_ID=${USDC_TOKEN_ID}
+# Dummy placeholders so Next.js build doesn't crash on missing env vars.
+# Real secrets are injected at RUNTIME by Railway — never baked into image.
+ENV DATABASE_URL="postgresql://x:x@x/x?sslmode=require"
+ENV ESCROW_CONTRACT_ID="CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+ENV AGENT_SECRET_KEY="SAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+ENV AGENT_PUBLIC_KEY="GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+ENV CLOUDINARY_CLOUD_NAME="placeholder"
+ENV CLOUDINARY_API_KEY="000000000000000"
+ENV CLOUDINARY_API_SECRET="placeholder"
+ENV USDC_TOKEN_ID="CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
 RUN npm run build
 
@@ -57,9 +47,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-ENV PORT=3000
+# Railway sets PORT automatically — Next.js standalone reads it
 ENV HOSTNAME="0.0.0.0"
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+# Use shell form so $PORT is expanded at runtime
+CMD node server.js
