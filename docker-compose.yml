@@ -3,16 +3,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: stl-remit-app
-    restart: always
+      args:
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    container_name: stl-remit
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
-      - NEXT_PUBLIC_STELLAR_NETWORK=${NEXT_PUBLIC_STELLAR_NETWORK}
-      - STELLAR_AGENT_SECRET_KEY=${STELLAR_AGENT_SECRET_KEY}
       - ESCROW_CONTRACT_ID=${ESCROW_CONTRACT_ID}
+      - AGENT_SECRET_KEY=${AGENT_SECRET_KEY}
+      - AGENT_PUBLIC_KEY=${AGENT_PUBLIC_KEY}
+      - USDC_TOKEN_ID=${USDC_TOKEN_ID}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

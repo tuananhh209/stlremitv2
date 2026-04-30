@@ -30,14 +30,16 @@ export async function GET() {
     }
 
     // DB queries are fast (Neon HTTP)
-    const [reserved] = await Promise.all([
+    const [reserved, historicalVolume] = await Promise.all([
       databaseService.getReservedUsdc(),
+      databaseService.getHistoricalVolume(),
     ]);
 
     const response: AgentBalanceResponse = {
       totalCollateral: total,
       reservedUsdc: reserved,
       availableUsdc: Math.max(0, total - reserved),
+      historicalVolume,
     };
     return NextResponse.json(response, {
       headers: { "Cache-Control": "no-store" },
