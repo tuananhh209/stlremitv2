@@ -32,7 +32,7 @@ export async function POST(
     const record = await databaseService.getRemittance(txId);
     if (!record) throw new NotFoundError(txId);
 
-    if (record.status !== "processing") {
+    if (record.status !== "processing" && record.status !== "payout_submitted") {
       throw new InvalidStatusTransitionError(txId, record.status, "receiver-confirm");
     }
 
