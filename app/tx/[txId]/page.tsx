@@ -40,6 +40,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; desc: string
     desc: "Agent is transferring PHP to the receiver.",
     icon: Zap,
   },
+  payout_submitted: {
+    label: "Awaiting Receiver Confirm",
+    color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+    desc: "Agent has submitted payout proof. Waiting for receiver to acknowledge.",
+    icon: ShieldCheck,
+  },
   completed: {
     label: "Transfer Completed",
     color: "text-emerald-600 bg-emerald-50 border-emerald-100",
@@ -55,6 +61,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; desc: string
 };
 
 function getSteps(status: string) {
+  const isExpired = status === "expired";
+  
   return [
     { label: "Requested", done: true },
     { 
@@ -63,8 +71,17 @@ function getSteps(status: string) {
       done: !["pending_agent", "cancelled"].includes(status),
       cancelled: status === "cancelled"
     },
-    { label: "Pay VND", active: status === "funded", done: !["pending_agent", "funded", "cancelled"].includes(status) },
-    { label: "PHP Payout", active: status === "processing", done: status === "completed" },
+    { 
+      label: "Pay VND", 
+      active: status === "funded", 
+      done: !["pending_agent", "funded", "cancelled", "expired"].includes(status),
+    },
+    { 
+      label: "PHP Payout", 
+      active: ["processing", "payout_submitted"].includes(status), 
+      done: status === "completed",
+      expired: isExpired // Show the failure at Phase 4 as requested
+    },
     { label: "Done", done: status === "completed" },
   ];
 }
@@ -114,7 +131,7 @@ export default function TransactionStatusPage() {
       if (!res.ok) return;
       const data: RemittanceRecord = await res.json();
       setRecord(data);
-      if (data.status === "funded") {
+      if (data.status === "funded" || data.status === "processing") {
         const diff = Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000));
         setTimeRemaining(diff);
       }
@@ -140,7 +157,7 @@ export default function TransactionStatusPage() {
   }, [fetchRecord, fetchAgentBank]);
 
   useEffect(() => {
-    if (record?.status === "funded" && timeRemaining > 0) {
+    if ((record?.status === "funded" || record?.status === "processing") && timeRemaining > 0) {
       timerRef.current = setInterval(() => setTimeRemaining(p => Math.max(0, p - 1)), 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
@@ -148,7 +165,7 @@ export default function TransactionStatusPage() {
 
   // When timer hits 0 on funded status → trigger refund immediately
   useEffect(() => {
-    if (record?.status === "funded" && timeRemaining === 0) {
+    if ((record?.status === "funded" || record?.status === "processing") && timeRemaining === 0) {
       fetch("/api/cron/check-timeouts", { method: "POST" }).catch(() => {});
     }
   }, [record?.status, timeRemaining]);
@@ -251,14 +268,14 @@ export default function TransactionStatusPage() {
               <div key={idx} className="flex flex-col items-center gap-3 relative z-10">
                 <div className={cn(
                   "w-12 h-12 rounded-[18px] flex items-center justify-center border-2 transition-all duration-500",
-                  s.cancelled ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-100" :
+                  s.cancelled || s.expired ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-100" :
                   s.done ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100" :
                   s.active ? "bg-primary border-primary text-white shadow-xl shadow-primary/20 scale-110" :
                   "bg-white border-gray-100 text-gray-300"
                 )}>
-                  {s.cancelled ? <XCircle className="w-6 h-6" /> : s.done ? <CheckCircle2 className="w-6 h-6" /> : <span className="font-bold text-sm">{idx + 1}</span>}
+                  {s.cancelled || s.expired ? <XCircle className="w-6 h-6" /> : s.done ? <CheckCircle2 className="w-6 h-6" /> : <span className="font-bold text-sm">{idx + 1}</span>}
                 </div>
-                <span className={cn("text-[10px] font-bold uppercase tracking-widest", s.cancelled ? "text-red-500" : (s.done || s.active) ? "text-gray-900" : "text-gray-200")}>{s.label}</span>
+                <span className={cn("text-[10px] font-bold uppercase tracking-widest", (s.cancelled || s.expired) ? "text-red-500" : (s.done || s.active) ? "text-gray-900" : "text-gray-200")}>{s.label}</span>
               </div>
             ))}
           </div>
@@ -503,6 +520,35 @@ export default function TransactionStatusPage() {
                   <div className="space-y-3">
                     <h4 className="text-3xl font-bold tracking-tight">Processing PHP Payout</h4>
                     <p className="text-white/70 max-w-sm text-lg">Agent has received your VND and is transferring <b>{record.phpPayout.toFixed(2)} PHP</b> to the recipient.</p>
+                  </div>
+                  
+                  {/* Phase 4 Timer */}
+                  <div className="flex items-center gap-4 bg-white/10 px-8 py-4 rounded-3xl border border-white/20 backdrop-blur-md">
+                    <Clock className={cn("w-6 h-6", timeRemaining < 60 ? "text-red-300 animate-pulse" : "text-blue-200 animate-pulse")} />
+                    <span className={cn("text-4xl font-mono font-bold tracking-tight", timeRemaining < 60 ? "text-red-200" : "text-white")}>
+                      {Math.floor(timeRemaining / 60)}:{String(timeRemaining % 60).padStart(2, "0")}
+                    </span>
+                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Time Left for Agent</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 4.5. payout_submitted */}
+            {record.status === "payout_submitted" && (
+              <div className="pt-8 border-t border-dashed border-outline/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-indigo-600 p-12 rounded-[48px] text-white flex flex-col items-center text-center gap-8 shadow-2xl shadow-indigo-100 relative overflow-hidden">
+                  <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-white/10 rounded-full blur-[100px]" />
+                  <div className="w-24 h-24 bg-white/20 rounded-[32px] flex items-center justify-center relative backdrop-blur-md border border-white/20">
+                    <ShieldCheck className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="text-3xl font-bold tracking-tight">Payout Submitted</h4>
+                    <p className="text-white/70 max-w-sm text-lg">Agent has submitted proof of transfer. Waiting for the receiver to confirm receipt to finalize the transaction.</p>
+                  </div>
+                  
+                  <div className="w-full max-w-xs h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-white/40 animate-[loading_2s_ease-in-out_infinite]" style={{ width: '40%' }} />
                   </div>
                 </div>
               </div>

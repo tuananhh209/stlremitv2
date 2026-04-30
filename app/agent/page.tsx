@@ -32,6 +32,8 @@ import {
   Save,
   Loader2,
   QrCode,
+  X,
+  Banknote,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -77,7 +79,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   pending_agent: { label: "Awaiting Accept", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
   cancelled:     { label: "Cancelled",       color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
   funded:        { label: "Waiting VND",     color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
-  processing:    { label: "Pay PHP Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: TrendingUp },
+  processing:    { label: "Pay PHP Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: Zap },
+  payout_submitted: { label: "Wait Receiver", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
   completed:     { label: "Completed",       color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
   expired:       { label: "Expired",         color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
 };
@@ -106,26 +109,25 @@ export default function AgentDashboard() {
       router.replace("/");
     }
   }, [role, router]);
-  const [recentRemittances, setRecentRemittances] = useState<RemittanceRecord[]>(() => {
-    if (typeof window === "undefined") return [];
-    try { return JSON.parse(localStorage.getItem("stl_recent") ?? "[]"); } catch { return []; }
-  });
-  const [allRemittances, setAllRemittances] = useState<RemittanceRecord[]>(() => {
-    if (typeof window === "undefined") return [];
-    try { return JSON.parse(localStorage.getItem("stl_history") ?? "[]"); } catch { return []; }
-  });
-  const [balance, setBalance] = useState<AgentBalanceResponse | null>(() => {
-    if (typeof window === "undefined") return null;
-    try { return JSON.parse(localStorage.getItem("stl_balance") ?? "null"); } catch { return null; }
-  });
-  const [activityLoading, setActivityLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !localStorage.getItem("stl_recent");
-  });
-  const [historyLoading, setHistoryLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !localStorage.getItem("stl_history");
-  });
+  const [recentRemittances, setRecentRemittances] = useState<RemittanceRecord[]>([]);
+  const [allRemittances, setAllRemittances] = useState<RemittanceRecord[]>([]);
+  const [balance, setBalance] = useState<AgentBalanceResponse | null>(null);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  // Load cache on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const r = localStorage.getItem("stl_recent");
+        const h = localStorage.getItem("stl_history");
+        const b = localStorage.getItem("stl_balance");
+        if (r) { setRecentRemittances(JSON.parse(r)); setActivityLoading(false); }
+        if (h) { setAllRemittances(JSON.parse(h)); setHistoryLoading(false); }
+        if (b) setBalance(JSON.parse(b));
+      } catch (e) { console.error("Cache load error", e); }
+    }
+  }, []);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -143,6 +145,14 @@ export default function AgentDashboard() {
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
+  
+  // Payout Modal State
+  const [payoutTx, setPayoutTx] = useState<RemittanceRecord | null>(null);
+  const [payoutProofUrl, setPayoutProofUrl] = useState<string | null>(null);
+  const [payoutLoading, setPayoutLoading] = useState(false);
+  const [receiverProfile, setReceiverProfile] = useState<any | null>(null);
+  const [loadingReceiver, setLoadingReceiver] = useState(false);
+
   const AGENT_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
 
   const fetchBalance = useCallback(async () => {
@@ -168,7 +178,7 @@ export default function AgentDashboard() {
     finally { setActivityLoading(false); }
   }, []);
 
-  const fetchAllHistory = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     try {
       const res = await fetch("/api/remittance", { cache: "no-store" });
       if (res.ok) {
@@ -197,8 +207,8 @@ export default function AgentDashboard() {
     const aId = setInterval(fetchRecentActivity, 5000);
 
     // Fetch history less frequently or when tab is active
-    const hId = setInterval(fetchAllHistory, 15000);
-    fetchAllHistory();
+    const hId = setInterval(fetchAll, 15000);
+    fetchAll();
 
     const onVisible = () => { 
       if (document.visibilityState === "visible") {
@@ -214,7 +224,7 @@ export default function AgentDashboard() {
       clearInterval(hId);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [fetchBalance, fetchRecentActivity, fetchAllHistory]);
+  }, [fetchBalance, fetchRecentActivity, fetchAll]);
 
   // Load profile when settings tab opens
   useEffect(() => {
@@ -371,17 +381,46 @@ export default function AgentDashboard() {
     }
   }
 
-  async function handleConfirmPayout(txId: string) {
-    setConfirmingId(txId);
+  async function handleConfirmPayout(tx: RemittanceRecord) {
+    setPayoutTx(tx);
+    setPayoutProofUrl(null);
+    setReceiverProfile(null);
+    
+    if (tx.receiverWallet) {
+      setLoadingReceiver(true);
+      fetch(`/api/profile?wallet=${tx.receiverWallet}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => setReceiverProfile(data))
+        .catch(() => {})
+        .finally(() => setLoadingReceiver(false));
+    }
+  }
+
+  async function handleSubmitPayout() {
+    if (!payoutTx || !payoutProofUrl) return;
+    setPayoutLoading(true);
     try {
-      const res = await fetch(`/api/remittance/${txId}/confirm`, { method: "POST" });
-      if (res.ok) fetchAll();
-    } catch { /* ignore */ }
-    finally { setConfirmingId(null); }
+      const res = await fetch(`/api/remittance/${payoutTx.txId}/payout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentProofRef: payoutProofUrl }),
+      });
+      if (res.ok) {
+        setPayoutTx(null);
+        fetchAll();
+      } else {
+        const d = await res.json();
+        alert(d.error ?? "Failed to submit payout");
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setPayoutLoading(false);
+    }
   }
 
   const pendingRequests  = allRemittances.filter(r => r.status === "pending_agent");
-  const activeRemittances = allRemittances.filter(r => r.status === "funded" || r.status === "processing");
+  const activeRemittances = allRemittances.filter(r => ["funded", "processing", "payout_submitted"].includes(r.status));
   const historyRemittances = allRemittances.filter(r => r.status === "completed" || r.status === "expired");
 
   const navItems: { id: NavTab; label: string; icon: any; badge?: number }[] = [
@@ -600,14 +639,10 @@ export default function AgentDashboard() {
                         <td className="px-10 py-6 text-right">
                           {r.status === "processing" ? (
                             <button
-                              onClick={() => handleConfirmPayout(r.txId)}
-                              disabled={confirmingId === r.txId}
-                              className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto disabled:opacity-50"
+                              onClick={() => handleConfirmPayout(r)}
+                              className="btn-primary px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto hover:scale-105 transition-all"
                             >
-                              {confirmingId === r.txId
-                                ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                : <Zap className="w-3.5 h-3.5" />}
-                              Confirm Payout
+                              <Zap className="w-3.5 h-3.5" /> Confirm Payout
                             </button>
                           ) : (
                             <button
@@ -846,6 +881,99 @@ export default function AgentDashboard() {
 
         </div>
       </div>
+
+      {/* ── PAYOUT MODAL ── */}
+      {payoutTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+            {/* Modal Header */}
+            <div className="p-8 border-b border-outline/5 flex items-center justify-between bg-gray-50/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                  <Banknote className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Confirm PHP Payout</h3>
+                  <p className="text-[10px] text-gray-400 font-mono tracking-wider">{payoutTx.txId}</p>
+                </div>
+              </div>
+              <button onClick={() => setPayoutTx(null)} className="p-3 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-10 space-y-10 overflow-y-auto max-h-[75vh]">
+              
+              {/* Receiver Account Section */}
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Receiver Destination
+                </h4>
+                <div className="bg-emerald-50/50 rounded-[32px] p-8 border border-emerald-100/30 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Payout Amount</p>
+                      <p className="text-3xl font-bold text-emerald-700">{payoutTx.phpPayout.toLocaleString()} PHP</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Receiver Name</p>
+                      <p className="text-lg font-bold text-emerald-900">{payoutTx.receiverName}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 bg-white/50 rounded-2xl p-6 border border-emerald-100/20">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bank / Account</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {loadingReceiver ? "Loading..." : receiverProfile?.bankName || "See Account No."}
+                      </p>
+                      <p className="text-lg font-mono font-bold text-indigo-600 mt-1">{payoutTx.receiverAccount}</p>
+                    </div>
+                    {receiverProfile?.accountHolder && (
+                      <div className="space-y-1 pt-2 border-t border-emerald-100/30">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Holder Name</p>
+                        <p className="text-xs font-bold text-gray-700">{receiverProfile.accountHolder}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Proof */}
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Payment Proof
+                </h4>
+                <div className="bg-gray-50 rounded-[32px] p-8 border border-outline/5">
+                  <QrUpload 
+                    currentUrl={payoutProofUrl}
+                    walletAddress={address!}
+                    field="agent_proof"
+                    label="Upload Transfer Receipt"
+                    onUploaded={(url) => setPayoutProofUrl(url || null)}
+                  />
+                  <p className="text-[10px] text-gray-400 text-center mt-6 uppercase tracking-wider font-medium">
+                    Upload a screenshot of your PHP transfer confirmation
+                  </p>
+                </div>
+              </div>
+
+              {/* Confirm Action */}
+              <button
+                disabled={!payoutProofUrl || payoutLoading}
+                onClick={handleSubmitPayout}
+                className="w-full h-20 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[28px] font-bold text-lg shadow-2xl shadow-indigo-100 flex items-center justify-center gap-4 transition-all disabled:opacity-50 disabled:grayscale"
+              >
+                {payoutLoading ? (
+                  <><Loader2 className="w-6 h-6 animate-spin" /> Updating Status...</>
+                ) : (
+                  <><CheckCircle2 className="w-6 h-6" /> Confirm Payout Sent</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

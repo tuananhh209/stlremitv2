@@ -1,4 +1,4 @@
-import { eq, lt, and, desc } from "drizzle-orm";
+import { eq, lt, and, desc, inArray, lte } from "drizzle-orm";
 import { db } from "./db-client";
 import { remittanceRequests, agentState, userProfiles } from "./schema";
 import type { RemittanceRecord, RemittanceStatus } from "./types";
@@ -132,10 +132,13 @@ export const databaseService = {
   /**
    * Update status of a remittance.
    */
-  async updateStatus(txId: string, status: RemittanceStatus): Promise<void> {
+  async updateStatus(txId: string, status: RemittanceStatus, expiresAt?: Date): Promise<void> {
     await db
       .update(remittanceRequests)
-      .set({ status })
+      .set({ 
+        status,
+        ...(expiresAt ? { expiresAt } : {})
+      })
       .where(eq(remittanceRequests.txId, txId));
   },
 
@@ -172,15 +175,15 @@ export const databaseService = {
   /**
    * Get all "funded" remittances whose 5-min window has expired (for cron refund job).
    */
-  async getExpiredFundedRemittances(): Promise<RemittanceRecord[]> {
+  async getExpiredActiveRemittances(): Promise<RemittanceRecord[]> {
     const now = new Date();
     const rows = await db
       .select()
       .from(remittanceRequests)
       .where(
         and(
-          eq(remittanceRequests.status, "funded"),
-          lt(remittanceRequests.expiresAt, now)
+          inArray(remittanceRequests.status, ["funded", "processing"]),
+          lte(remittanceRequests.expiresAt, now)
         )
       );
     return rows.map(rowToRecord);
@@ -254,21 +257,10 @@ export const databaseService = {
       .select({ usdc: remittanceRequests.usdcEquivalent })
       .from(remittanceRequests)
       .where(
-        and(
-          eq(remittanceRequests.status, "funded"),
-          // also include processing if it's still locked in contract
-          // (depending on contract logic, it's released on completion)
-        )
+        inArray(remittanceRequests.status, ["funded", "processing", "payout_submitted"])
       );
     
-    // Also check processing
-    const processingRows = await db
-      .select({ usdc: remittanceRequests.usdcEquivalent })
-      .from(remittanceRequests)
-      .where(eq(remittanceRequests.status, "processing"));
-
-    const allActive = [...rows, ...processingRows];
-    return allActive.reduce((sum, r) => sum + Number(r.usdc), 0);
+    return rows.reduce((sum, r) => sum + Number(r.usdc), 0);
   },
 
   /**

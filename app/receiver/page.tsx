@@ -20,9 +20,10 @@ function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   pending_agent: { label: "Waiting Agent",  color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
-  funded:        { label: "Pending VND",    color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
-  processing:    { label: "Pay PHP Now",    color: "text-blue-600 bg-blue-50 border-blue-100",      icon: TrendingUp },
-  completed:     { label: "Completed",      color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
+  funded:           { label: "Pending VND",    color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
+  processing:       { label: "Agent Paying",   color: "text-blue-600 bg-blue-50 border-blue-100",      icon: TrendingUp },
+  payout_submitted: { label: "Confirm Now",    color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
+  completed:        { label: "Completed",      color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
   expired:       { label: "Expired",        color: "text-gray-500 bg-gray-50 border-gray-100",      icon: AlertCircle },
   cancelled:     { label: "Cancelled",      color: "text-red-500 bg-red-50 border-red-100",        icon: X },
 };
@@ -690,8 +691,29 @@ export default function ReceiverDashboard() {
                 </div>
               </div>
 
+              {/* Payout Proof Section */}
+              {selectedTx.agentProofRef && (
+                <div className="space-y-6">
+                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Agent Payment Proof
+                  </h4>
+                  <div className="bg-gray-50 p-6 rounded-3xl border border-outline/5">
+                    <p className="text-xs text-gray-500 mb-4 font-medium">The agent has uploaded this receipt of your PHP transfer:</p>
+                    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-outline/10 bg-white group">
+                      <img 
+                        src={selectedTx.agentProofRef} 
+                        alt="Payment Proof" 
+                        className="w-full h-full object-contain cursor-zoom-in transition-transform duration-500 group-hover:scale-105" 
+                        onClick={() => window.open(selectedTx.agentProofRef!, "_blank")}
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-3 text-center uppercase tracking-widest font-bold">Click image to expand</p>
+                  </div>
+                </div>
+              )}
+
               {/* Action */}
-              {selectedTx.status === "processing" && (
+              {selectedTx.status === "payout_submitted" && (
                 <div className="pt-4">
                   <button
                     onClick={() => handleReceiverConfirm(selectedTx.txId)}

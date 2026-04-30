@@ -5,7 +5,7 @@ import { stellarService } from "@/lib/stellar";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  const expired = await databaseService.getExpiredFundedRemittances();
+  const expired = await databaseService.getExpiredActiveRemittances();
   let processed = 0;
   const errors: string[] = [];
 

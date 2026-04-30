@@ -63,7 +63,10 @@ export async function POST(
     }
 
     await databaseService.updateSenderProof(txId, proofRef);
-    await databaseService.updateStatus(txId, "processing");
+    
+    // Set 5 mins for agent to payout PHP
+    const agentExpiry = new Date(Date.now() + 5 * 60 * 1000);
+    await databaseService.updateStatus(txId, "processing", agentExpiry);
 
     const response: MarkPaidResponse = { txId, status: "processing" };
     return NextResponse.json(response);

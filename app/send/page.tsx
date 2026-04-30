@@ -110,23 +110,26 @@ export default function SenderDashboard() {
 
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch("/api/agent/balance");
+      const res = await fetch("/api/agent/balance", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setAvailableUsdc(data.availableUsdc);
         setTotalCollateral(data.totalCollateral);
-        setReservedUsdc(data.reservedUsdc);
-        setHistoricalVolume(data.historicalVolume);
+        setReservedUsdc(data.reservedUsdc ?? 0);
+        setHistoricalVolume(data.historicalVolume ?? 0);
+        // Cache for instant display on next load
+        try { localStorage.setItem("stl_balance", JSON.stringify(data)); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
   }, []);
 
   const fetchRecentActivity = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance?limit=5");
+      const res = await fetch("/api/remittance?limit=5", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setRecentRemittances(data.remittances ?? []);
+        try { localStorage.setItem("stl_recent", JSON.stringify(data.remittances ?? [])); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
     finally { setActivityLoading(false); }
@@ -134,35 +137,38 @@ export default function SenderDashboard() {
 
   const fetchAllHistory = useCallback(async () => {
     try {
-      const res = await fetch("/api/remittance");
+      const res = await fetch("/api/remittance", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setAllRemittances(data.remittances ?? []);
+        try { localStorage.setItem("stl_history", JSON.stringify(data.remittances ?? [])); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
     finally { setHistoryLoading(false); }
   }, []);
 
-  // Poll balance frequently
+  // Balance: poll every 15s (Stellar RPC is slow, cached on server for 10s)
   useEffect(() => {
     fetchBalance();
-    const id = setInterval(fetchBalance, 3000);
+    const id = setInterval(fetchBalance, 15000);
     return () => clearInterval(id);
   }, [fetchBalance]);
 
-  // Poll recent activity frequently
+  // Recent activity: poll every 3s
   useEffect(() => {
     fetchRecentActivity();
-    const id = setInterval(fetchRecentActivity, 5000);
-    return () => clearInterval(id);
+    const id = setInterval(fetchRecentActivity, 3000);
+    const onVisible = () => { if (document.visibilityState === "visible") fetchRecentActivity(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible); };
   }, [fetchRecentActivity]);
 
-  // Load all history only when needed or less frequently
+  // History: load on demand + every 30s
   useEffect(() => {
     if (activeTab === "history" || activeTab === "overview") {
       fetchAllHistory();
     }
-    const id = setInterval(fetchAllHistory, 15000);
+    const id = setInterval(fetchAllHistory, 30000);
     return () => clearInterval(id);
   }, [fetchAllHistory, activeTab]);
 
@@ -307,10 +313,10 @@ export default function SenderDashboard() {
 
           {/* ── OVERVIEW TAB ── */}
           {activeTab === "overview" && isBankInfoComplete("sender") && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+            <div className="flex flex-col xl:flex-row gap-10">
               {/* Left: Form */}
-              <div className="xl:col-span-2 space-y-8">
-                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 lg:p-14">
+              <div className="flex-1 space-y-8">
+                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 lg:p-16">
                   <div className="space-y-12">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
@@ -322,7 +328,7 @@ export default function SenderDashboard() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div className="flex flex-col gap-12">
                       {/* Amount */}
                       <div className="space-y-8">
                         <div className="relative group">
@@ -334,9 +340,9 @@ export default function SenderDashboard() {
                             value={vndAmount}
                             onChange={(e) => setVndAmount(e.target.value)}
                             placeholder="0"
-                            className="w-full bg-gray-50 border-none rounded-[32px] px-7 pt-12 pb-7 text-4xl font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-gray-200"
+                            className="w-full bg-gray-50 border-none rounded-[40px] px-10 pt-20 pb-12 text-6xl font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-gray-200"
                           />
-                          <div className="absolute right-7 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-outline/5 font-bold text-sm">VND</div>
+                          <div className="absolute right-10 top-1/2 -translate-y-1/2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-outline/5 font-bold text-lg">VND</div>
                         </div>
 
                         {amounts && (
@@ -364,7 +370,7 @@ export default function SenderDashboard() {
                               value={receiverName}
                               onChange={(e) => setReceiverName(e.target.value)}
                               placeholder="Juan Dela Cruz"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-lg font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
                             />
                           </div>
                         </div>
@@ -377,7 +383,7 @@ export default function SenderDashboard() {
                               value={receiverAccount}
                               onChange={(e) => setReceiverAccount(e.target.value)}
                               placeholder="09XXXXXXXXX"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-lg font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
                             />
                           </div>
                         </div>
@@ -391,7 +397,7 @@ export default function SenderDashboard() {
                               value={receiverWallet}
                               onChange={(e) => setReceiverWallet(e.target.value.trim())}
                               placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-14 pr-6 py-4 text-xs font-mono text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
+                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-xs font-mono text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
                             />
                           </div>
                           <p className="text-[10px] text-gray-400 ml-3">Ask receiver for their Stellar wallet address</p>
@@ -441,7 +447,7 @@ export default function SenderDashboard() {
               </div>
 
               {/* Right: Recent activity */}
-              <div className="space-y-8">
+              <div className="xl:w-[450px] space-y-8">
                 <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-8">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-gray-900">Recent Activity</h3>

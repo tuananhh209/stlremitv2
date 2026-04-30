@@ -5,25 +5,22 @@ use soroban_sdk::{
     symbol_short, token, Address, Env, String,
 };
 
-// ── Data structures ──────────────────────────────────────────────────────────
 
 #[contracttype]
 #[derive(Clone, PartialEq, Debug)]
 pub enum TxStatus {
-    Funded,    // USDC locked by agent, waiting for sender VND payment
-    Completed, // Receiver confirmed → USDC released back to agent
-    Expired,   // Timeout → USDC returned to agent
-}
+    Funded,    
+    Completed, 
+    Expired,  
 
-/// One escrow record per remittance request.
 #[contracttype]
 #[derive(Clone)]
 pub struct TxRecord {
     pub amount: i128,
     pub created_at: u64,
     pub status: TxStatus,
-    pub agent: Address,    // who locked the USDC (gets it back on complete/expire)
-    pub receiver: Address, // who must confirm to release USDC
+    pub agent: Address,    
+    pub receiver: Address, 
 }
 
 #[contracttype]
@@ -32,7 +29,6 @@ pub enum DataKey {
     TxRecord(String),
 }
 
-// ── Errors ───────────────────────────────────────────────────────────────────
 
 #[contracterror]
 #[derive(Clone, Debug, PartialEq)]
@@ -46,8 +42,6 @@ pub enum ContractError {
     NotExpired         = 7,
 }
 
-// ── Contract ─────────────────────────────────────────────────────────────────
-
 const TIMEOUT_SECONDS: u64 = 300; // 5 minutes
 
 #[contract]
@@ -55,10 +49,9 @@ pub struct EscrowContract;
 
 #[contractimpl]
 impl EscrowContract {
-    // ── Setup ────────────────────────────────────────────────────────────────
 
-    /// Initialize with USDC token address. Called once on deploy.
-    /// No hardcoded agent — anyone can act as agent.
+    /// Initialize with USDC token addressCalled once on deploy.
+
     pub fn initialize(env: Env, usdc_token: Address) -> Result<(), ContractError> {
         if env.storage().instance().has(&DataKey::UsdcToken) {
             return Err(ContractError::AlreadyInitialized);
@@ -67,20 +60,13 @@ impl EscrowContract {
         Ok(())
     }
 
-    // ── Accept (any agent) ────────────────────────────────────────────────────
-
-    /// ANY wallet can act as agent by calling accept().
-    /// Locks `amount` USDC from caller's wallet into this contract.
-    /// The caller becomes the agent for this tx — they get USDC back on complete/expire.
-    ///
-    /// Single signature: caller signs this tx, Soroban captures nested
-    /// token.transfer auth automatically via require_auth().
+   
     pub fn accept(
         env: Env,
-        agent: Address,   // the wallet locking USDC (must sign this tx)
+        agent: Address,  
         tx_id: String,
         amount: i128,
-        receiver: Address, // who must confirm to release USDC
+        receiver: Address, 
     ) -> Result<(), ContractError> {
         agent.require_auth();
 
@@ -88,8 +74,6 @@ impl EscrowContract {
             return Err(ContractError::TxAlreadyProcessed);
         }
 
-        // Pull USDC from agent wallet → contract
-        // agent.require_auth() above covers the nested token.transfer call
         let usdc = Self::usdc_client(&env)?;
         usdc.transfer(&agent, &env.current_contract_address(), &amount);
 
@@ -110,11 +94,6 @@ impl EscrowContract {
         Ok(())
     }
 
-    // ── Receiver confirm ──────────────────────────────────────────────────────
-
-    /// Receiver confirms they received the PHP payout.
-    /// Releases locked USDC back to the agent who locked it.
-    /// Only the receiver address stored in TxRecord can call this.
     pub fn receiver_confirm(
         env: Env,
         tx_id: String,
@@ -122,11 +101,7 @@ impl EscrowContract {
     ) -> Result<i128, ContractError> {
         receiver.require_auth();
 
-        let mut record: TxRecord = env
-            .storage()
-            .persistent()
-            .get(&DataKey::TxRecord(tx_id.clone()))
-            .ok_or(ContractError::TxNotFound)?;
+        let mut record: TxRecord = env.storage().persistent().get(&DataKey::TxRecord(tx_id.clone())).ok_or(ContractError::TxNotFound)?;
 
         if record.status != TxStatus::Funded {
             return Err(ContractError::TxAlreadyProcessed);
@@ -141,31 +116,20 @@ impl EscrowContract {
             return Err(ContractError::Expired);
         }
 
-        // Release USDC: contract → agent (who originally locked it)
         let usdc = Self::usdc_client(&env)?;
         usdc.transfer(&env.current_contract_address(), &record.agent, &record.amount);
 
         record.status = TxStatus::Completed;
-        env.storage()
-            .persistent()
-            .set(&DataKey::TxRecord(tx_id.clone()), &record);
+        env.storage().persistent().set(&DataKey::TxRecord(tx_id.clone()), &record);
 
-        env.events()
-            .publish((symbol_short!("released"),), (tx_id, record.amount, record.agent));
+        env.events().publish((symbol_short!("released"),), (tx_id, record.amount, record.agent));
 
         Ok(record.amount)
     }
 
-    // ── Timeout refund ────────────────────────────────────────────────────────
 
-    /// Anyone can call refund after timeout.
-    /// Returns USDC to the agent who originally locked it.
     pub fn refund(env: Env, tx_id: String) -> Result<i128, ContractError> {
-        let mut record: TxRecord = env
-            .storage()
-            .persistent()
-            .get(&DataKey::TxRecord(tx_id.clone()))
-            .ok_or(ContractError::TxNotFound)?;
+        let mut record: TxRecord = env.storage().persistent().get(&DataKey::TxRecord(tx_id.clone())).ok_or(ContractError::TxNotFound)?;
 
         if record.status != TxStatus::Funded {
             return Err(ContractError::TxAlreadyProcessed);
@@ -181,19 +145,14 @@ impl EscrowContract {
         usdc.transfer(&env.current_contract_address(), &record.agent, &record.amount);
 
         record.status = TxStatus::Expired;
-        env.storage()
-            .persistent()
-            .set(&DataKey::TxRecord(tx_id.clone()), &record);
+        env.storage().persistent().set(&DataKey::TxRecord(tx_id.clone()), &record);
 
-        env.events()
-            .publish((symbol_short!("refund"),), (tx_id, record.amount, record.agent));
+        env.events().publish((symbol_short!("refund"),), (tx_id, record.amount, record.agent));
 
         Ok(record.amount)
     }
 
-    // ── Queries ───────────────────────────────────────────────────────────────
-
-    /// Total USDC currently locked in this contract.
+  
     pub fn get_balance(env: Env) -> i128 {
         if let Ok(usdc) = Self::usdc_client(&env) {
             usdc.balance(&env.current_contract_address())
@@ -224,8 +183,6 @@ impl EscrowContract {
             .ok_or(ContractError::NotInitialized)
     }
 
-    // ── Internal ──────────────────────────────────────────────────────────────
-
     fn usdc_client(env: &Env) -> Result<token::Client<'_>, ContractError> {
         let usdc_addr: Address = env
             .storage()
@@ -236,7 +193,6 @@ impl EscrowContract {
     }
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {
@@ -250,9 +206,9 @@ mod tests {
     fn setup() -> (
         Env,
         EscrowContractClient<'static>,
-        Address, // agent1
-        Address, // agent2 (different wallet — proves anyone can be agent)
-        Address, // receiver
+        Address, 
+        Address, 
+        Address,
         TokenClient<'static>,
     ) {
         let env = Env::default();
@@ -266,14 +222,12 @@ mod tests {
         let contract_id = env.register(EscrowContract, ());
         let client = EscrowContractClient::new(&env, &contract_id);
 
-        // No hardcoded agent — just initialize with USDC token
         client.initialize(&usdc_id.address());
 
         let agent1 = Address::generate(&env);
         let agent2 = Address::generate(&env);
         let receiver = Address::generate(&env);
 
-        // Mint USDC to both agents
         usdc_asset.mint(&agent1, &10_000_i128);
         usdc_asset.mint(&agent2, &10_000_i128);
 
@@ -284,17 +238,13 @@ mod tests {
     fn test_any_wallet_can_be_agent() {
         let (env, client, agent1, agent2, receiver, usdc) = setup();
 
-        // agent1 accepts tx1
         let tx1 = String::from_str(&env, "tx001");
         client.accept(&agent1, &tx1, &1000_i128, &receiver);
         assert_eq!(usdc.balance(&agent1), 9000);
 
-        // agent2 accepts tx2 — different wallet, same contract
         let tx2 = String::from_str(&env, "tx002");
         client.accept(&agent2, &tx2, &500_i128, &receiver);
         assert_eq!(usdc.balance(&agent2), 9500);
-
-        // Contract holds both
         assert_eq!(client.get_balance(), 1500);
     }
 
@@ -308,10 +258,10 @@ mod tests {
         let tx2 = String::from_str(&env, "tx002");
         client.accept(&agent2, &tx2, &500_i128, &receiver);
 
-        // Receiver confirms tx1 → USDC goes back to agent1
+
         client.receiver_confirm(&tx1, &receiver);
-        assert_eq!(usdc.balance(&agent1), 10_000); // agent1 gets back 1000
-        assert_eq!(usdc.balance(&agent2), 9500);   // agent2 unchanged
+        assert_eq!(usdc.balance(&agent1), 10_000); 
+        assert_eq!(usdc.balance(&agent2), 9500);   
 
         // Receiver confirms tx2 → USDC goes back to agent2
         client.receiver_confirm(&tx2, &receiver);
@@ -327,7 +277,7 @@ mod tests {
         env.ledger().with_mut(|l| { l.timestamp += TIMEOUT_SECONDS + 1; });
         client.refund(&tx_id);
 
-        assert_eq!(usdc.balance(&agent1), 10_000); // agent1 gets back
+        assert_eq!(usdc.balance(&agent1), 10_000);
         assert_eq!(client.get_balance(), 0);
     }
 

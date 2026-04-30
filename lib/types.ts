@@ -5,6 +5,7 @@ export type RemittanceStatus =
   | "cancelled"        // Sender cancelled before agent accepted
   | "funded"           // Agent accepted & locked USDC, waiting for sender to pay VND (5-min timer starts)
   | "processing"       // Sender uploaded VND proof, agent needs to pay PHP
+  | "payout_submitted" // Agent uploaded PHP proof, waiting for receiver to confirm
   | "completed"        // Agent confirmed PHP payout on-chain, USDC released
   | "expired";         // 5-min timer expired without sender paying, USDC unlocked
 
