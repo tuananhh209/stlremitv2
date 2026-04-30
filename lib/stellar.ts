@@ -56,7 +56,7 @@ function fromContractAmount(raw: bigint | number): number {
 
 export class StellarService {
   private server: StellarRpc.Server;
-  private agentKeypair: Keypair;
+  private _agentKeypair: Keypair | null = null;
   private contractId: string;
   private balanceCache: ContractBalance | null = null;
   private balanceCacheTime: number = 0;
@@ -65,8 +65,15 @@ export class StellarService {
     this.server = new StellarRpc.Server(STELLAR_CONFIG.RPC_URL, {
       allowHttp: false,
     });
-    this.agentKeypair = Keypair.fromSecret(STELLAR_CONFIG.AGENT_SECRET_KEY);
     this.contractId = STELLAR_CONFIG.ESCROW_CONTRACT_ID;
+  }
+
+  /** Lazy-init keypair so build-time dummy env vars don't crash checksum validation */
+  private get agentKeypair(): Keypair {
+    if (!this._agentKeypair) {
+      this._agentKeypair = Keypair.fromSecret(STELLAR_CONFIG.AGENT_SECRET_KEY);
+    }
+    return this._agentKeypair;
   }
 
   // ── Internal: build, simulate, sign, submit ───────────────────────────────
