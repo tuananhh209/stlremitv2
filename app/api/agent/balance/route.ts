@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { stellarService } from "@/lib/stellar";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
@@ -10,8 +10,11 @@ export const dynamic = "force-dynamic";
 let cachedBalance: { total: number; ts: number } | null = null;
 const CACHE_TTL_MS = 10_000; // 10s — Stellar RPC is slow, cache is fine
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const agentWallet = searchParams.get("agentWallet");
+
     const now = Date.now();
 
     // Use cached Stellar balance if fresh
@@ -31,7 +34,7 @@ export async function GET() {
 
     // DB queries are fast (Neon HTTP)
     const [reserved, historicalVolume] = await Promise.all([
-      databaseService.getReservedUsdc(),
+      databaseService.getReservedUsdc(agentWallet),
       databaseService.getHistoricalVolume(),
     ]);
 

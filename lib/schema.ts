@@ -42,7 +42,7 @@ export const remittanceRequests = pgTable("remittance_requests", {
 });
 
 export const agentState = pgTable("agent_state", {
-  id: text("id").primaryKey().default("singleton"),
+  agentWallet: text("agent_wallet").primaryKey(),
   totalCollateral: numeric("total_collateral", {
     precision: 20,
     scale: 7,

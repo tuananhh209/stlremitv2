@@ -14,8 +14,14 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { usdcAmount } = body;
+    const { usdcAmount, agentWallet } = body;
 
+    if (!agentWallet || typeof agentWallet !== "string") {
+      return NextResponse.json(
+        { error: "agentWallet is required", code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
     if (!usdcAmount || typeof usdcAmount !== "number" || usdcAmount <= 0) {
       return NextResponse.json(
         { error: "usdcAmount must be a positive number", code: "VALIDATION_ERROR" },
@@ -27,7 +33,7 @@ export async function POST(req: NextRequest) {
     const { total } = await stellarService.getContractBalance();
 
     // Sync to DB
-    await databaseService.updateAgentCollateral(total);
+    await databaseService.updateAgentCollateral(agentWallet, total);
 
     const response: AgentFundResponse = {
       newBalance: total,

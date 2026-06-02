@@ -312,7 +312,7 @@ export default function AgentDashboard() {
       await fetch("/api/agent/fund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usdcAmount: amount }),
+        body: JSON.stringify({ usdcAmount: amount, agentWallet: address }),
       });
 
       setDepositAmount("");

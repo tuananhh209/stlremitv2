@@ -134,8 +134,18 @@ export const databaseService = {
         stellarTxHash,
         agentWallet 
       })
-      .where(eq(remittanceRequests.txId, txId))
+      .where(
+        and(
+          eq(remittanceRequests.txId, txId),
+          eq(remittanceRequests.status, "pending_agent")
+        )
+      )
       .returning();
+      
+    if (!row) {
+      throw new Error("Remittance not found or already accepted by another agent");
+    }
+    
     return rowToRecord(row);
   },
 
@@ -217,17 +227,17 @@ export const databaseService = {
   /**
    * Get or initialize agent state singleton.
    */
-  async getAgentState(): Promise<{ totalCollateral: number; reservedUsdc: number }> {
+  async getAgentState(agentWallet: string): Promise<{ totalCollateral: number; reservedUsdc: number }> {
     const [row] = await db
       .select()
       .from(agentState)
-      .where(eq(agentState.id, "singleton"))
+      .where(eq(agentState.agentWallet, agentWallet))
       .limit(1);
 
     if (!row) {
       const [newRow] = await db
         .insert(agentState)
-        .values({ id: "singleton", totalCollateral: "0", reservedUsdc: "0" })
+        .values({ agentWallet, totalCollateral: "0", reservedUsdc: "0" })
         .onConflictDoNothing()
         .returning();
       return {
@@ -245,12 +255,12 @@ export const databaseService = {
   /**
    * Update agent collateral balance in DB.
    */
-  async updateAgentCollateral(totalCollateral: number): Promise<void> {
+  async updateAgentCollateral(agentWallet: string, totalCollateral: number): Promise<void> {
     await db
       .insert(agentState)
-      .values({ id: "singleton", totalCollateral: totalCollateral.toString(), reservedUsdc: "0" })
+      .values({ agentWallet, totalCollateral: totalCollateral.toString(), reservedUsdc: "0" })
       .onConflictDoUpdate({
-        target: agentState.id,
+        target: agentState.agentWallet,
         set: {
           totalCollateral: totalCollateral.toString(),
           updatedAt: new Date(),
@@ -262,13 +272,17 @@ export const databaseService = {
    * Calculate total USDC currently reserved (locked in contract for active remittances).
    * Statuses: funded, processing
    */
-  async getReservedUsdc(): Promise<number> {
+  async getReservedUsdc(agentWallet?: string | null): Promise<number> {
+    const conditions = [inArray(remittanceRequests.status, ["funded", "processing", "payout_submitted"])];
+    
+    if (agentWallet) {
+      conditions.push(eq(remittanceRequests.agentWallet, agentWallet));
+    }
+
     const rows = await db
       .select({ usdc: remittanceRequests.usdcEquivalent })
       .from(remittanceRequests)
-      .where(
-        inArray(remittanceRequests.status, ["funded", "processing", "payout_submitted"])
-      );
+      .where(and(...conditions));
     
     return rows.reduce((sum, r) => sum + Number(r.usdc), 0);
   },

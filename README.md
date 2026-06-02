@@ -228,9 +228,6 @@ stlremit/
 4. Ensure build passes: `npm run build`
 5. Submit pull request
 
-## My USDC Wallet Address on EVM chain: 
-0xe7cfe1fc23c0688f03d06ff1d376da3a8609639d
-
 ## Support
 
 - For issues or questions:
