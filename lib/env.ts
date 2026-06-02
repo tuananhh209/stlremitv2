@@ -13,11 +13,11 @@ const envSchema = z.object({
 });
 
 const _env = process.env.SKIP_ENV_VALIDATION === "true" 
-  ? { success: true, data: process.env as any } 
+  ? { success: true as const, data: process.env as any } 
   : envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  console.error("❌ Invalid environment variables:", _env.error.format());
+  console.error("❌ Invalid environment variables:", ('error' in _env) ? _env.error.format() : "");
   throw new Error("Invalid environment variables");
 }
 

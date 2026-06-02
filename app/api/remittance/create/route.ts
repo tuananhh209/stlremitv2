@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     
     const result = CreateRemittanceSchema.safeParse(body);
     if (!result.success) {
-      const errorMsg = result.error.errors[0].message;
+      const errorMsg = result.error.issues[0].message;
       return NextResponse.json(
         { error: errorMsg, code: "VALIDATION_ERROR" },
         { status: 400 }
@@ -42,8 +42,8 @@ export async function POST(req: NextRequest) {
       receiverName,
       receiverAccount,
       receiverWallet,
-      senderWallet: senderWallet || null,
-      senderName: senderName || null,
+      senderWallet: senderWallet || undefined,
+      senderName: senderName || undefined,
       status: "pending_agent",
     });
 
