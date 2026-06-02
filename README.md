@@ -2,21 +2,19 @@
 
 A decentralized remittance platform built on the Stellar blockchain that enables secure, fast, and low-cost money transfers through a trusted agent network.
 
-## 🏆 MVP Submission Requirements
+## ✅ Submission Checklist & Requirements
 
-> **Note to Submitter:** Please fill out the missing URLs and upload the images before submitting to the Hackathon/Bounty!
-
-- **Live Demo Link:** [Insert Vercel URL here]
+- **Live Demo Link:** [https://stlremitv2.up.railway.app/](https://stlremitv2.up.railway.app/)
 - **Mobile Responsive Screenshot:**
-  > ![Mobile View](./public/mobile-view-placeholder.png) *(Replace this with your actual mobile screenshot)*
+  ![Mobile View](./public/mobile-view-placeholder.png) 
+  *(Lưu ý: Tôi không thể tự chụp màn hình điện thoại của bạn, bạn hãy tự chụp 1 ảnh dọc trên điện thoại và lưu đè vào file `public/mobile-view-placeholder.png` nhé)*
 - **CI/CD Pipeline Running:**
-  > [![CI/CD Pipeline](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml/badge.svg)](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml)
-  > *(Or insert a screenshot of the passing GitHub Actions workflow)*
+  [![CI/CD Pipeline](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml/badge.svg)](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml)
 - **Contract Addresses & Transaction Hash:**
-  - **Escrow Contract:** `CC4BFWZ4KOKCHV4N2YF26U3BPIH2KOWR2H2V2KZJYFV5U2Y6R2Y6R2Y6` *(Replace if different)*
-  - **Transaction Hash:** `[Insert an example transaction hash here]`
+  - Escrow Contract: `CALP4YVV3YEYIISWQMZZX5JGTBIG6VMWMX5U7RHCWYONYEEITYEIXJZD`
+  - Transaction Hash: `00000000000000000000000000000000` *(Thay bằng mã giao dịch thực tế của bạn)*
 - **Token or Pool Address:**
-  - **USDC (Testnet):** `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` *(Replace if different)*
+  - USDC Token (Testnet): `CDVSELRDNGPJNFGACTCH34TPIOBAQLGUKDALQE7P367AUCMYREBHJOA7`
 
 ---
 
@@ -28,21 +26,6 @@ A decentralized remittance platform built on the Stellar blockchain that enables
 - **Receivers** to confirm and claim their payments in local currency (PHP)
 
 The platform leverages smart contracts on Stellar for automated lock/unlock mechanisms and maintains real-time transaction tracking with a 5-minute timeout protection.
-
-## 2. Live Demo
-
-**Live Deployment:** https://stlremit.up.railway.app/
-
-## 3. Demo Video
-
-Full flow walkthrough available in:
-https://drive.google.com/drive/folders/13KKKffw5nwtmjkUu3zdF6ckE-H3KX1eG?usp=sharing
-
-Videos demonstrate:
-- Wallet connection
-- Lock mechanism
-- Agent processing
-- Unlock & confirmation
 
 ## 4. Architecture
 
