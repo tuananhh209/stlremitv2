@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { WalletProvider } from "@/components/wallet-provider";
 import { AppGate } from "@/components/app-gate";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "STL Remit — Cross-Border Remittance",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <WalletProvider>
           <AppGate>{children}</AppGate>
         </WalletProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

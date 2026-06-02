@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stellarService } from "@/lib/stellar";
+import { stellarBuilderService } from "@/lib/stellar-builder";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
@@ -20,7 +20,8 @@ export async function POST(
 ) {
   try {
     const { id: txId } = await params;
-    const { receiverPublicKey } = await req.json();
+    const body = await req.json();
+    const { receiverPublicKey } = body;
 
     if (!receiverPublicKey) {
       return NextResponse.json(
@@ -32,12 +33,20 @@ export async function POST(
     const record = await databaseService.getRemittance(txId);
     if (!record) throw new NotFoundError(txId);
 
-    if (record.status !== "processing" && record.status !== "payout_submitted") {
-      throw new InvalidStatusTransitionError(txId, record.status, "receiver-confirm");
+    if (record.status !== "payout_submitted") {
+      throw new InvalidStatusTransitionError(txId, record.status, "confirm");
     }
 
-    const xdr = await stellarService.buildReceiverConfirmTx(receiverPublicKey, txId);
-    return NextResponse.json({ xdr });
+    if (record.receiverWallet !== receiverPublicKey) {
+      return NextResponse.json(
+        { error: "Only the designated receiver can confirm this transaction", code: "UNAUTHORIZED" },
+        { status: 403 }
+      );
+    }
+
+    const xdr = await stellarBuilderService.buildReceiverConfirmTx(receiverPublicKey, txId);
+    
+    return NextResponse.json({ xdr, phpAmount: record.phpPayout });
   } catch (err) {
     return errorResponse(err);
   }

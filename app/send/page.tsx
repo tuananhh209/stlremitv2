@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -208,9 +209,21 @@ export default function SenderDashboard() {
           qrImageUrl: settingsQrUrl || null,
         }),
       });
-      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); refetchProfile(); }
-      else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
-    } catch { setSettingsError("Network error"); }
+      if (res.ok) { 
+        setSettingsSaved(true); 
+        toast.success("Settings saved successfully!");
+        setTimeout(() => setSettingsSaved(false), 3000); 
+        refetchProfile(); 
+      }
+      else { 
+        const d = await res.json(); 
+        setSettingsError(d.error ?? "Failed to save"); 
+        toast.error(d.error ?? "Failed to save settings");
+      }
+    } catch { 
+      setSettingsError("Network error"); 
+      toast.error("Network error");
+    }
     finally { setSettingsSaving(false); }
   };
 
@@ -233,13 +246,16 @@ export default function SenderDashboard() {
       });
       const data = await res.json();
       if (res.ok) {
+        toast.success("Remittance request created!");
         // Always redirect to tx page — status will be pending_agent
         router.push(`/tx/${data.txId}`);
       } else {
         setError(data.error ?? "Failed to create request");
+        toast.error(data.error ?? "Failed to create request");
       }
     } catch {
       setError("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }

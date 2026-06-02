@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { databaseService } from "@/lib/db";
-import { stellarService } from "@/lib/stellar";
+import { stellarRpcService } from "@/lib/stellar-rpc";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 import type { ConfirmResponse } from "@/lib/types";
@@ -22,7 +22,7 @@ export async function POST(
     }
 
     // Call contract confirm — may throw EXPIRED or UNAUTHORIZED
-    const { txHash, releasedUsdc } = await stellarService.confirmPayout(txId);
+    const { txHash, releasedUsdc } = await stellarRpcService.confirmPayout(txId);
 
     // Update DB
     await databaseService.updateStatus(txId, "completed");

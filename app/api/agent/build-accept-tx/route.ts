@@ -1,21 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stellarService } from "@/lib/stellar";
+import { stellarBuilderService } from "@/lib/stellar-builder";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
+import { z } from "zod";
+
+const acceptSchema = z.object({
+  txId: z.string().min(1, "txId is required"),
+  agentPublicKey: z.string().min(1, "agentPublicKey is required"),
+});
+
 export async function POST(req: NextRequest) {
   try {
-    const { txId, agentPublicKey } = await req.json();
-
-    if (!txId || !agentPublicKey) {
+    const body = await req.json();
+    const parsed = acceptSchema.safeParse(body);
+    
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "txId and agentPublicKey are required", code: "VALIDATION_ERROR" },
+        { error: "Validation failed", details: parsed.error.format(), code: "VALIDATION_ERROR" },
         { status: 400 }
       );
     }
+    
+    const { txId, agentPublicKey } = parsed.data;
 
     const record = await databaseService.getRemittance(txId);
     if (!record) throw new NotFoundError(txId);
@@ -33,7 +43,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const xdr = await stellarService.buildAcceptTx(
+    const xdr = await stellarBuilderService.buildAcceptTx(
       agentPublicKey,
       txId,
       record.usdcEquivalent,

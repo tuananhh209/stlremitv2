@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { databaseService } from "@/lib/db";
-import { stellarService } from "@/lib/stellar";
+import { stellarRpcService } from "@/lib/stellar-rpc";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function POST() {
   for (const record of expired) {
     try {
       // refund() on new contract: anyone can call, returns USDC to original agent
-      const { txHash } = await stellarService.refundCollateral(record.txId);
+      const { txHash } = await stellarRpcService.refundCollateral(record.txId);
       await databaseService.updateStatus(record.txId, "expired");
       await databaseService.updateStellarTxHash(record.txId, txHash);
       processed++;

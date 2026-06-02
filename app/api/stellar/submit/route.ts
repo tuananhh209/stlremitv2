@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stellarService } from "@/lib/stellar";
+import { stellarRpcService } from "@/lib/stellar-rpc";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing signedXdr" }, { status: 400 });
     }
 
-    const txHash = await stellarService.submitTransaction(signedXdr);
+    const txHash = await stellarRpcService.submitTransaction(signedXdr);
     return NextResponse.json({ txHash });
   } catch (error: any) {
     console.error("Submit transaction error:", error);

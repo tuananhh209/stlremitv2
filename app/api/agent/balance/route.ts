@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stellarService } from "@/lib/stellar";
+import { stellarRpcService } from "@/lib/stellar-rpc";
 import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import type { AgentBalanceResponse } from "@/lib/types";
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       total = cachedBalance.total;
     } else {
       try {
-        const result = await stellarService.getContractBalance();
+        const result = await stellarRpcService.getContractBalance();
         total = result.total;
         cachedBalance = { total, ts: now };
       } catch {

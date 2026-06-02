@@ -25,19 +25,39 @@ export async function GET(req: NextRequest) {
   }
 }
 
+import { z } from "zod";
+
+const profileSchema = z.object({
+  walletAddress: z.string().min(1, "Wallet address is required"),
+  role: z.enum(["sender", "agent"]),
+  bankName: z.string().nullable().optional(),
+  accountNumber: z.string().nullable().optional(),
+  accountHolder: z.string().nullable().optional(),
+  qrImageUrl: z.string().nullable().optional(),
+  agentBankName: z.string().nullable().optional(),
+  agentAccountNumber: z.string().nullable().optional(),
+  agentAccountHolder: z.string().nullable().optional(),
+  agentQrImageUrl: z.string().nullable().optional(),
+});
+
 // PUT /api/profile  — upsert
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
+    
+    const parsed = profileSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.format(), code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
+    
     const {
       walletAddress, role,
       bankName, accountNumber, accountHolder, qrImageUrl,
       agentBankName, agentAccountNumber, agentAccountHolder, agentQrImageUrl,
-    } = body;
-
-    if (!walletAddress || !role) {
-      return NextResponse.json({ error: "walletAddress and role required", code: "VALIDATION_ERROR" }, { status: 400 });
-    }
+    } = parsed.data;
 
     const [row] = await db
       .insert(userProfiles)

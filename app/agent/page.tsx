@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -262,9 +263,21 @@ export default function AgentDashboard() {
           agentQrImageUrl: settingsQrUrl || null,
         }),
       });
-      if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); refetchProfile(); }
-      else { const d = await res.json(); setSettingsError(d.error ?? "Failed to save"); }
-    } catch { setSettingsError("Network error"); }
+      if (res.ok) { 
+        setSettingsSaved(true); 
+        toast.success("Settings saved successfully!");
+        setTimeout(() => setSettingsSaved(false), 3000); 
+        refetchProfile(); 
+      }
+      else { 
+        const d = await res.json(); 
+        setSettingsError(d.error ?? "Failed to save"); 
+        toast.error(d.error ?? "Failed to save settings");
+      }
+    } catch { 
+      setSettingsError("Network error"); 
+      toast.error("Network error");
+    }
     finally { setSettingsSaving(false); }
   };
 
@@ -282,7 +295,7 @@ export default function AgentDashboard() {
       });
       if (!buildRes.ok) {
         const d = await buildRes.json();
-        alert(`Failed to build transaction: ${d.error}`);
+        toast.error(`Failed to build transaction: ${d.error}`);
         return;
       }
       const { xdr } = await buildRes.json();
@@ -292,7 +305,7 @@ export default function AgentDashboard() {
       try {
         signedXdr = await sign(xdr, "TESTNET");
       } catch (err: any) {
-        alert(`Wallet signing cancelled or failed: ${err?.message ?? err}`);
+        toast.error(`Wallet signing cancelled or failed: ${err?.message ?? err}`);
         return;
       }
 
@@ -304,7 +317,7 @@ export default function AgentDashboard() {
       });
       if (!submitRes.ok) {
         const d = await submitRes.json();
-        alert(`Transaction failed: ${d.error}`);
+        toast.error(`Transaction failed: ${d.error}`);
         return;
       }
 
@@ -316,9 +329,10 @@ export default function AgentDashboard() {
       });
 
       setDepositAmount("");
+      toast.success("Deposit successful!");
       fetchAll();
     } catch (err: any) {
-      alert(`Error: ${err?.message ?? "Unknown error"}`);
+      toast.error(`Error: ${err?.message ?? "Unknown error"}`);
     } finally {
       setDepositLoading(false);
     }
@@ -336,7 +350,7 @@ export default function AgentDashboard() {
       });
       if (!buildRes.ok) {
         const d = await buildRes.json();
-        alert(`Failed to build transaction: ${d.error}`);
+        toast.error(`Failed to build transaction: ${d.error}`);
         return;
       }
       const { xdr } = await buildRes.json();
@@ -346,7 +360,7 @@ export default function AgentDashboard() {
       try {
         signedXdr = await sign(xdr, "TESTNET");
       } catch (err: any) {
-        alert(`Signing cancelled: ${err?.message ?? err}`);
+        toast.error(`Signing cancelled: ${err?.message ?? err}`);
         return;
       }
 
@@ -358,7 +372,7 @@ export default function AgentDashboard() {
       });
       if (!submitRes.ok) {
         const d = await submitRes.json();
-        alert(`Transaction failed: ${d.error}`);
+        toast.error(`Transaction failed: ${d.error}`);
         return;
       }
       const { txHash } = await submitRes.json();
@@ -369,13 +383,16 @@ export default function AgentDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stellarTxHash: txHash, agentWallet: address }),
       });
-      if (acceptRes.ok) fetchAll();
+      if (acceptRes.ok) {
+        toast.success("Accepted request and locked USDC!");
+        fetchAll();
+      }
       else {
         const d = await acceptRes.json();
-        alert(`DB update failed: ${d.error}`);
+        toast.error(`DB update failed: ${d.error}`);
       }
     } catch (err: any) {
-      alert(`Error: ${err?.message ?? "Unknown error"}`);
+      toast.error(`Error: ${err?.message ?? "Unknown error"}`);
     } finally {
       setAcceptingId(null);
     }
@@ -407,13 +424,14 @@ export default function AgentDashboard() {
       });
       if (res.ok) {
         setPayoutTx(null);
+        toast.success("Payout submitted successfully!");
         fetchAll();
       } else {
         const d = await res.json();
-        alert(d.error ?? "Failed to submit payout");
+        toast.error(d.error ?? "Failed to submit payout");
       }
     } catch {
-      alert("Network error");
+      toast.error("Network error");
     } finally {
       setPayoutLoading(false);
     }
