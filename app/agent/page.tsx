@@ -493,7 +493,7 @@ export default function AgentDashboard() {
       </aside>
 
       {/* ── Main ── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-24 xl:pb-0">
         <header className="h-24 bg-white/80 backdrop-blur-md border-b border-outline/5 px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeNav}</h1>
@@ -899,6 +899,28 @@ export default function AgentDashboard() {
 
         </div>
       </div>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-outline/5 px-2 py-3 flex justify-around xl:hidden z-40 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveNav(item.id)}
+            className={cn(
+              "flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all relative min-w-[64px]",
+              activeNav === item.id ? "text-indigo-600 bg-indigo-50/50" : "text-gray-400 hover:text-gray-600"
+            )}
+          >
+            <item.icon className={cn("w-5 h-5", activeNav === item.id && "drop-shadow-md")} />
+            <span className="text-[10px] font-bold tracking-wide">{item.label}</span>
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="absolute top-0 right-1 bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm">
+                {item.badge}
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
 
       {/* ── PAYOUT MODAL ── */}
       {payoutTx && (

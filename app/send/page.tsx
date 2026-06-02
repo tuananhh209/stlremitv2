@@ -311,7 +311,7 @@ export default function SenderDashboard() {
       </aside>
 
       {/* ── Main ── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-24 xl:pb-0">
         <header className="h-24 bg-white/80 backdrop-blur-md border-b border-outline/5 px-8 flex items-center justify-between sticky top-0 z-30">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeTab}</h1>
@@ -831,6 +831,32 @@ export default function SenderDashboard() {
 
         </div>
       </div>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-outline/5 px-2 py-3 flex justify-around xl:hidden z-40 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+        {(["overview", "history", "pools", "settings"] as Tab[]).map((tab) => {
+          const icons: Record<Tab, any> = {
+            overview: LayoutDashboard,
+            history: HistoryIcon,
+            pools: Activity,
+            settings: Settings,
+          };
+          const Icon = icons[tab];
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all relative min-w-[64px] capitalize",
+                activeTab === tab ? "text-primary bg-primary/10" : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              <Icon className={cn("w-5 h-5", activeTab === tab && "drop-shadow-md")} />
+              <span className="text-[10px] font-bold tracking-wide">{tab}</span>
+            </button>
+          );
+        })}
+      </nav>
     </main>
   );
 }

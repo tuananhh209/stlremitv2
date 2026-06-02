@@ -2,6 +2,24 @@
 
 A decentralized remittance platform built on the Stellar blockchain that enables secure, fast, and low-cost money transfers through a trusted agent network.
 
+## 🏆 MVP Submission Requirements
+
+> **Note to Submitter:** Please fill out the missing URLs and upload the images before submitting to the Hackathon/Bounty!
+
+- **Live Demo Link:** [Insert Vercel URL here]
+- **Mobile Responsive Screenshot:**
+  > ![Mobile View](./public/mobile-view-placeholder.png) *(Replace this with your actual mobile screenshot)*
+- **CI/CD Pipeline Running:**
+  > [![CI/CD Pipeline](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml/badge.svg)](https://github.com/tuananhh209/stlremitv2/actions/workflows/ci.yml)
+  > *(Or insert a screenshot of the passing GitHub Actions workflow)*
+- **Contract Addresses & Transaction Hash:**
+  - **Escrow Contract:** `CC4BFWZ4KOKCHV4N2YF26U3BPIH2KOWR2H2V2KZJYFV5U2Y6R2Y6R2Y6` *(Replace if different)*
+  - **Transaction Hash:** `[Insert an example transaction hash here]`
+- **Token or Pool Address:**
+  - **USDC (Testnet):** `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` *(Replace if different)*
+
+---
+
 ## 1. Project Overview
 
 **STLRemit** is a dApp that facilitates international remittances using the Stellar blockchain. The system enables:
