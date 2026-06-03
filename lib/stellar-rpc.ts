@@ -14,20 +14,6 @@ import {
 import { STELLAR_CONFIG } from "./stellar-config";
 import { StellarTransactionError } from "./errors";
 
-export interface FundContractResult {
-  txHash: string;
-  newBalance: number;
-}
-
-export interface ReserveCollateralResult {
-  txHash: string;
-}
-
-export interface ConfirmPayoutResult {
-  txHash: string;
-  releasedUsdc: number;
-}
-
 export interface RefundCollateralResult {
   txHash: string;
   refundedUsdc: number;
@@ -177,47 +163,6 @@ export class StellarRpcService {
     } catch {
       return { total: 0, available: 0 };
     }
-  }
-
-  async fundContract(usdcAmount: number): Promise<FundContractResult> {
-    const amount = toContractAmount(usdcAmount);
-    const args = [
-      new Address(this.agentKeypair.publicKey()).toScVal(),
-      nativeToScVal(amount, { type: "i128" }),
-    ];
-
-    const { txHash, returnValue } = await this.invokeContract("fund", args);
-    const newBalanceRaw = scValToNative(returnValue) as bigint;
-    const newBalance = fromContractAmount(newBalanceRaw);
-    return { txHash, newBalance };
-  }
-
-  async reserveCollateral(
-    txId: string,
-    usdcAmount: number,
-    receiverWallet?: string,
-  ): Promise<ReserveCollateralResult> {
-    const amount = toContractAmount(usdcAmount);
-    const receiver = receiverWallet ?? this.agentKeypair.publicKey(); // fallback
-    const args = [
-      new Address(this.agentKeypair.publicKey()).toScVal(),
-      nativeToScVal(txId, { type: "string" }),
-      nativeToScVal(amount, { type: "i128" }),
-      new Address(receiver).toScVal(),
-    ];
-    const { txHash } = await this.invokeContract("accept", args, txId);
-    return { txHash };
-  }
-
-  async confirmPayout(txId: string): Promise<ConfirmPayoutResult> {
-    const args = [
-      nativeToScVal(txId, { type: "string" }),
-      new Address(this.agentKeypair.publicKey()).toScVal(),
-    ];
-    const { txHash, returnValue } = await this.invokeContract("receiver_confirm", args);
-    const releasedRaw = scValToNative(returnValue) as bigint;
-    const releasedUsdc = fromContractAmount(releasedRaw);
-    return { txHash, releasedUsdc };
   }
 
   async refundCollateral(txId: string): Promise<RefundCollateralResult> {

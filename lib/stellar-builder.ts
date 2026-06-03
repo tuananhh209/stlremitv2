@@ -113,35 +113,6 @@ export class StellarBuilderService {
     }
     return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
   }
-
-  async buildConfirmTx(publicKey: string, txId: string): Promise<string> {
-    const args = [
-      nativeToScVal(txId, { type: "string" }),
-      new Address(publicKey).toScVal(),
-    ];
-
-    const account = await this.server.getAccount(publicKey);
-    const contract = new Contract(this.contractId);
-
-    const tx = new TransactionBuilder(account, {
-      fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
-    })
-      .addOperation(contract.call("confirm", ...args))
-      .setTimeout(30)
-      .build();
-
-    const simResult = await this.server.simulateTransaction(tx);
-    if (StellarRpc.Api.isSimulationError(simResult)) {
-      throw new StellarTransactionError(
-        "SIMULATION_FAILED",
-        undefined,
-        simResult.error
-      );
-    }
-
-    return StellarRpc.assembleTransaction(tx, simResult).build().toXDR();
-  }
 }
 
 export const stellarBuilderService = new StellarBuilderService();

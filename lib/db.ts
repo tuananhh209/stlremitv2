@@ -1,4 +1,4 @@
-import { eq, lt, and, desc, inArray, lte } from "drizzle-orm";
+import { eq, and, desc, inArray, lte } from "drizzle-orm";
 import { db } from "./db-client";
 import { remittanceRequests, agentState, userProfiles } from "./schema";
 import type { RemittanceRecord, RemittanceStatus } from "./types";
@@ -223,35 +223,6 @@ export const databaseService = {
   },
 
   // ── Agent state helpers ────────────────────────────────────────────────────
-
-  /**
-   * Get or initialize agent state singleton.
-   */
-  async getAgentState(agentWallet: string): Promise<{ totalCollateral: number; reservedUsdc: number }> {
-    const [row] = await db
-      .select()
-      .from(agentState)
-      .where(eq(agentState.agentWallet, agentWallet))
-      .limit(1);
-
-    if (!row) {
-      const [newRow] = await db
-        .insert(agentState)
-        .values({ agentWallet, totalCollateral: "0", reservedUsdc: "0" })
-        .onConflictDoNothing()
-        .returning();
-      return {
-        totalCollateral: Number(newRow?.totalCollateral ?? 0),
-        reservedUsdc: Number(newRow?.reservedUsdc ?? 0),
-      };
-    }
-
-    return {
-      totalCollateral: Number(row.totalCollateral),
-      reservedUsdc: Number(row.reservedUsdc),
-    };
-  },
-
   /**
    * Update agent collateral balance in DB.
    */

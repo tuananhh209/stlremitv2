@@ -12,6 +12,7 @@ pub enum TxStatus {
     Funded,    
     Completed, 
     Expired,  
+}
 
 #[contracttype]
 #[derive(Clone)]

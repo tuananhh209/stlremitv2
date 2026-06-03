@@ -28,43 +28,11 @@ export interface RemittanceRecord {
   agentWallet: string | null;
 }
 
-export interface AgentBalance {
-  totalCollateral: number;
-  reservedUsdc: number;
-  availableUsdc: number; // = totalCollateral - reservedUsdc
-}
-
 // --- Request / Response interfaces ---
-
-export interface CreateRemittanceRequest {
-  vndAmount: number;
-  receiverName: string;
-  receiverAccount: string;
-  receiverWallet?: string;   // optional Stellar wallet of receiver
-}
-
-export interface CreateRemittanceResponse {
-  txId: string;
-  usdcEquivalent: number;
-  phpPayout: number;
-  status: "funded";
-  expiresAt: string;
-  stellarTxHash: string;
-}
-
-export interface MarkPaidRequest {
-  proofImageBase64: string;
-  proofImageMimeType: string;
-}
 
 export interface MarkPaidResponse {
   txId: string;
   status: "processing";
-}
-
-export interface AgentProofRequest {
-  proofImageBase64: string;
-  proofImageMimeType: string;
 }
 
 export interface AgentProofResponse {
@@ -72,19 +40,8 @@ export interface AgentProofResponse {
   agentProofRef: string;
 }
 
-export interface ConfirmResponse {
-  txId: string;
-  status: "completed";
-  stellarTxHash: string;
-  releasedUsdc: number;
-}
-
 export interface RemittanceListResponse {
   remittances: RemittanceRecord[];
-}
-
-export interface AgentFundRequest {
-  usdcAmount: number;
 }
 
 export interface AgentFundResponse {
