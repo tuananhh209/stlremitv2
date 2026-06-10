@@ -12,6 +12,7 @@ function rowToRecord(row: typeof remittanceRequests.$inferSelect): RemittanceRec
     vndAmount: Number(row.vndAmount),
     usdcEquivalent: Number(row.usdcEquivalent),
     phpPayout: Number(row.phpPayout),
+    destinationCurrency: row.destinationCurrency ?? "PHP",
     receiverName: row.receiverName,
     receiverAccount: row.receiverAccount,
     receiverWallet: row.receiverWallet ?? null,
@@ -24,6 +25,10 @@ function rowToRecord(row: typeof remittanceRequests.$inferSelect): RemittanceRec
     senderWallet: row.senderWallet ?? null,
     senderName: row.senderName ?? null,
     agentWallet: row.agentWallet ?? null,
+    fundedAt:          row.fundedAt?.toISOString()          ?? null,
+    processingAt:      row.processingAt?.toISOString()      ?? null,
+    payoutSubmittedAt: row.payoutSubmittedAt?.toISOString() ?? null,
+    completedAt:       row.completedAt?.toISOString()       ?? null,
   };
 }
 
@@ -34,6 +39,7 @@ export interface CreateRemittanceData {
   vndAmount: number;
   usdcEquivalent: number;
   phpPayout: number;
+  destinationCurrency?: string;
   receiverName: string;
   receiverAccount: string;
   receiverWallet?: string;
@@ -62,6 +68,7 @@ export const databaseService = {
         vndAmount: data.vndAmount.toString(),
         usdcEquivalent: data.usdcEquivalent.toString(),
         phpPayout: data.phpPayout.toString(),
+        destinationCurrency: data.destinationCurrency ?? "PHP",
         receiverName: data.receiverName,
         receiverAccount: data.receiverAccount,
         receiverWallet: data.receiverWallet ?? null,
@@ -128,11 +135,12 @@ export const databaseService = {
     const expiresAt = new Date(Date.now() + EXCHANGE_RATES.TIMEOUT_SECONDS * 1000);
     const [row] = await db
       .update(remittanceRequests)
-      .set({ 
-        status: "funded", 
-        expiresAt, 
+      .set({
+        status: "funded",
+        expiresAt,
         stellarTxHash,
-        agentWallet 
+        agentWallet,
+        fundedAt: new Date(),
       })
       .where(
         and(
@@ -153,11 +161,14 @@ export const databaseService = {
    * Update status of a remittance.
    */
   async updateStatus(txId: string, status: RemittanceStatus, expiresAt?: Date): Promise<void> {
+    const timestampField: Partial<typeof remittanceRequests.$inferInsert> =
+      status === "completed" ? { completedAt: new Date() } : {};
     await db
       .update(remittanceRequests)
-      .set({ 
+      .set({
         status,
-        ...(expiresAt ? { expiresAt } : {})
+        ...(expiresAt ? { expiresAt } : {}),
+        ...timestampField,
       })
       .where(eq(remittanceRequests.txId, txId));
   },
@@ -168,7 +179,7 @@ export const databaseService = {
   async updateSenderProof(txId: string, proofRef: string): Promise<void> {
     await db
       .update(remittanceRequests)
-      .set({ senderProofRef: proofRef })
+      .set({ senderProofRef: proofRef, processingAt: new Date(), status: "processing" })
       .where(eq(remittanceRequests.txId, txId));
   },
 
@@ -178,7 +189,7 @@ export const databaseService = {
   async updateAgentProof(txId: string, proofRef: string): Promise<void> {
     await db
       .update(remittanceRequests)
-      .set({ agentProofRef: proofRef })
+      .set({ agentProofRef: proofRef, payoutSubmittedAt: new Date() })
       .where(eq(remittanceRequests.txId, txId));
   },
 

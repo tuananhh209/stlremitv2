@@ -1,0 +1,2126 @@
+[     117ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     141ms] [LOG] [Fast Refresh] done in 132ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     201ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[     225ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   94398ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   94499ms] [LOG] [Fast Refresh] done in 77ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   94660ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[   94746ms] [LOG] [Fast Refresh] done in 204ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  119917ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  120022ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120156ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120265ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  120313ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120313ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/tx/60ba9213-9797-4e49-aea0-51c23e15ac8f?_rsc=12hdu:0
+[  120417ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120460ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/tx/60ba9213-9797-4e49-aea0-51c23e15ac8f?_rsc=12hdu:0
+[  120533ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[  120607ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120619ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[  120654ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/tx/60ba9213-9797-4e49-aea0-51c23e15ac8f:0
+[  120913ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_react-dom_0bruynb._.js:15305
+[  121063ms] Error: ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+
+    at <unknown> (Error: ./app/tx/[txId]/page.tsx:679:11)
+    at Object.getCompilationErrors (file://F:\stlremit\node_modules\next\dist\server\dev\hot-reloader-turbopack.js:1186:59)
+    at DevBundlerService.getCompilationError (file://F:\stlremit\node_modules\next\dist\server\lib\dev-bundler-service.js:44:55)
+    at DevServer.getCompilationError (file://F:\stlremit\node_modules\next\dist\server\dev\next-dev-server.js:719:42)
+    at DevServer.findPageComponents (file://F:\stlremit\node_modules\next\dist\server\dev\next-dev-server.js:689:43)
+    at async DevServer.renderErrorToResponseImpl (file://F:\stlremit\node_modules\next\dist\server\base-server.js:1745:26)
+[  121065ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  121070ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121152ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121183ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  121464ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121538ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  121681ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121711ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  121854ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121899ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  121967ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  122041ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  122054ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  122209ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  122245ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  122285ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  122347ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  127223ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  127284ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  127518ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  127577ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  127824ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  127884ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  127962ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  128023ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  128070ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  128180ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  128225ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  153429ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  153500ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  153738ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  153803ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  154017ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  154082ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  154144ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  154198ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  154245ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  154317ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  154357ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  154421ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  187890ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  187950ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  188174ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188233ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  188465ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188526ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  188581ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188619ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188696ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  188748ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188790ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  188866ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  276859ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  276899ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  276960ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  277446ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277493ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277555ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277602ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277730ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277773ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  277834ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  284452ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  284514ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  284737ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  284779ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  285029ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  285090ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  285154ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  285200ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  285262ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  285315ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  285356ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  285417ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  288155ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  288217ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  288438ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  288498ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  288701ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  288762ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  288830ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  288872ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  288933ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  288987ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  289028ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  289088ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  291303ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  291364ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  291959ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292020ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  292222ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292283ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  292338ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292378ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292439ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  292477ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292519ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  292593ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  295287ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  295348ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  295567ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  295628ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  295847ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  295907ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  295971ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  296016ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  296077ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  296132ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  296172ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  296233ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  305511ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  305573ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  305809ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  305869ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  306103ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  306165ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  306228ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  306274ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  306335ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  306388ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  306435ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  306489ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  309059ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309131ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  309357ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309426ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  309641ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309707ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  309750ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309798ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309852ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  309914ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  309957ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  310015ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  312761ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  312840ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  313047ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313124ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  313319ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313397ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  313440ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313489ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313542ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  313604ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313647ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  313706ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  331555ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  331615ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  331833ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  331894ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  332098ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  332158ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  332210ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  332252ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  332314ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226
+[  332369ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  332409ms] [ERROR] ./app/tx/[txId]/page.tsx:679:11
+Expected corresponding JSX closing tag for <main>
+  677 |           </div>{/* end right col */}
+  678 |
+> 679 |         </div>{/* end 2-col grid */}
+      |           ^^^
+  680 |
+  681 |         {/* Footer */}
+  682 |         <div className="flex items-center justify-center gap-2 py-2">
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./app/tx/[txId]/page.tsx [Client Component Browser]
+    ./app/tx/[txId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./app/tx/[txId]/page.tsx [Client Component SSR]
+    ./app/tx/[txId]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1945
+[  332485ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_0u_w_5s._.js:1226

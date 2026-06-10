@@ -24,6 +24,7 @@ export const remittanceRequests = pgTable("remittance_requests", {
     scale: 7,
   }).notNull(),
   phpPayout: numeric("php_payout", { precision: 20, scale: 2 }).notNull(),
+  destinationCurrency: text("destination_currency").notNull().default("PHP"),
   receiverName: text("receiver_name").notNull(),
   receiverAccount: text("receiver_account").notNull(),
   status: remittanceStatusEnum("status").notNull().default("funded"),
@@ -39,6 +40,10 @@ export const remittanceRequests = pgTable("remittance_requests", {
   senderWallet: text("sender_wallet"),
   senderName: text("sender_name"),
   agentWallet: text("agent_wallet"),
+  fundedAt:           timestamp("funded_at",           { withTimezone: true }),
+  processingAt:       timestamp("processing_at",       { withTimezone: true }),
+  payoutSubmittedAt:  timestamp("payout_submitted_at", { withTimezone: true }),
+  completedAt:        timestamp("completed_at",        { withTimezone: true }),
 });
 
 export const agentState = pgTable("agent_state", {

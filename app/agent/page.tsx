@@ -80,7 +80,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   pending_agent: { label: "Awaiting Accept", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
   cancelled:     { label: "Cancelled",       color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
   funded:        { label: "Waiting VND",     color: "text-amber-600 bg-amber-50 border-amber-100",   icon: Clock },
-  processing:    { label: "Pay PHP Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: Zap },
+  processing:    { label: "Pay Out Now",     color: "text-blue-600 bg-blue-50 border-blue-100",      icon: Zap },
   payout_submitted: { label: "Wait Receiver", color: "text-indigo-600 bg-indigo-50 border-indigo-100", icon: Activity },
   completed:     { label: "Completed",       color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: CheckCircle2 },
   expired:       { label: "Expired",         color: "text-gray-400 bg-gray-50 border-gray-100",      icon: AlertCircle },
@@ -598,7 +598,7 @@ export default function AgentDashboard() {
                             <p className="font-bold text-indigo-600 text-sm">{r.usdcEquivalent.toFixed(2)}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">PHP Out</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{r.destinationCurrency || "PHP"} Out</p>
                             <p className="font-bold text-emerald-600 text-sm">{r.phpPayout.toFixed(0)}</p>
                           </div>
                         </div>
@@ -651,7 +651,7 @@ export default function AgentDashboard() {
                         <td className="px-10 py-6"><StatusBadge status={r.status} /></td>
                         <td className="px-10 py-6"><CountdownTimer expiresAt={r.expiresAt} status={r.status} /></td>
                         <td className="px-10 py-6 text-right">
-                          <p className="text-sm font-bold text-gray-900">{r.phpPayout.toLocaleString()} PHP</p>
+                          <p className="text-sm font-bold text-gray-900">{r.phpPayout.toLocaleString()} {r.destinationCurrency || "PHP"}</p>
                           <p className="text-xs text-emerald-600 font-bold mt-1">{r.vndAmount.toLocaleString()} VND</p>
                         </td>
                         <td className="px-10 py-6 text-right">
@@ -933,7 +933,7 @@ export default function AgentDashboard() {
                   <Banknote className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Confirm PHP Payout</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Confirm {payoutTx?.destinationCurrency || "PHP"} Payout</h3>
                   <p className="text-[10px] text-gray-400 font-mono tracking-wider">{payoutTx.txId}</p>
                 </div>
               </div>
@@ -954,7 +954,7 @@ export default function AgentDashboard() {
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Payout Amount</p>
-                      <p className="text-3xl font-bold text-emerald-700">{payoutTx.phpPayout.toLocaleString()} PHP</p>
+                      <p className="text-3xl font-bold text-emerald-700">{payoutTx.phpPayout.toLocaleString()} {payoutTx.destinationCurrency || "PHP"}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Receiver Name</p>
@@ -993,7 +993,7 @@ export default function AgentDashboard() {
                     onUploaded={(url) => setPayoutProofUrl(url || null)}
                   />
                   <p className="text-[10px] text-gray-400 text-center mt-6 uppercase tracking-wider font-medium">
-                    Upload a screenshot of your PHP transfer confirmation
+                    Upload a screenshot of your {payoutTx?.destinationCurrency || "PHP"} transfer confirmation
                   </p>
                 </div>
               </div>

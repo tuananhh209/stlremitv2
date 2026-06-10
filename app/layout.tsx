@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "STL Remit — Cross-Border Remittance",
-  description: "Send VND to Philippines via Stellar blockchain escrow",
+  description: "Send VND to 6 currencies worldwide via Stellar blockchain escrow",
 };
 
 export default function RootLayout({

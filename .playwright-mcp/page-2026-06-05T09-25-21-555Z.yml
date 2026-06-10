@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "overview" [level=1] [ref=e6]
+          - paragraph [ref=e7]: Stellar Blockchain · Testnet
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - paragraph [ref=e11]: Connected Wallet
+            - paragraph [ref=e12]: GCEZWK...EX9GX7
+          - button "Wallet menu" [ref=e13]: G
+      - generic [ref=e16]:
+        - img [ref=e18]
+        - generic [ref=e20]:
+          - heading "Set up your bank account first" [level=3] [ref=e21]
+          - paragraph [ref=e22]: You need to add your Vietnamese bank account in Settings before you can send money.
+        - button "Go to Settings" [ref=e23]:
+          - img [ref=e24]
+          - text: Go to Settings
+    - navigation [ref=e27]:
+      - button "overview" [ref=e28]:
+        - img [ref=e29]
+        - generic [ref=e34]: overview
+      - button "history" [ref=e35]:
+        - img [ref=e36]
+        - generic [ref=e40]: history
+      - button "pools" [ref=e41]:
+        - img [ref=e42]
+        - generic [ref=e44]: pools
+      - button "settings" [ref=e45]:
+        - img [ref=e46]
+        - generic [ref=e49]: settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e55] [cursor=pointer]:
+    - img [ref=e56]
+  - alert [ref=e59]

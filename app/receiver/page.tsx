@@ -28,7 +28,22 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   cancelled:     { label: "Cancelled",      color: "text-red-500 bg-red-50 border-red-100",        icon: X },
 };
 
-const RECEIVER_BANKS = ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank", "GCash", "Maya"];
+const RECEIVER_BANKS = [
+  // Philippines
+  "GCash", "Maya", "BDO", "BPI", "Metrobank",
+  // United States
+  "PayPal", "Zelle", "Venmo", "Chase", "Bank of America",
+  // China
+  "Alipay", "WeChat Pay", "UnionPay",
+  // Russia
+  "Sberbank", "Tinkoff", "СБП (SBP)",
+  // United Kingdom
+  "Barclays", "HSBC", "Monzo",
+  // France / Eurozone
+  "Revolut", "Wise", "BNP Paribas",
+  // Generic
+  "Bank Transfer",
+];
 
 export default function ReceiverDashboard() {
   const router = useRouter();
@@ -324,7 +339,7 @@ export default function ReceiverDashboard() {
                   <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600"><TrendingUp className="w-6 h-6" /></div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Received</p>
-                    <p className="text-3xl font-bold text-gray-900">{totalReceived.toFixed(2)} <span className="text-sm font-medium text-gray-300">PHP</span></p>
+                    <p className="text-3xl font-bold text-gray-900">{totalReceived.toFixed(2)} <span className="text-sm font-medium text-gray-300">total</span></p>
                   </div>
                 </div>
                 <div className="bg-white p-8 rounded-[32px] premium-shadow border border-outline/5 space-y-4">
@@ -363,7 +378,7 @@ export default function ReceiverDashboard() {
                     <thead className="bg-gray-50/50">
                       <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                         <th className="px-10 py-6">Status / Time</th>
-                        <th className="px-10 py-6">Amount (PHP)</th>
+                        <th className="px-10 py-6">Payout Amount</th>
                         <th className="px-10 py-6">From (VND)</th>
                         <th className="px-10 py-6 text-right">Details</th>
                       </tr>
@@ -393,7 +408,7 @@ export default function ReceiverDashboard() {
                                 </div>
                               </td>
                               <td className="px-10 py-7">
-                                <p className="text-lg font-bold text-emerald-600">{r.phpPayout.toFixed(2)} PHP</p>
+                                <p className="text-lg font-bold text-emerald-600">{r.phpPayout.toFixed(2)} {r.destinationCurrency || "PHP"}</p>
                               </td>
                               <td className="px-10 py-7">
                                 <p className="text-sm font-bold text-gray-400">{r.vndAmount.toLocaleString()} VND</p>
@@ -451,7 +466,7 @@ export default function ReceiverDashboard() {
                     <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                       <th className="px-10 py-6">Date / ID</th>
                       <th className="px-10 py-6">Sender Info</th>
-                      <th className="px-10 py-6">Amount (PHP)</th>
+                      <th className="px-10 py-6">Payout Amount</th>
                       <th className="px-10 py-6">Status</th>
                       <th className="px-10 py-6 text-right">View</th>
                     </tr>
@@ -481,7 +496,7 @@ export default function ReceiverDashboard() {
                               <p className="text-[10px] text-gray-400 font-mono mt-1">{r.senderWallet ? `${r.senderWallet.slice(0, 6)}...${r.senderWallet.slice(-4)}` : "No Wallet"}</p>
                             </td>
                             <td className="px-10 py-7">
-                              <p className="text-lg font-bold text-emerald-600">{r.phpPayout.toFixed(2)} PHP</p>
+                              <p className="text-lg font-bold text-emerald-600">{r.phpPayout.toFixed(2)} {r.destinationCurrency || "PHP"}</p>
                             </td>
                             <td className="px-10 py-7">
                               <span className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border", cfg.color)}>
@@ -519,7 +534,7 @@ export default function ReceiverDashboard() {
             <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-                <p className="text-sm text-gray-400 mt-1">Your Philippine payout account for receiving PHP.</p>
+                <p className="text-sm text-gray-400 mt-1">Your payout account for receiving funds.</p>
               </div>
 
               {sLoading ? (
@@ -532,7 +547,7 @@ export default function ReceiverDashboard() {
                     <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5" /> Philippine Bank / E-Wallet
+                          <Building2 className="w-3.5 h-3.5" /> Bank / E-Wallet
                         </label>
                         <select value={sBankName} onChange={e => setSBankName(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3.5 text-gray-900 focus:ring-2 focus:ring-emerald-200 transition-all">
                           <option value="">Select bank...</option>
@@ -633,7 +648,7 @@ export default function ReceiverDashboard() {
               <div className="grid grid-cols-2 gap-6 bg-emerald-50/50 p-8 rounded-3xl border border-emerald-100/30">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">You Receive</p>
-                  <p className="text-3xl font-bold text-emerald-700">{selectedTx.phpPayout.toFixed(2)} PHP</p>
+                  <p className="text-3xl font-bold text-emerald-700">{selectedTx.phpPayout.toFixed(2)} {selectedTx.destinationCurrency || "PHP"}</p>
                 </div>
                 <div className="space-y-1 text-right">
                   <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">Sent Amount</p>
@@ -710,7 +725,7 @@ export default function ReceiverDashboard() {
                   <StatusBadge status={selectedTx.status} />
                   <div className="h-4 w-[1px] bg-gray-200" />
                   <p className="text-xs font-medium text-gray-500">
-                    {selectedTx.status === "processing" ? "Agent has received VND and is paying out PHP." : 
+                    {selectedTx.status === "processing" ? `Agent has received VND and is paying out ${selectedTx.destinationCurrency || "PHP"}.` :
                      selectedTx.status === "funded" ? "Waiting for sender to complete VND payment." :
                      selectedTx.status === "completed" ? "Successfully delivered to your bank account." :
                      "Status update in progress..."}
@@ -725,7 +740,7 @@ export default function ReceiverDashboard() {
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Agent Payment Proof
                   </h4>
                   <div className="bg-gray-50 p-6 rounded-3xl border border-outline/5">
-                    <p className="text-xs text-gray-500 mb-4 font-medium">The agent has uploaded this receipt of your PHP transfer:</p>
+                    <p className="text-xs text-gray-500 mb-4 font-medium">The agent has uploaded this receipt of your {selectedTx.destinationCurrency || "PHP"} transfer:</p>
                     <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-outline/10 bg-white group">
                       <img 
                         src={selectedTx.agentProofRef} 
@@ -750,11 +765,11 @@ export default function ReceiverDashboard() {
                     {confirmingId === selectedTx.txId ? (
                       <><Loader2 className="w-5 h-5 animate-spin" /> Signing on Stellar...</>
                     ) : (
-                      <><ShieldCheck className="w-5 h-5" /> Confirm PHP Received</>
+                      <><ShieldCheck className="w-5 h-5" /> Confirm {selectedTx.destinationCurrency || "PHP"} Received</>
                     )}
                   </button>
                   <p className="text-[10px] text-gray-400 text-center mt-4 uppercase tracking-[0.1em] font-medium px-10">
-                    Confirming will release the Agent's USDC collateral. Only click if you have actually received the PHP in your bank.
+                    Confirming will release the Agent's USDC collateral. Only click if you have actually received the {selectedTx.destinationCurrency || "PHP"} in your bank.
                   </p>
                 </div>
               )}

@@ -47,7 +47,7 @@ function ConnectStep() {
             <div className="space-y-2">
               <Globe2 className="w-5 h-5 text-gray-400" />
               <h3 className="font-semibold text-gray-900 text-sm">Global</h3>
-              <p className="text-xs text-gray-500">VND → PHP</p>
+              <p className="text-xs text-gray-500">VND → 6 currencies</p>
             </div>
           </div>
         </div>
@@ -75,14 +75,14 @@ function RoleStep({ onSelect }: { onSelect: (role: UserRole) => void }) {
     {
       id: "sender" as UserRole,
       title: "Sender",
-      desc: "Send VND from Vietnam to Philippines",
+      desc: "Send VND to 6 currencies worldwide",
       color: "hover:border-primary/50 hover:bg-primary/5",
       badge: "bg-primary/10 text-primary",
     },
     {
       id: "receiver" as UserRole,
       title: "Receiver",
-      desc: "Receive PHP payout in Philippines",
+      desc: "Receive payout in your local currency",
       color: "hover:border-emerald-300 hover:bg-emerald-50",
       badge: "bg-emerald-100 text-emerald-700",
     },

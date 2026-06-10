@@ -13,7 +13,8 @@ export interface RemittanceRecord {
   txId: string;
   vndAmount: number;
   usdcEquivalent: number;
-  phpPayout: number;
+  phpPayout: number;           // payout amount in destinationCurrency
+  destinationCurrency: string; // e.g. "PHP", "USD", "CNY", "RUB", "GBP", "EUR"
   receiverName: string;
   receiverAccount: string;
   receiverWallet: string | null;   // Stellar wallet of receiver
@@ -26,6 +27,10 @@ export interface RemittanceRecord {
   senderWallet: string | null;
   senderName: string | null;
   agentWallet: string | null;
+  fundedAt:           string | null;
+  processingAt:       string | null;
+  payoutSubmittedAt:  string | null;
+  completedAt:        string | null;
 }
 
 // --- Request / Response interfaces ---

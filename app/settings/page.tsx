@@ -23,7 +23,22 @@ function cn(...inputs: ClassValue[]) {
 
 // ── Bank lists ────────────────────────────────────────────────────────────────
 const SENDER_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
-const RECEIVER_BANKS = ["BDO", "BPI", "Metrobank", "UnionBank", "PNB", "Landbank", "GCash", "Maya"];
+const RECEIVER_BANKS = [
+  // Philippines
+  "GCash", "Maya", "BDO", "BPI", "Metrobank",
+  // United States
+  "PayPal", "Zelle", "Venmo", "Chase", "Bank of America",
+  // China
+  "Alipay", "WeChat Pay", "UnionPay",
+  // Russia
+  "Sberbank", "Tinkoff", "СБП (SBP)",
+  // United Kingdom
+  "Barclays", "HSBC", "Monzo",
+  // France / Eurozone
+  "Revolut", "Wise", "BNP Paribas",
+  // Generic
+  "Bank Transfer",
+];
 const AGENT_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
 
 // ── Field component ───────────────────────────────────────────────────────────
@@ -175,16 +190,16 @@ export default function SettingsPage() {
             <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 space-y-8">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  {role === "sender" ? "Your Vietnamese Bank Account" : "Your Philippine Payout Account"}
+                  {role === "sender" ? "Your Vietnamese Bank Account" : "Your Payout Account"}
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">
                   {role === "sender"
                     ? "This is the account you'll use to send VND to the agent."
-                    : "This is the account where you'll receive PHP payouts."}
+                    : "This is the account where you'll receive your payouts."}
                 </p>
               </div>
 
-              <Field label={role === "sender" ? "Vietnamese Bank" : "Philippine Bank / E-Wallet"} icon={Building2}>
+              <Field label={role === "sender" ? "Vietnamese Bank" : "Bank / E-Wallet"} icon={Building2}>
                 <select
                   value={bankName}
                   onChange={e => setBankName(e.target.value)}

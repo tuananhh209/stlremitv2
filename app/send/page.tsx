@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { calculateAmounts, EXCHANGE_RATES } from "@/lib/config";
+import { calculateAmounts, CURRENCIES, PLATFORM_SPREAD } from "@/lib/config";
+import type { CurrencyCode } from "@/lib/config";
 import { useWallet } from "@/components/wallet-provider";
 import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
@@ -69,12 +70,20 @@ export default function SenderDashboard() {
   }, [isConnected, role, router]);
 
   // Form State
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("PHP");
   const [vndAmount, setVndAmount] = useState<string>("");
   const [receiverName, setReceiverName] = useState("");
   const [receiverAccount, setReceiverAccount] = useState("");
   const [receiverWallet, setReceiverWallet] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Live oracle rates state
+  const [liveRates, setLiveRates] = useState<Record<CurrencyCode, number> | null>(null);
+  const [rawRates, setRawRates] = useState<Record<CurrencyCode, number> | null>(null);
+  const [ratesSource, setRatesSource] = useState<"oracle" | "fallback">("fallback");
+  const [, setRatesUpdatedAt] = useState<number>(Date.now());
+  const [ratesAge, setRatesAge] = useState(0);
 
   // Real-time Data — init from localStorage cache for instant display
   const [availableUsdc, setAvailableUsdc] = useState<number>(() => {
@@ -100,8 +109,11 @@ export default function SenderDashboard() {
 
   const SENDER_BANKS = ["Vietcombank", "Techcombank", "BIDV", "VPBank", "MB Bank", "ACB", "Sacombank", "TPBank"];
 
-  const parsedAmount = parseFloat(vndAmount);
-  const amounts = !isNaN(parsedAmount) && parsedAmount > 0 ? calculateAmounts(parsedAmount) : null;
+  const parsedAmount = parseFloat(vndAmount.replace(/\./g, ""));
+  const amounts = !isNaN(parsedAmount) && parsedAmount > 0
+    ? calculateAmounts(parsedAmount, selectedCurrency, liveRates ?? undefined)
+    : null;
+  const currencyInfo = CURRENCIES[selectedCurrency];
 
   const [recentRemittances, setRecentRemittances] = useState<any[]>([]);
   const [allRemittances, setAllRemittances] = useState<any[]>([]);
@@ -146,6 +158,33 @@ export default function SenderDashboard() {
       }
     } catch { /* ignore */ }
     finally { setHistoryLoading(false); }
+  }, []);
+
+  // Oracle rates: fetch every 60s (server caches for 60s)
+  const fetchRates = useCallback(async () => {
+    try {
+      const res = await fetch("/api/rates", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setLiveRates(data.rates);
+        setRawRates(data.rawRates);
+        setRatesSource(data.source ?? "oracle");
+        setRatesUpdatedAt(Date.now());
+        setRatesAge(0);
+      }
+    } catch { /* fallback rates used in calculateAmounts */ }
+  }, []);
+
+  useEffect(() => {
+    fetchRates();
+    const id = setInterval(fetchRates, 60_000);
+    return () => clearInterval(id);
+  }, [fetchRates]);
+
+  // Age ticker — increments every second for "updated X seconds ago" display
+  useEffect(() => {
+    const id = setInterval(() => setRatesAge((a) => a + 1), 1000);
+    return () => clearInterval(id);
   }, []);
 
   // Balance: poll every 15s (Stellar RPC is slow, cached on server for 10s)
@@ -235,11 +274,12 @@ export default function SenderDashboard() {
       const res = await fetch("/api/remittance/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          vndAmount: parsedAmount, 
-          receiverName, 
-          receiverAccount, 
+        body: JSON.stringify({
+          vndAmount: parsedAmount,
+          receiverName,
+          receiverAccount: "",
           receiverWallet,
+          destinationCurrency: selectedCurrency,
           senderWallet: address,
           senderName: "Sender"
         }),
@@ -331,108 +371,123 @@ export default function SenderDashboard() {
           {activeTab === "overview" && isBankInfoComplete("sender") && (
             <div className="flex flex-col xl:flex-row gap-10">
               {/* Left: Form */}
-              <div className="flex-1 space-y-8">
-                <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-10 lg:p-16">
-                  <div className="space-y-12">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">New Remittance</h2>
-                        <p className="text-sm text-gray-400">Send VND to Philippines via escrow-protected transfer.</p>
+              <div className="flex-1 space-y-6">
+                <div className="bg-white rounded-[32px] premium-shadow border border-outline/5 p-8">
+                  <div className="space-y-6">
+
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/5 rounded-2xl flex items-center justify-center text-primary shrink-0">
+                        <Banknote className="w-5 h-5" />
                       </div>
-                      <div className="w-14 h-14 bg-primary/5 rounded-[20px] flex items-center justify-center text-primary">
-                        <Banknote className="w-7 h-7" />
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">New Remittance</h2>
+                        <p className="text-xs text-gray-400">VND → {currencyInfo.flag} {currencyInfo.country} · escrow-protected</p>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-gray-50" />
+
+                    {/* Destination Currency */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Destination Currency</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {(Object.values(CURRENCIES) as typeof CURRENCIES[CurrencyCode][]).map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => setSelectedCurrency(c.code)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border",
+                              selectedCurrency === c.code
+                                ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                                : "bg-gray-50 text-gray-500 border-transparent hover:bg-gray-100 hover:text-gray-700"
+                            )}
+                          >
+                            <span className="text-sm leading-none">{c.flag}</span>
+                            <span className="text-xs">{c.code}</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-12">
-                      {/* Amount */}
-                      <div className="space-y-8">
-                        <div className="relative group">
-                          <label className="absolute left-7 top-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-focus-within:text-primary transition-colors">
-                            VND Amount
-                          </label>
-                          <input
-                            type="number"
-                            value={vndAmount}
-                            onChange={(e) => setVndAmount(e.target.value)}
-                            placeholder="0"
-                            className="w-full bg-gray-50 border-none rounded-[40px] px-10 pt-20 pb-12 text-6xl font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-gray-200"
-                          />
-                          <div className="absolute right-10 top-1/2 -translate-y-1/2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-outline/5 font-bold text-lg">VND</div>
-                        </div>
-
-                        {amounts && (
-                          <div className="bg-emerald-50/50 rounded-3xl p-8 border border-emerald-100/50 space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recipient Gets</span>
-                              <span className="text-2xl font-bold text-emerald-700">{amounts.phpPayout.toLocaleString()} PHP</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-4 border-t border-emerald-100/30">
-                              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">USDC to Lock</span>
-                              <span className="text-lg font-bold text-emerald-700">{amounts.usdcEquivalent.toFixed(4)} USDC</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Receiver */}
-                      <div className="space-y-6">
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Receiver Full Name</label>
-                          <div className="relative">
-                            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                            <input
-                              type="text"
-                              value={receiverName}
-                              onChange={(e) => setReceiverName(e.target.value)}
-                              placeholder="Juan Dela Cruz"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-lg font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">GCash / Account No.</label>
-                          <div className="relative">
-                            <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                            <input
-                              type="text"
-                              value={receiverAccount}
-                              onChange={(e) => setReceiverAccount(e.target.value)}
-                              placeholder="09XXXXXXXXX"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-lg font-bold text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-3">Receiver Stellar Wallet</label>
-                          <div className="relative">
-                            <Wallet className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                            <input
-                              type="text"
-                              value={receiverWallet}
-                              onChange={(e) => setReceiverWallet(e.target.value.trim())}
-                              placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                              className="w-full bg-gray-50 border-none rounded-2xl pl-16 pr-8 py-6 text-xs font-mono text-gray-900 focus:ring-4 focus:ring-primary/5 transition-all"
-                            />
-                          </div>
-                          <p className="text-[10px] text-gray-400 ml-3">Ask receiver for their Stellar wallet address</p>
-                        </div>
-
-                        <button
-                          disabled={!amounts || !receiverName || !receiverAccount || !receiverWallet || loading}
-                          onClick={handleStartRemittance}
-                          className="w-full btn-primary h-16 rounded-[24px] font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
-                        >
-                          {loading ? (
-                            <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending Request...</>
-                          ) : (
-                            <>Send Request <ArrowRight className="w-5 h-5" /></>
-                          )}
-                        </button>
-                        {error && <p className="text-center text-xs text-red-500 font-bold mt-2">⚠️ {error}</p>}
+                    {/* VND Amount */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">VND Amount</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={vndAmount}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "");
+                            setVndAmount(digits ? Number(digits).toLocaleString("de-DE") : "");
+                          }}
+                          placeholder="0"
+                          className="w-full bg-gray-50 border border-transparent rounded-2xl pl-5 pr-20 py-4 text-2xl font-bold text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-gray-200"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-outline/10 text-xs font-bold text-gray-500">VND</span>
                       </div>
                     </div>
+
+                    {/* Payout preview */}
+                    {amounts && (
+                      <div className="flex items-center justify-between px-5 py-4 bg-emerald-50 rounded-2xl border border-emerald-100 animate-in fade-in duration-300">
+                        <div>
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recipient Gets</p>
+                          <p className="text-[10px] text-emerald-500/70 mt-0.5">{currencyInfo.flag} {currencyInfo.country}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-emerald-700 tabular-nums">
+                            {amounts.phpPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedCurrency}
+                          </p>
+                          <p className="text-[10px] text-emerald-500/70 mt-0.5">{amounts.usdcEquivalent.toFixed(4)} USDC locked</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Receiver fields */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Receiver Name</label>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                        <input
+                          type="text"
+                          value={receiverName}
+                          onChange={(e) => setReceiverName(e.target.value)}
+                          placeholder={currencyInfo.namePlaceholder}
+                          className="w-full bg-gray-50 border border-transparent rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-gray-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Receiver Stellar Wallet</label>
+                      <div className="relative">
+                        <Wallet className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                        <input
+                          type="text"
+                          value={receiverWallet}
+                          onChange={(e) => setReceiverWallet(e.target.value.trim())}
+                          placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                          className="w-full bg-gray-50 border border-transparent rounded-xl pl-10 pr-4 py-3 text-xs font-mono text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-gray-300"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-400 ml-1">Ask receiver for their Stellar wallet address</p>
+                    </div>
+
+                    <button
+                      disabled={!amounts || !receiverName || !receiverWallet || loading}
+                      onClick={handleStartRemittance}
+                      className="w-full btn-primary h-12 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-40"
+                    >
+                      {loading ? (
+                        <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending...</>
+                      ) : (
+                        <>Send Request <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </button>
+                    {error && <p className="text-center text-xs text-red-500 font-bold">⚠️ {error}</p>}
                   </div>
                 </div>
 
@@ -462,8 +517,92 @@ export default function SenderDashboard() {
                 </div>
               </div>
 
-              {/* Right: Recent activity */}
+              {/* Right: Live Rates + Recent activity */}
               <div className="xl:w-[450px] space-y-8">
+
+                {/* ── Live Exchange Rates widget ── */}
+                <div className="bg-indigo-600 rounded-[40px] p-8 text-white relative overflow-hidden">
+                  <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+                  <div className="relative z-10">
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-bold text-lg">Live Rates</h3>
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          ratesSource === "oracle" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                        )} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                          {ratesSource === "oracle" ? "Live" : "Fallback"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Subtitle: reference + age */}
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-white/50 text-xs">100,000 VND →</p>
+                      <p className="text-white/30 text-[10px] tabular-nums">
+                        {ratesAge < 60 ? `${ratesAge}s ago` : `${Math.floor(ratesAge / 60)}m ago`}
+                        {" · "}+{(PLATFORM_SPREAD * 100).toFixed(0)}% spread
+                      </p>
+                    </div>
+
+                    {/* Rate rows */}
+                    <div className="space-y-0">
+                      {(Object.values(CURRENCIES) as typeof CURRENCIES[CurrencyCode][]).map((c, i, arr) => {
+                        const appliedRate = liveRates?.[c.code];
+                        const marketRate = rawRates?.[c.code];
+                        const payout100k = appliedRate ? appliedRate * 100_000 : null;
+                        const isSelected = selectedCurrency === c.code;
+
+                        return (
+                          <div
+                            key={c.code}
+                            className={cn(
+                              "flex items-center justify-between py-2.5 text-sm transition-all",
+                              i < arr.length - 1 ? "border-b border-white/10" : "",
+                              isSelected ? "opacity-100" : "opacity-70"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base leading-none">{c.flag}</span>
+                              <div>
+                                <span className={cn("font-semibold", isSelected && "text-white")}>{c.code}</span>
+                                <span className="text-white/40 text-[10px] ml-1">{c.country}</span>
+                              </div>
+                              {isSelected && (
+                                <span className="text-[9px] font-bold bg-white/20 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                                  selected
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold tabular-nums text-sm">
+                                {payout100k !== null
+                                  ? payout100k >= 1
+                                    ? payout100k.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                    : payout100k.toFixed(4)
+                                  : "—"}
+                              </p>
+                              {marketRate && appliedRate && (
+                                <p className="text-white/30 text-[10px] tabular-nums">
+                                  mkt {(marketRate * 100_000).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-white/20 text-[10px] text-center mt-4 uppercase tracking-widest">
+                      Rates from ExchangeRate-API · Updates every 60s
+                    </p>
+                  </div>
+                </div>
+
+                {/* ── Recent Activity ── */}
                 <div className="bg-white rounded-[40px] premium-shadow border border-outline/5 p-8 space-y-8">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-gray-900">Recent Activity</h3>
@@ -483,7 +622,7 @@ export default function SenderDashboard() {
                           <span className="text-[10px] font-medium text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
                         </div>
                         <p className="font-bold text-gray-900 group-hover:text-primary transition-colors">{r.receiverName}</p>
-                        <p className="text-xs text-gray-400 mt-1">{Number(r.vndAmount).toLocaleString()} VND → {Number(r.phpPayout).toFixed(0)} PHP</p>
+                        <p className="text-xs text-gray-400 mt-1">{Number(r.vndAmount).toLocaleString()} VND → {Number(r.phpPayout).toFixed(0)} {r.destinationCurrency || "PHP"}</p>
                       </div>
                     ))}
                     {activityLoading ? (
@@ -497,23 +636,6 @@ export default function SenderDashboard() {
                         <p className="text-xs text-gray-400 font-medium">No activity yet</p>
                       </div>
                     ) : null}
-                  </div>
-                </div>
-
-                <div className="bg-indigo-600 rounded-[40px] p-8 text-white space-y-6 relative overflow-hidden">
-                  <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-                  <div className="relative z-10">
-                    <h3 className="font-bold text-lg">Exchange Rates</h3>
-                    <div className="mt-4 space-y-3">
-                      <div className="flex justify-between items-center text-sm font-medium border-b border-white/10 pb-3">
-                        <span className="text-white/60">1 USDC</span>
-                        <span>{EXCHANGE_RATES.USDC_TO_PHP} PHP</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm font-medium pt-1">
-                        <span className="text-white/60">1 USDC</span>
-                        <span>{Math.round(1 / EXCHANGE_RATES.VND_TO_USDC).toLocaleString()} VND</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -557,7 +679,7 @@ export default function SenderDashboard() {
                         </td>
                         <td className="px-10 py-7">
                           <p className="text-sm font-bold text-gray-900">{Number(r.vndAmount).toLocaleString()} VND</p>
-                          <p className="text-xs text-emerald-600 font-bold mt-1">{Number(r.phpPayout).toFixed(2)} PHP</p>
+                          <p className="text-xs text-emerald-600 font-bold mt-1">{Number(r.phpPayout).toFixed(2)} {r.destinationCurrency || "PHP"}</p>
                         </td>
                         <td className="px-10 py-7">
                           <span className={cn("inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider", STATUS_COLORS[r.status] ?? "bg-gray-50 text-gray-400")}>
@@ -642,7 +764,7 @@ export default function SenderDashboard() {
                       { title: "1. Send Request", desc: "You submit a remittance request. No payment yet." },
                       { title: "2. Agent Accepts", desc: "Agent reviews and locks USDC in the smart contract." },
                       { title: "3. Pay VND (5 min)", desc: "You transfer VND to agent's bank within 5 minutes." },
-                      { title: "4. PHP Delivered", desc: "Agent pays PHP to receiver and confirms on-chain." },
+                      { title: "4. Payout Delivered", desc: "Agent pays the destination currency to receiver and confirms on-chain." },
                     ].map((s, i) => (
                       <div key={i} className="flex gap-5">
                         <div className="w-10 h-10 bg-gray-50 rounded-2xl flex items-center justify-center font-bold text-gray-400 shrink-0 text-sm">{i + 1}</div>

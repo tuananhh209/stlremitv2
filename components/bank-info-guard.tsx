@@ -14,7 +14,7 @@ const MESSAGES: Record<string, { title: string; desc: string }> = {
   },
   receiver: {
     title: "Set up your payout account first",
-    desc: "You need to add your Philippine bank / e-wallet in Settings before you can receive payouts.",
+    desc: "You need to add your bank / e-wallet in Settings before you can receive payouts.",
   },
   agent: {
     title: "Set up your bank account first",

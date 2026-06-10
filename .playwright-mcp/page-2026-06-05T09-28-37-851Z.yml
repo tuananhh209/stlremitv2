@@ -1,0 +1,99 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - heading "settings" [level=1] [ref=e206]
+          - paragraph [ref=e7]: Stellar Blockchain · Testnet
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - paragraph [ref=e11]: Connected Wallet
+            - paragraph [ref=e12]: GCEZWK...EX9GX7
+          - button "Wallet menu" [ref=e13]: G
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - heading "Settings" [level=2] [ref=e209]
+          - paragraph [ref=e210]: Your Vietnamese bank account for VND transfers.
+        - generic [ref=e211]:
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - generic [ref=e214]:
+                - generic [ref=e215]:
+                  - img [ref=e216]
+                  - text: Vietnamese Bank
+                - combobox [ref=e220]:
+                  - option "Select bank..." [selected]
+                  - option "Vietcombank"
+                  - option "Techcombank"
+                  - option "BIDV"
+                  - option "VPBank"
+                  - option "MB Bank"
+                  - option "ACB"
+                  - option "Sacombank"
+                  - option "TPBank"
+              - generic [ref=e221]:
+                - generic [ref=e222]:
+                  - img [ref=e223]
+                  - text: Account Number
+                - textbox "0123456789" [ref=e225]
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - img [ref=e228]
+                  - text: Account Holder Name
+                - textbox "Full name as on bank account" [ref=e231]
+              - generic [ref=e232]:
+                - generic [ref=e233]:
+                  - img [ref=e234]
+                  - text: Bank QR Code (optional)
+                - generic [ref=e240] [cursor=pointer]:
+                  - img [ref=e242]
+                  - generic [ref=e245]:
+                    - paragraph [ref=e246]: Click or drag to upload QR
+                    - paragraph [ref=e247]: PNG, JPG up to 5MB
+            - generic [ref=e248]:
+              - paragraph [ref=e249]: Connected Wallet
+              - paragraph [ref=e250]: GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGDE6Y1KQOHOYMCEOEX9GX7
+            - button "Save Settings" [ref=e251]:
+              - img [ref=e252]
+              - text: Save Settings
+          - generic [ref=e256]:
+            - paragraph [ref=e257]: Live Preview
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - paragraph [ref=e260]: Bank Account
+                - paragraph [ref=e261]: Bank name
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - paragraph [ref=e264]:
+                    - img [ref=e265]
+                    - text: Account Number
+                  - paragraph [ref=e267]: 0000 0000 000
+                - generic [ref=e268]:
+                  - paragraph [ref=e269]:
+                    - img [ref=e270]
+                    - text: Account Holder
+                  - paragraph [ref=e273]: Full name
+                - generic [ref=e274]:
+                  - paragraph [ref=e275]:
+                    - img [ref=e276]
+                    - text: QR Code
+                  - generic [ref=e282]:
+                    - img [ref=e283]
+                    - paragraph [ref=e289]: Upload QR to preview
+    - navigation [ref=e161]:
+      - button "overview" [ref=e162]:
+        - img [ref=e163]
+        - generic [ref=e168]: overview
+      - button "history" [ref=e169]:
+        - img [ref=e170]
+        - generic [ref=e174]: history
+      - button "pools" [ref=e175]:
+        - img [ref=e176]
+        - generic [ref=e178]: pools
+      - button "settings" [ref=e179]:
+        - img [ref=e180]
+        - generic [ref=e183]: settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e189] [cursor=pointer]:
+    - img [ref=e190]
+  - alert [ref=e193]

@@ -1,13 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useWallet } from "./wallet-provider";
 import { Wallet, CheckCircle2, LogOut } from "lucide-react";
 
 export function ConnectWallet() {
   const { address, connect, disconnect, isConnected, walletType } = useWallet();
+  const [mounted, setMounted] = useState(false);
 
-  if (isConnected) {
+  useEffect(() => { setMounted(true); }, []);
+
+  // Defer connected-state render until after hydration to avoid server/client mismatch
+  if (mounted && isConnected) {
     return (
       <div className="flex flex-col gap-4">
         <div className="p-4 bg-secondary/10 border border-secondary/20 rounded-xl flex items-center gap-3">
