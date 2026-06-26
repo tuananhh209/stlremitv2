@@ -1,4 +1,13 @@
 import { z } from "zod";
+import { loadEnvConfig } from "@next/env";
+import path from "path";
+
+if (typeof window === "undefined" && !process.env.DATABASE_URL) {
+  const originalEnv = process.env.NODE_ENV;
+  (process.env as any).NODE_ENV = "development";
+  loadEnvConfig(path.resolve(__dirname, ".."));
+  (process.env as any).NODE_ENV = originalEnv;
+}
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL"),

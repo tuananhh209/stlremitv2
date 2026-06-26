@@ -75,7 +75,7 @@ export const databaseService = {
         senderWallet: data.senderWallet ?? null,
         senderName: data.senderName ?? null,
         agentWallet: data.agentWallet ?? null,
-        status: data.status || "pending_agent",
+        status: data.status || (data.stellarTxHash ? "funded" : "pending_agent"),
         createdAt: now,
         expiresAt,
         ...(data.stellarTxHash ? { stellarTxHash: data.stellarTxHash } : {}),
