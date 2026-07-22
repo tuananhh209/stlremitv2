@@ -7,6 +7,7 @@ import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
 import { BankInfoGuard } from "@/components/bank-info-guard";
 import type { RemittanceRecord } from "@/lib/types";
+import { STELLAR_EXPLORER_URL, STELLAR_WALLET_NETWORK } from "@/lib/stellar-network";
 import {
   Clock, CheckCircle2, AlertCircle, ExternalLink,
   Inbox, User, Building2, CreditCard, Settings,
@@ -209,7 +210,7 @@ export default function ReceiverDashboard() {
 
       let signedXdr: string;
       try {
-        signedXdr = await sign(xdr, "TESTNET");
+        signedXdr = await sign(xdr, STELLAR_WALLET_NETWORK);
       } catch (err: any) {
         alert(`Signing cancelled: ${err?.message ?? err}`);
         return;
@@ -776,7 +777,7 @@ export default function ReceiverDashboard() {
 
               {selectedTx.stellarTxHash && selectedTx.status === "completed" && (
                 <a 
-                  href={`https://stellar.expert/explorer/testnet/tx/${selectedTx.stellarTxHash}`} 
+                  href={`${STELLAR_EXPLORER_URL}/tx/${selectedTx.stellarTxHash}`}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full h-16 bg-gray-900 text-white rounded-3xl font-bold flex items-center justify-center gap-3 transition-all hover:bg-black"

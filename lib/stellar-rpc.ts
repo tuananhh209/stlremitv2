@@ -1,6 +1,5 @@
 import {
   Keypair,
-  Networks,
   TransactionBuilder,
   BASE_FEE,
   nativeToScVal,
@@ -68,7 +67,7 @@ export class StellarRpcService {
 
     let txBuilder = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(contract.call(functionName, ...args))
       .setTimeout(30);
@@ -137,7 +136,7 @@ export class StellarRpcService {
 
       const tx = new TransactionBuilder(agentAccount, {
         fee: BASE_FEE,
-        networkPassphrase: Networks.TESTNET,
+        networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
       })
         .addOperation(contract.call("get_balance"))
         .setTimeout(30)
@@ -175,7 +174,7 @@ export class StellarRpcService {
   }
 
   async submitTransaction(signedXdr: string): Promise<string> {
-    const tx = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
+    const tx = TransactionBuilder.fromXDR(signedXdr, STELLAR_CONFIG.NETWORK_PASSPHRASE);
     const sendResult = await this.server.sendTransaction(tx);
 
     if (sendResult.status === "ERROR") {

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { RemittanceRecord } from "@/lib/types";
+import { STELLAR_EXPLORER_URL } from "@/lib/stellar-network";
 import {
   ArrowLeft, CheckCircle2, Clock, AlertCircle, ExternalLink,
   ShieldCheck, Globe2, FileText, Image as ImageIcon, Zap,
@@ -499,7 +500,7 @@ export default function TransactionStatusPage() {
                   </div>
                 </div>
                 {record.stellarTxHash && (
-                  <a href={`https://stellar.expert/explorer/testnet/tx/${record.stellarTxHash}`} target="_blank" rel="noopener noreferrer"
+                  <a href={`${STELLAR_EXPLORER_URL}/tx/${record.stellarTxHash}`} target="_blank" rel="noopener noreferrer"
                     className="flex items-center justify-between p-5 bg-white rounded-2xl border border-outline/10 hover:border-primary/30 transition-all group">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center text-primary"><Globe2 className="w-5 h-5" /></div>
@@ -591,7 +592,7 @@ export default function TransactionStatusPage() {
                 >
                   {record.stellarTxHash && (
                     <a
-                      href={`https://stellar.expert/explorer/testnet/tx/${record.stellarTxHash}`}
+                      href={`${STELLAR_EXPLORER_URL}/tx/${record.stellarTxHash}`}
                       target="_blank" rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline"
                     >

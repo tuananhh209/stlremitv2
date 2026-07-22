@@ -1,5 +1,4 @@
 import {
-  Networks,
   TransactionBuilder,
   BASE_FEE,
   nativeToScVal,
@@ -30,16 +29,17 @@ export class StellarBuilderService {
   async buildFundTx(publicKey: string, usdcAmount: number): Promise<string> {
     const amount = toContractAmount(usdcAmount);
     const account = await this.server.getAccount(publicKey);
-    const escrowContract = new Contract(this.contractId);
+    const usdcContract = new Contract(STELLAR_CONFIG.USDC_TOKEN_ID);
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
-        escrowContract.call(
-          "fund",
+        usdcContract.call(
+          "transfer",
           new Address(publicKey).toScVal(),
+          new Address(this.contractId).toScVal(),
           nativeToScVal(amount, { type: "i128" }),
         )
       )
@@ -65,7 +65,7 @@ export class StellarBuilderService {
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         contract.call(
@@ -95,7 +95,7 @@ export class StellarBuilderService {
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         contract.call(

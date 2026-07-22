@@ -1,6 +1,5 @@
 import {
   Keypair,
-  Networks,
   TransactionBuilder,
   BASE_FEE,
   nativeToScVal,
@@ -80,7 +79,7 @@ export class StellarService {
 
       const tx = new TransactionBuilder(agentAccount, {
         fee: BASE_FEE,
-        networkPassphrase: Networks.TESTNET,
+        networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
       })
         .addOperation(contract.call("get_balance"))
         .setTimeout(30)
@@ -124,7 +123,7 @@ export class StellarService {
 
     const tx = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         usdcContract.call(
@@ -160,7 +159,7 @@ export class StellarService {
 
     const tx = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         escrowContract.call(
@@ -194,7 +193,7 @@ export class StellarService {
 
     const tx = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         escrowContract.call(
@@ -221,7 +220,7 @@ export class StellarService {
     try {
       const recordTx = new TransactionBuilder(agentAccount, {
         fee: BASE_FEE,
-        networkPassphrase: Networks.TESTNET,
+        networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
       })
         .addOperation(escrowContract.call("get_tx_record", nativeToScVal(txId, { type: "string" })))
         .setTimeout(30)
@@ -245,7 +244,7 @@ export class StellarService {
 
     const tx = new TransactionBuilder(agentAccount, {
       fee: BASE_FEE,
-      networkPassphrase: Networks.TESTNET,
+      networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
     })
       .addOperation(
         escrowContract.call(
@@ -270,7 +269,7 @@ export class StellarService {
     try {
       const recordTx = new TransactionBuilder(agentAccount, {
         fee: BASE_FEE,
-        networkPassphrase: Networks.TESTNET,
+        networkPassphrase: STELLAR_CONFIG.NETWORK_PASSPHRASE,
       })
         .addOperation(escrowContract.call("get_tx_record", nativeToScVal(txId, { type: "string" })))
         .setTimeout(30)

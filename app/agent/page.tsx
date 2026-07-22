@@ -7,6 +7,7 @@ import { useWallet } from "@/components/wallet-provider";
 import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
 import { BankInfoGuard } from "@/components/bank-info-guard";
+import { STELLAR_WALLET_NETWORK } from "@/lib/stellar-network";
 import { QrUpload } from "@/components/qr-upload";
 import {
   LayoutDashboard,
@@ -303,7 +304,7 @@ export default function AgentDashboard() {
       // Step 2: Sign with connected wallet (Freighter / Rabet)
       let signedXdr: string;
       try {
-        signedXdr = await sign(xdr, "TESTNET");
+        signedXdr = await sign(xdr, STELLAR_WALLET_NETWORK);
       } catch (err: any) {
         toast.error(`Wallet signing cancelled or failed: ${err?.message ?? err}`);
         return;
@@ -358,7 +359,7 @@ export default function AgentDashboard() {
       // Step 2: Agent signs with wallet (Freighter/Rabet popup)
       let signedXdr: string;
       try {
-        signedXdr = await sign(xdr, "TESTNET");
+        signedXdr = await sign(xdr, STELLAR_WALLET_NETWORK);
       } catch (err: any) {
         toast.error(`Signing cancelled: ${err?.message ?? err}`);
         return;
