@@ -308,7 +308,7 @@ export default function ReceiverDashboard() {
               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Receiver App</span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Confirm payouts here to release agent's USDC collateral.
+              Confirm payouts here to release agent&apos;s USDC collateral.
             </p>
           </div>
         </div>
@@ -770,7 +770,7 @@ export default function ReceiverDashboard() {
                     )}
                   </button>
                   <p className="text-[10px] text-gray-400 text-center mt-4 uppercase tracking-[0.1em] font-medium px-10">
-                    Confirming will release the Agent's USDC collateral. Only click if you have actually received the {selectedTx.destinationCurrency || "PHP"} in your bank.
+                    Confirming will release the Agent&apos;s USDC collateral. Only click if you have actually received the {selectedTx.destinationCurrency || "PHP"} in your bank.
                   </p>
                 </div>
               )}

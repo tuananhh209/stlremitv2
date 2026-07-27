@@ -52,7 +52,7 @@ interface WalletContextType {
   disconnect: () => void;
   setRole: (role: UserRole) => void;
   setBankInfo: (info: BankInfo) => void;
-  sign: (xdr: string, network: "PUBLIC" | "TESTNET") => Promise<string>;
+  sign: (xdr: string, network: "PUBLIC") => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -144,13 +144,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const setBankInfo = (info: BankInfo) => setBankInfoState(info);
 
-  const sign = async (xdr: string, network: "PUBLIC" | "TESTNET") => {
+  const sign = async (xdr: string, network: "PUBLIC") => {
     if (walletType === "freighter") {
-      const networkPassphrase =
-        network === "TESTNET"
-          ? "Test SDF Network ; September 2015"
-          : "Public Global Stellar Network ; September 2015";
-      const signed = await signTransaction(xdr, { network, networkPassphrase });
+      const signed = await signTransaction(xdr, {
+        network,
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
+      });
       return typeof signed === "string" ? signed : (signed as any).signedTransaction;
     } else if (walletType === "rabet") {
       const result = await (window as any).rabet.sign(xdr, network);

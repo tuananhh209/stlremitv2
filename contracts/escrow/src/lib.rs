@@ -38,6 +38,7 @@ pub enum ContractError {
     TxAlreadyProcessed = 5,
     Expired = 6,
     NotExpired = 7,
+    InvalidAmount = 8,
 }
 
 const TIMEOUT_SECONDS: u64 = 300; // 5 minutes
@@ -73,6 +74,10 @@ impl EscrowContract {
         receiver: Address,
     ) -> Result<(), ContractError> {
         agent.require_auth();
+
+        if amount <= 0 {
+            return Err(ContractError::InvalidAmount);
+        }
 
         if env
             .storage()
@@ -329,5 +334,16 @@ mod tests {
         client.accept(&agent1, &tx_id, &500_i128, &receiver);
         let result = client.try_accept(&agent1, &tx_id, &500_i128, &receiver);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_non_positive_amount_rejected() {
+        let (env, client, agent, _, receiver, _) = setup();
+
+        for (id, amount) in [("zero", 0_i128), ("negative", -1_i128)] {
+            let result =
+                client.try_accept(&agent, &String::from_str(&env, id), &amount, &receiver);
+            assert!(result.is_err());
+        }
     }
 }

@@ -11,6 +11,8 @@ if (typeof window === "undefined" && !process.env.DATABASE_URL) {
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL"),
+  NEXT_PUBLIC_STELLAR_NETWORK: z.literal("mainnet"),
+  NEXT_PUBLIC_STELLAR_RPC_URL: z.string().url("NEXT_PUBLIC_STELLAR_RPC_URL must be a valid URL"),
   ESCROW_CONTRACT_ID: z.string().min(1, "ESCROW_CONTRACT_ID is required"),
   AGENT_SECRET_KEY: z.string().min(1, "AGENT_SECRET_KEY is required"),
   AGENT_PUBLIC_KEY: z.string().min(1, "AGENT_PUBLIC_KEY is required"),

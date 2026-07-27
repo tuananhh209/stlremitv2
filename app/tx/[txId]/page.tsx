@@ -612,7 +612,7 @@ export default function TransactionStatusPage() {
         {/* Footer */}
         <div className="flex items-center justify-center gap-2 py-2">
           <ShieldCheck className="w-4 h-4 text-primary/40" />
-          <span className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">Soroban Smart Escrow · Stellar Testnet</span>
+          <span className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em]">Soroban Smart Escrow · Stellar Mainnet</span>
         </div>
 
       </div>

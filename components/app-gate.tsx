@@ -59,7 +59,7 @@ function ConnectStep() {
           </div>
           <ConnectWallet />
           <p className="text-center text-[10px] text-gray-400 font-medium uppercase tracking-[0.2em]">
-            Powered by Soroban · Stellar Testnet
+            Powered by Soroban · Stellar Mainnet
           </p>
         </div>
       </div>

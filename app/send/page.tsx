@@ -82,7 +82,7 @@ export default function SenderDashboard() {
   const [liveRates, setLiveRates] = useState<Record<CurrencyCode, number> | null>(null);
   const [rawRates, setRawRates] = useState<Record<CurrencyCode, number> | null>(null);
   const [ratesSource, setRatesSource] = useState<"oracle" | "fallback">("fallback");
-  const [, setRatesUpdatedAt] = useState<number>(Date.now());
+  const [, setRatesUpdatedAt] = useState<number>(() => Date.now());
   const [ratesAge, setRatesAge] = useState(0);
 
   // Real-time Data — init from localStorage cache for instant display
@@ -355,7 +355,7 @@ export default function SenderDashboard() {
         <header className="h-24 bg-white/80 backdrop-blur-md border-b border-outline/5 px-8 flex items-center justify-between sticky top-0 z-30">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 capitalize">{activeTab}</h1>
-            <p className="text-xs text-gray-400 font-medium mt-1">Stellar Blockchain · Testnet</p>
+            <p className="text-xs text-gray-400 font-medium mt-1">Stellar Blockchain · Mainnet</p>
           </div>
           {isConnected && <WalletMenu />}
         </header>
