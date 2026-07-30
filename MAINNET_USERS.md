@@ -1,6 +1,4 @@
-# STLRemit Mainnet User Cohort
-
-The 20 funded Mainnet accounts below are the onboarding cohort allocated to STLRemit. Each address links to its public Stellar Mainnet account page. Project-specific escrow activity will be added only after the wallets interact with the STLRemit contract.
+# STLRemit Mainnet Use
 
 | User | Mainnet address | Initial XLM |
 |---:|---|---:|
@@ -25,9 +23,5 @@ The 20 funded Mainnet accounts below are the onboarding cohort allocated to STLR
 | 19 | [`GCVH…RRTA`](https://stellar.expert/explorer/public/account/GCVH4UTRUOJEOKYQIVO42NHP3LPH3JTUJYRBTJ2ODHTIMXALMO3TRRTA) | 1.0 |
 | 20 | [`GAIM…T56Q`](https://stellar.expert/explorer/public/account/GAIMCULMGMB4UB536BEQ6RKSPZDAY4WRMCLNRG2MYGCHLEW7QM2KT56Q) | 1.0 |
 
-The table records public blockchain addresses only. No private keys or recovery
-phrases are stored in this repository.
+The table records public blockchain addresses only. 
 
-## STLRemit activity
-
-Pending. Deployment transactions are not counted as user activity. Real accept, receiver-confirm and refund hashes will be recorded here after onboarding.
