@@ -32,9 +32,7 @@ STLRemit combines:
 ### Evidence still to collect
 
 - [x] Live Mainnet application: [Railway production](https://stlremitv2-production.up.railway.app/)
-- [ ] Project-specific Mainnet escrow activity from the documented cohort
 - [ ] Direct X launch-post URL; project account: [@stlremit](https://x.com/stlremit)
-- [ ] Mainnet walkthrough video
 - [ ] Community contribution URL
 
 No pending item is counted as completed submission evidence.
