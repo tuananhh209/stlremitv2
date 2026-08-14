@@ -22,17 +22,6 @@ export async function POST() {
       errors.push(`${record.txId}: ${msg}`);
       console.error(`[cron] Failed to refund ${record.txId}:`, msg);
 
-      // If contract already processed (TxAlreadyProcessed) → just mark DB
-      if (
-        msg.includes("TxAlreadyProcessed") ||
-        msg.includes("Expired") ||
-        msg.includes("SIMULATION_FAILED")
-      ) {
-        try {
-          await databaseService.updateStatus(record.txId, "expired");
-          processed++;
-        } catch { /* ignore */ }
-      }
     }
   }
 
