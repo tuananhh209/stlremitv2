@@ -30,16 +30,16 @@ export async function GET(req: NextRequest) {
 import { z } from "zod";
 
 const profileSchema = z.object({
-  walletAddress: z.string().min(1, "Wallet address is required"),
+  walletAddress: z.string().regex(/^G[A-Z2-7]{55}$/, "Valid Stellar wallet address is required"),
   role: z.enum(["sender", "receiver", "agent"]),
-  bankName: z.string().nullable().optional(),
-  accountNumber: z.string().nullable().optional(),
-  accountHolder: z.string().nullable().optional(),
-  qrImageUrl: z.string().nullable().optional(),
-  agentBankName: z.string().nullable().optional(),
-  agentAccountNumber: z.string().nullable().optional(),
-  agentAccountHolder: z.string().nullable().optional(),
-  agentQrImageUrl: z.string().nullable().optional(),
+  bankName: z.string().max(100).nullable().optional(),
+  accountNumber: z.string().max(64).nullable().optional(),
+  accountHolder: z.string().max(120).nullable().optional(),
+  qrImageUrl: z.string().url().max(500).nullable().optional(),
+  agentBankName: z.string().max(100).nullable().optional(),
+  agentAccountNumber: z.string().max(64).nullable().optional(),
+  agentAccountHolder: z.string().max(120).nullable().optional(),
+  agentQrImageUrl: z.string().url().max(500).nullable().optional(),
 });
 
 // PUT /api/profile  — upsert
