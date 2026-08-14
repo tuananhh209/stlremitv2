@@ -29,7 +29,7 @@ import { z } from "zod";
 
 const profileSchema = z.object({
   walletAddress: z.string().min(1, "Wallet address is required"),
-  role: z.enum(["sender", "agent"]),
+  role: z.enum(["sender", "receiver", "agent"]),
   bankName: z.string().nullable().optional(),
   accountNumber: z.string().nullable().optional(),
   accountHolder: z.string().nullable().optional(),
