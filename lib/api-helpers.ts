@@ -9,10 +9,14 @@ import {
   StellarTransactionError,
   DatabaseConnectionError,
 } from "./errors";
+import { InvalidImageError } from "./image-upload";
 
 export function errorResponse(
   error: unknown
 ): NextResponse<ApiErrorResponse> {
+  if (error instanceof InvalidImageError) {
+    return NextResponse.json({ error: error.message, code: "VALIDATION_ERROR" }, { status: 400 });
+  }
   if (error instanceof InsufficientLiquidityError) {
     return NextResponse.json(
       {

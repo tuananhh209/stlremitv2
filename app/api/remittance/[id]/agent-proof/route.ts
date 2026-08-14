@@ -4,6 +4,7 @@ import { databaseService } from "@/lib/db";
 import { errorResponse } from "@/lib/api-helpers";
 import { NotFoundError, InvalidStatusTransitionError } from "@/lib/errors";
 import type { AgentProofResponse } from "@/lib/types";
+import { validateImageDataUri } from "@/lib/image-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -37,9 +38,9 @@ export async function POST(
     }
 
     const mimeType = proofImageMimeType ?? "image/jpeg";
-    const dataUri = proofImageBase64.startsWith("data:")
+    const dataUri = validateImageDataUri(proofImageBase64.startsWith("data:")
       ? proofImageBase64
-      : `data:${mimeType};base64,${proofImageBase64}`;
+      : `data:${mimeType};base64,${proofImageBase64}`);
 
     let agentProofRef: string;
     try {

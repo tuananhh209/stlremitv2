@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { errorResponse } from "@/lib/api-helpers";
+import { validateImageDataUri } from "@/lib/image-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Ensure it's a proper data URI
-    const dataUri = imageBase64.startsWith("data:")
+    const dataUri = validateImageDataUri(imageBase64.startsWith("data:")
       ? imageBase64
-      : `data:image/png;base64,${imageBase64}`;
+      : `data:image/png;base64,${imageBase64}`);
 
-    const publicId = `stl-remit/qr/${walletAddress}_${field ?? "qr"}`;
+    const publicId = `stl-remit/qr/${walletAddress}_${field ?? "qr"}_${crypto.randomUUID()}`;
 
     const result = await cloudinary.uploader.upload(dataUri, {
       public_id: publicId,

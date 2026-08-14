@@ -8,6 +8,7 @@ import {
   TransactionExpiredError,
 } from "@/lib/errors";
 import type { MarkPaidResponse } from "@/lib/types";
+import { validateImageDataUri } from "@/lib/image-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +47,9 @@ export async function POST(
 
     // Upload proof image to Cloudinary — store URL instead of raw base64 in DB
     const mimeType = proofImageMimeType ?? "image/jpeg";
-    const dataUri = proofImageBase64.startsWith("data:")
+    const dataUri = validateImageDataUri(proofImageBase64.startsWith("data:")
       ? proofImageBase64
-      : `data:${mimeType};base64,${proofImageBase64}`;
+      : `data:${mimeType};base64,${proofImageBase64}`);
 
     let proofRef: string;
     try {
