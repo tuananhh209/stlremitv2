@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const { signedXdr } = await req.json();
-    if (!signedXdr) {
-      return NextResponse.json({ error: "Missing signedXdr" }, { status: 400 });
+    if (typeof signedXdr !== "string" || signedXdr.length === 0 || signedXdr.length > 200_000) {
+      return NextResponse.json({ error: "Invalid signedXdr" }, { status: 400 });
     }
 
     const txHash = await stellarRpcService.submitTransaction(signedXdr);
