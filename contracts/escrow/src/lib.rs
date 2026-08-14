@@ -42,6 +42,8 @@ pub enum ContractError {
 }
 
 const TIMEOUT_SECONDS: u64 = 300; // 5 minutes
+const TTL_THRESHOLD: u32 = 120_000;
+const TTL_EXTEND_TO: u32 = 250_000;
 
 #[contract]
 pub struct EscrowContract;
@@ -52,6 +54,9 @@ impl EscrowContract {
         env.storage()
             .instance()
             .set(&DataKey::UsdcToken, &usdc_token);
+        env.storage()
+            .instance()
+            .extend_ttl(TTL_THRESHOLD, TTL_EXTEND_TO);
     }
 
     /// Initialize with USDC token addressCalled once on deploy.
@@ -63,6 +68,9 @@ impl EscrowContract {
         env.storage()
             .instance()
             .set(&DataKey::UsdcToken, &usdc_token);
+        env.storage()
+            .instance()
+            .extend_ttl(TTL_THRESHOLD, TTL_EXTEND_TO);
         Ok(())
     }
 
@@ -100,6 +108,7 @@ impl EscrowContract {
         env.storage()
             .persistent()
             .set(&DataKey::TxRecord(tx_id.clone()), &record);
+        bump_tx_ttl(&env, &tx_id);
 
         env.events()
             .publish((symbol_short!("accepted"),), (agent, tx_id, amount));
@@ -119,6 +128,7 @@ impl EscrowContract {
             .persistent()
             .get(&DataKey::TxRecord(tx_id.clone()))
             .ok_or(ContractError::TxNotFound)?;
+        bump_tx_ttl(&env, &tx_id);
 
         if record.status != TxStatus::Funded {
             return Err(ContractError::TxAlreadyProcessed);
@@ -159,6 +169,7 @@ impl EscrowContract {
             .persistent()
             .get(&DataKey::TxRecord(tx_id.clone()))
             .ok_or(ContractError::TxNotFound)?;
+        bump_tx_ttl(&env, &tx_id);
 
         if record.status != TxStatus::Funded {
             return Err(ContractError::TxAlreadyProcessed);
@@ -199,6 +210,7 @@ impl EscrowContract {
     }
 
     pub fn get_tx_status(env: Env, tx_id: String) -> Result<TxStatus, ContractError> {
+        bump_tx_ttl(&env, &tx_id);
         env.storage()
             .persistent()
             .get::<DataKey, TxRecord>(&DataKey::TxRecord(tx_id))
@@ -207,6 +219,7 @@ impl EscrowContract {
     }
 
     pub fn get_tx_record(env: Env, tx_id: String) -> Result<TxRecord, ContractError> {
+        bump_tx_ttl(&env, &tx_id);
         env.storage()
             .persistent()
             .get(&DataKey::TxRecord(tx_id))
@@ -214,6 +227,9 @@ impl EscrowContract {
     }
 
     pub fn get_usdc_token(env: Env) -> Result<Address, ContractError> {
+        env.storage()
+            .instance()
+            .extend_ttl(TTL_THRESHOLD, TTL_EXTEND_TO);
         env.storage()
             .instance()
             .get(&DataKey::UsdcToken)
@@ -228,6 +244,18 @@ impl EscrowContract {
             .ok_or(ContractError::NotInitialized)?;
         Ok(token::Client::new(env, &usdc_addr))
     }
+}
+
+fn bump_tx_ttl(env: &Env, tx_id: &String) {
+    let key = DataKey::TxRecord(tx_id.clone());
+    if env.storage().persistent().has(&key) {
+        env.storage()
+            .persistent()
+            .extend_ttl(&key, TTL_THRESHOLD, TTL_EXTEND_TO);
+    }
+    env.storage()
+        .instance()
+        .extend_ttl(TTL_THRESHOLD, TTL_EXTEND_TO);
 }
 
 #[cfg(test)]
@@ -341,8 +369,7 @@ mod tests {
         let (env, client, agent, _, receiver, _) = setup();
 
         for (id, amount) in [("zero", 0_i128), ("negative", -1_i128)] {
-            let result =
-                client.try_accept(&agent, &String::from_str(&env, id), &amount, &receiver);
+            let result = client.try_accept(&agent, &String::from_str(&env, id), &amount, &receiver);
             assert!(result.is_err());
         }
     }
