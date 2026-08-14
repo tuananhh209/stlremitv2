@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { expect, jest, test } from "@jest/globals";
-import { profileAuthMessage, verifyProfileSignature } from "../lib/profile-auth";
+import { verifyProfileSignature } from "../lib/profile-auth";
+import { profileAuthMessage } from "../lib/profile-auth-message";
 
 const mockVerify = jest.fn((digest: Buffer, signature: Buffer) => digest.equals(signature));
 jest.mock("@stellar/stellar-sdk", () => ({

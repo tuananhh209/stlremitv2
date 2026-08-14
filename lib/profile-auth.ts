@@ -1,15 +1,8 @@
 import { createHash } from "node:crypto";
 import { Keypair } from "@stellar/stellar-sdk";
+import { profileAuthMessage } from "./profile-auth-message";
 
 const MAX_SIGNATURE_AGE_MS = 5 * 60_000;
-const FIELDS = [
-  "walletAddress", "role", "bankName", "accountNumber", "accountHolder", "qrImageUrl",
-  "agentBankName", "agentAccountNumber", "agentAccountHolder", "agentQrImageUrl",
-] as const;
-
-export function profileAuthMessage(profile: Record<string, unknown>, timestamp: string): string {
-  return ["STLRemit Profile Update", timestamp, ...FIELDS.map((key) => `${key}:${profile[key] ?? ""}`)].join("\n");
-}
 
 export function verifyProfileSignature(
   profile: Record<string, unknown>,

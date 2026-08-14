@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { signMessage } from "@stellar/freighter-api";
+import { profileAuthMessage } from "@/lib/profile-auth-message";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -108,19 +110,35 @@ export default function SettingsPage() {
     setSaving(true);
     setError(null);
     try {
+      const payload = {
+        walletAddress: address,
+        role,
+        bankName: bankName || null,
+        accountNumber: accountNumber || null,
+        accountHolder: accountHolder || null,
+        agentBankName: agentBankName || null,
+        agentAccountNumber: agentAccountNumber || null,
+        agentAccountHolder: agentAccountHolder || null,
+      };
+      const timestamp = Date.now().toString();
+      const signed = await signMessage(profileAuthMessage(payload, timestamp), {
+        address,
+        networkPassphrase: "Public Global Stellar Network ; September 2015",
+      });
+      if (signed.error || !signed.signedMessage || signed.signerAddress !== address) {
+        throw new Error(signed.error?.message ?? "Wallet signature rejected");
+      }
+      const signature = typeof signed.signedMessage === "string"
+        ? signed.signedMessage
+        : signed.signedMessage.toString("base64");
       const res = await fetch("/api/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          walletAddress: address,
-          role,
-          bankName: bankName || null,
-          accountNumber: accountNumber || null,
-          accountHolder: accountHolder || null,
-          agentBankName: agentBankName || null,
-          agentAccountNumber: agentAccountNumber || null,
-          agentAccountHolder: agentAccountHolder || null,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-wallet-timestamp": timestamp,
+          "x-wallet-signature": signature,
+        },
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setSaved(true);
@@ -129,8 +147,8 @@ export default function SettingsPage() {
         const d = await res.json();
         setError(d.error ?? "Failed to save");
       }
-    } catch {
-      setError("Network error");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Network error");
     } finally {
       setSaving(false);
     }
