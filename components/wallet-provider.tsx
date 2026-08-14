@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   requestAccess,
   signTransaction,
-  getPublicKey,
+  getAddress,
 } from "@stellar/freighter-api";
 
 export type WalletType = "freighter" | "rabet" | null;
@@ -69,10 +69,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const session = loadSession();
     if (!session || session.walletType !== "freighter") return;
 
-    getPublicKey().then((pk) => {
-      if (pk && pk === session.address) {
+    getAddress().then(({ address: currentAddress }) => {
+      if (currentAddress && currentAddress === session.address) {
         // Still same account — keep session
-      } else if (pk && pk !== session.address) {
+      } else if (currentAddress && currentAddress !== session.address) {
         // Wallet switched — clear session
         clearSession();
         setAddress(null);
@@ -94,9 +94,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const connect = async (type: WalletType) => {
     try {
       if (type === "freighter") {
-        const publicKey = await requestAccess();
-        if (publicKey) {
-          setAddress(publicKey);
+        const result = await requestAccess();
+        if (result.error) throw new Error(result.error.message);
+        if (result.address) {
+          setAddress(result.address);
           setWalletType("freighter");
           // role will be set by AppGate — session saved via useEffect
         }
@@ -144,15 +145,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const setBankInfo = (info: BankInfo) => setBankInfoState(info);
 
-  const sign = async (xdr: string, network: "PUBLIC") => {
+  const sign = async (xdr: string, _network: "PUBLIC") => {
     if (walletType === "freighter") {
       const signed = await signTransaction(xdr, {
-        network,
         networkPassphrase: "Public Global Stellar Network ; September 2015",
+        address: address ?? undefined,
       });
-      return typeof signed === "string" ? signed : (signed as any).signedTransaction;
+      if (signed.error) throw new Error(signed.error.message);
+      return signed.signedTxXdr;
     } else if (walletType === "rabet") {
-      const result = await (window as any).rabet.sign(xdr, network);
+      const result = await (window as any).rabet.sign(xdr, _network);
       return result.xdr;
     }
     throw new Error("No wallet connected");
