@@ -3,6 +3,7 @@ import { db } from "@/lib/db-client";
 import { userProfiles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { errorResponse } from "@/lib/api-helpers";
+import { verifyProfileSignature } from "@/lib/profile-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,15 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.format(), code: "VALIDATION_ERROR" },
         { status: 400 }
+      );
+    }
+
+    const timestamp = req.headers.get("x-wallet-timestamp") ?? "";
+    const signature = req.headers.get("x-wallet-signature") ?? "";
+    if (!verifyProfileSignature(parsed.data, timestamp, signature)) {
+      return NextResponse.json(
+        { error: "Valid wallet signature required", code: "UNAUTHORIZED" },
+        { status: 401 },
       );
     }
     
