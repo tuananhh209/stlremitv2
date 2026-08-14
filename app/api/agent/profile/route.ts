@@ -3,6 +3,7 @@ import { db } from "@/lib/db-client";
 import { userProfiles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { errorResponse } from "@/lib/api-helpers";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export async function GET() {
     const [row] = await db
       .select()
       .from(userProfiles)
-      .where(eq(userProfiles.role, "agent"))
+      .where(eq(userProfiles.walletAddress, env.AGENT_PUBLIC_KEY))
       .limit(1);
 
     if (!row) return NextResponse.json(null);

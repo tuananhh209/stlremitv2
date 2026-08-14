@@ -4,6 +4,7 @@ import { userProfiles } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { errorResponse } from "@/lib/api-helpers";
 import { verifyProfileSignature } from "@/lib/profile-auth";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,9 @@ export async function PUT(req: NextRequest) {
         { error: "Valid wallet signature required", code: "UNAUTHORIZED" },
         { status: 401 },
       );
+    }
+    if (parsed.data.role === "agent" && parsed.data.walletAddress !== env.AGENT_PUBLIC_KEY) {
+      return NextResponse.json({ error: "Agent wallet is not authorized", code: "UNAUTHORIZED" }, { status: 403 });
     }
     
     const {
