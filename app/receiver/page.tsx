@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/components/wallet-provider";
 import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
+import { backdropDismissHandler, useDismissOnEscape } from "@/lib/hooks/use-dismiss";
 import { BankInfoGuard } from "@/components/bank-info-guard";
 import type { RemittanceRecord } from "@/lib/types";
 import { STELLAR_EXPLORER_URL, STELLAR_WALLET_NETWORK } from "@/lib/stellar-network";
@@ -62,6 +63,8 @@ export default function ReceiverDashboard() {
   
   // Detail Modal State
   const [selectedTx, setSelectedTx] = useState<RemittanceRecord | null>(null);
+  const closeDetailModal = useCallback(() => setSelectedTx(null), []);
+  useDismissOnEscape(selectedTx !== null, closeDetailModal);
   const [agentProfile, setAgentProfile] = useState<any>(null);
   const [senderProfile, setSenderProfile] = useState<any>(null);
   const [loadingAgent, setLoadingAgent] = useState(false);
@@ -621,8 +624,16 @@ export default function ReceiverDashboard() {
 
       {/* ── DETAIL MODAL ── */}
       {selectedTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={backdropDismissHandler(closeDetailModal)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="transfer-detail-title"
+            className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500"
+          >
             {/* Modal Header */}
             <div className="p-8 border-b border-outline/5 flex items-center justify-between bg-gray-50/50">
               <div className="flex items-center gap-4">
@@ -630,12 +641,14 @@ export default function ReceiverDashboard() {
                   <Info className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Transfer Details</h3>
+                  <h3 id="transfer-detail-title" className="text-xl font-bold text-gray-900">Transfer Details</h3>
                   <p className="text-[10px] text-gray-400 font-mono tracking-wider">{selectedTx.txId}</p>
                 </div>
               </div>
-              <button 
-                onClick={() => setSelectedTx(null)}
+              <button
+                type="button"
+                onClick={closeDetailModal}
+                aria-label="Close transfer details"
                 className="p-3 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X className="w-5 h-5 text-gray-400" />

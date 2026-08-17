@@ -6,6 +6,7 @@ import type { RemittanceRecord, AgentBalanceResponse } from "@/lib/types";
 import { useWallet } from "@/components/wallet-provider";
 import { WalletMenu } from "@/components/wallet-menu";
 import { useProfile } from "@/lib/hooks/use-profile";
+import { backdropDismissHandler, useDismissOnEscape } from "@/lib/hooks/use-dismiss";
 import { BankInfoGuard } from "@/components/bank-info-guard";
 import { STELLAR_WALLET_NETWORK } from "@/lib/stellar-network";
 import { QrUpload } from "@/components/qr-upload";
@@ -150,6 +151,8 @@ export default function AgentDashboard() {
   
   // Payout Modal State
   const [payoutTx, setPayoutTx] = useState<RemittanceRecord | null>(null);
+  const closePayoutModal = useCallback(() => setPayoutTx(null), []);
+  useDismissOnEscape(payoutTx !== null, closePayoutModal);
   const [payoutProofUrl, setPayoutProofUrl] = useState<string | null>(null);
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [receiverProfile, setReceiverProfile] = useState<any | null>(null);
@@ -925,8 +928,16 @@ export default function AgentDashboard() {
 
       {/* ── PAYOUT MODAL ── */}
       {payoutTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={backdropDismissHandler(closePayoutModal)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payout-modal-title"
+            className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500"
+          >
             {/* Modal Header */}
             <div className="p-8 border-b border-outline/5 flex items-center justify-between bg-gray-50/50">
               <div className="flex items-center gap-4">
@@ -934,11 +945,16 @@ export default function AgentDashboard() {
                   <Banknote className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Confirm {payoutTx?.destinationCurrency || "PHP"} Payout</h3>
+                  <h3 id="payout-modal-title" className="text-xl font-bold text-gray-900">Confirm {payoutTx?.destinationCurrency || "PHP"} Payout</h3>
                   <p className="text-[10px] text-gray-400 font-mono tracking-wider">{payoutTx.txId}</p>
                 </div>
               </div>
-              <button onClick={() => setPayoutTx(null)} className="p-3 hover:bg-gray-100 rounded-full transition-colors">
+              <button
+                type="button"
+                onClick={closePayoutModal}
+                aria-label="Close payout dialog"
+                className="p-3 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
