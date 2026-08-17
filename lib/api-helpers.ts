@@ -79,12 +79,11 @@ export function errorResponse(
     );
   }
 
-  // Generic error
-  const message =
-    error instanceof Error ? error.message : "Internal server error";
+  // Unexpected failure: log the detail, return an opaque message.
+  // Raw error text can carry connection strings, SQL, and stack context.
   console.error("[errorResponse] Unhandled error:", error);
   return NextResponse.json(
-    { error: message, code: "STELLAR_ERROR" },
+    { error: "Internal server error", code: "INTERNAL_ERROR" },
     { status: 500 }
   );
 }

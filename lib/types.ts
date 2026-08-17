@@ -71,6 +71,7 @@ export interface ApiErrorResponse {
     | "NOT_FOUND"
     | "STELLAR_ERROR"
     | "DB_ERROR"
-    | "VALIDATION_ERROR";
+    | "VALIDATION_ERROR"
+    | "INTERNAL_ERROR";
   details?: Record<string, unknown>;
 }
