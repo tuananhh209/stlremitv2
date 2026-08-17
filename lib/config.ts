@@ -44,27 +44,46 @@ const FALLBACK_PAYOUT_RATES: Record<CurrencyCode, number> = {
   EUR: EXCHANGE_RATES.VND_TO_USDC * EXCHANGE_RATES.USDC_TO_EUR,
 };
 
+export class InvalidAmountError extends Error {
+  constructor(message = "Amount must be a positive number") {
+    super(message);
+    this.name = "InvalidAmountError";
+  }
+}
+
+/** A rate is only usable when it is a finite positive number. */
+function usableRate(rate: number | undefined): rate is number {
+  return typeof rate === "number" && Number.isFinite(rate) && rate > 0;
+}
+
 /**
  * Calculate USDC collateral and destination payout for a VND amount.
  *
  * @param vndAmount  - Amount in VND the sender will pay
  * @param currency   - Destination currency code
  * @param oracleRates - Live VND-based rates WITH spread (from /api/rates).
- *                      Falls back to hardcoded rates + spread if not provided.
+ *                      Falls back to hardcoded rates + spread when a rate is
+ *                      missing or unusable, so a bad oracle payload can never
+ *                      turn into a NaN payout.
  */
 export function calculateAmounts(
   vndAmount: number,
   currency: CurrencyCode = "PHP",
   oracleRates?: Partial<Record<CurrencyCode, number>>
 ): { usdcEquivalent: number; phpPayout: number } {
+  if (!Number.isFinite(vndAmount) || vndAmount <= 0) {
+    throw new InvalidAmountError();
+  }
+
   // USD rate determines USDC collateral (1 USDC ≈ 1 USD)
-  const vndToUsd = oracleRates?.USD ?? EXCHANGE_RATES.VND_TO_USDC;
+  const vndToUsd = usableRate(oracleRates?.USD)
+    ? oracleRates.USD
+    : EXCHANGE_RATES.VND_TO_USDC;
 
   // Payout rate: oracle already includes spread; fallback applies it manually
-  const payoutRate =
-    oracleRates?.[currency] !== undefined
-      ? oracleRates[currency]!
-      : FALLBACK_PAYOUT_RATES[currency] * (1 - PLATFORM_SPREAD);
+  const payoutRate = usableRate(oracleRates?.[currency])
+    ? oracleRates[currency]!
+    : FALLBACK_PAYOUT_RATES[currency] * (1 - PLATFORM_SPREAD);
 
   return {
     usdcEquivalent: vndAmount * vndToUsd,

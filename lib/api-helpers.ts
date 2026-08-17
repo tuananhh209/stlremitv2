@@ -10,10 +10,14 @@ import {
   DatabaseConnectionError,
 } from "./errors";
 import { InvalidImageError } from "./image-upload";
+import { InvalidAmountError } from "./config";
 
 export function errorResponse(
   error: unknown
 ): NextResponse<ApiErrorResponse> {
+  if (error instanceof InvalidAmountError) {
+    return NextResponse.json({ error: error.message, code: "VALIDATION_ERROR" }, { status: 400 });
+  }
   if (error instanceof InvalidImageError) {
     return NextResponse.json({ error: error.message, code: "VALIDATION_ERROR" }, { status: 400 });
   }
