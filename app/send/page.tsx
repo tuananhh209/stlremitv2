@@ -324,7 +324,9 @@ export default function SenderDashboard() {
             return (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
+                aria-current={activeTab === tab ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all capitalize",
                   activeTab === tab ? "bg-primary/5 text-primary shadow-sm" : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"
@@ -687,7 +689,12 @@ export default function SenderDashboard() {
                           </span>
                         </td>
                         <td className="px-10 py-7 text-right">
-                          <button onClick={() => router.push(`/tx/${r.txId}`)} className="p-3 bg-gray-50 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/tx/${r.txId}`)}
+                            aria-label={`Open transfer ${r.txId}`}
+                            className="p-3 bg-gray-50 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20"
+                          >
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         </td>
@@ -967,7 +974,9 @@ export default function SenderDashboard() {
           return (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
+              aria-current={activeTab === tab ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all relative min-w-[64px] capitalize",
                 activeTab === tab ? "text-primary bg-primary/10" : "text-gray-400 hover:text-gray-600"

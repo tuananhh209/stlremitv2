@@ -275,7 +275,9 @@ export default function ReceiverDashboard() {
 
         <nav className="flex flex-col gap-2">
           <button
+            type="button"
             onClick={() => setActiveTab("transfers")}
+            aria-current={activeTab === "transfers" ? "page" : undefined}
             className={cn(
               "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all",
               activeTab === "transfers" ? "bg-emerald-50 text-emerald-600" : "text-gray-400 hover:bg-gray-50"
@@ -284,7 +286,9 @@ export default function ReceiverDashboard() {
             <Inbox className="w-5 h-5" /> Transfers
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab("history")}
+            aria-current={activeTab === "history" ? "page" : undefined}
             className={cn(
               "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all",
               activeTab === "history" ? "bg-emerald-50 text-emerald-600" : "text-gray-400 hover:bg-gray-50"
@@ -293,7 +297,9 @@ export default function ReceiverDashboard() {
             <History className="w-5 h-5" /> History
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab("settings")}
+            aria-current={activeTab === "settings" ? "page" : undefined}
             className={cn(
               "flex items-center gap-4 px-4 py-3 rounded-2xl font-bold text-sm transition-all",
               activeTab === "settings" ? "bg-emerald-50 text-emerald-600" : "text-gray-400 hover:bg-gray-50"

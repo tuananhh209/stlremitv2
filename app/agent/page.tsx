@@ -508,7 +508,13 @@ export default function AgentDashboard() {
             )}
           </div>
           <div className="flex items-center gap-6">
-            <button onClick={fetchAll} className="p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-outline/5">
+            <button
+              type="button"
+              onClick={fetchAll}
+              aria-label="Refresh agent data"
+              title="Refresh"
+              className="p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-outline/5"
+            >
               <RefreshCw className="w-5 h-5 text-gray-400" />
             </button>
             <WalletMenu />
@@ -909,7 +915,9 @@ export default function AgentDashboard() {
         {navItems.map((item) => (
           <button
             key={item.id}
+            type="button"
             onClick={() => setActiveNav(item.id)}
+            aria-current={activeNav === item.id ? "page" : undefined}
             className={cn(
               "flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all relative min-w-[64px]",
               activeNav === item.id ? "text-indigo-600 bg-indigo-50/50" : "text-gray-400 hover:text-gray-600"
