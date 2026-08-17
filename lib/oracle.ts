@@ -72,21 +72,27 @@ export async function getLiveRates(): Promise<OracleRates> {
 
     if (!res.ok) throw new Error(`Oracle HTTP ${res.status}`);
 
-    const data: { rates: Record<string, number> } = await res.json();
+    const data: { rates?: Record<string, number> } = await res.json();
+    const oracleRates = data.rates ?? {};
 
-    const vndPerUsd = data.rates["VND"];
-    if (!vndPerUsd || vndPerUsd <= 0) throw new Error("Invalid VND rate from oracle");
+    const vndPerUsd = oracleRates["VND"];
+    if (!Number.isFinite(vndPerUsd) || vndPerUsd <= 0) {
+      throw new Error("Invalid VND rate from oracle");
+    }
 
     // Convert USD-based oracle rates to VND-based rates
     // VND → X = (USD → X) / (USD → VND)  =  rates[X] / rates[VND]
-    const rawRates: Record<CurrencyCode, number> = {
-      USD: 1 / vndPerUsd,
-      PHP: data.rates["PHP"] / vndPerUsd,
-      CNY: data.rates["CNY"] / vndPerUsd,
-      RUB: data.rates["RUB"] / vndPerUsd,
-      GBP: data.rates["GBP"] / vndPerUsd,
-      EUR: data.rates["EUR"] / vndPerUsd,
-    };
+    // A missing or non-numeric entry would otherwise turn into a NaN payout.
+    const rawRates = Object.fromEntries(
+      CURRENCY_CODES.map((code) => {
+        if (code === "USD") return [code, 1 / vndPerUsd];
+        const usdRate = oracleRates[code];
+        if (!Number.isFinite(usdRate) || usdRate <= 0) {
+          throw new Error(`Missing ${code} rate from oracle`);
+        }
+        return [code, usdRate / vndPerUsd];
+      })
+    ) as Record<CurrencyCode, number>;
 
     // Apply 1% platform spread — receiver gets slightly less than market
     const rates = Object.fromEntries(
@@ -103,10 +109,11 @@ export async function getLiveRates(): Promise<OracleRates> {
     };
 
     return _cache;
-  } catch {
+  } catch (error) {
+    console.warn("[oracle] Falling back to configured rates:", error instanceof Error ? error.message : error);
     // Cache fallback too (avoids hammering a failing oracle)
     const fallback = buildFallback();
     _cache = { ...fallback, expiresAt: Date.now() + CACHE_TTL_MS };
-    return fallback;
+    return _cache;
   }
 }
