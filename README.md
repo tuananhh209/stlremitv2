@@ -4,6 +4,8 @@ STLRemit is a Mainnet remittance coordination application that uses a Soroban es
 
 Live Mainnet application: [https://stlremitv2-production.up.railway.app/](https://stlremitv2-production.up.railway.app/)
 
+Pitch deck: [Open pitch deck](https://stlremitv2-production.up.railway.app/submission/pitch-deck.html)
+
 ## Release brief
 
 The product addresses a common remittance trust problem: a sender, local payout agent and receiver need shared evidence that collateral is locked, the payout was confirmed, and funds were released or refunded under predictable rules.
@@ -16,28 +18,31 @@ STLRemit combines:
 - Neon PostgreSQL for profiles, remittance state and proof metadata;
 - Railway for the production application.
 
-## Current Level 6 submission status
+## Level 6 submission checklist
 
-### Ready and verifiable
+Every requirement, with the evidence for it in one place. Each link resolves to a
+public page, an on-chain transaction, or a file in this repository.
 
-- [x] Public repository: [tuananhh209/stlremitv2](https://github.com/tuananhh209/stlremitv2)
-- [x] More than 30 meaningful commits: [72+ commits](https://github.com/tuananhh209/stlremitv2/commits/main)
-- [x] Mainnet escrow contract deployed
-- [x] Mainnet deployment transactions confirmed
-- [x] [20 funded Mainnet accounts documented](MAINNET_USERS.md)
-- [x] Technical documentation
-- [x] User documentation
-- [x] Internal security review and contract test evidence
+| | Requirement | Evidence |
+|:--:|---|---|
+| ✅ | **Public GitHub repository** | [tuananhh209/stlremitv2](https://github.com/tuananhh209/stlremitv2) |
+| ✅ | **Minimum 30+ meaningful commits** | [96 commits on `main`](https://github.com/tuananhh209/stlremitv2/commits/main) |
+| ✅ | **Live deployed application** | [stlremitv2-production.up.railway.app](https://stlremitv2-production.up.railway.app/) — Stellar Public Network |
+| ✅ | **PPT/Pitch deck link** | [Open pitch deck](https://stlremitv2-production.up.railway.app/submission/pitch-deck.html) — problem, solution, market, architecture, growth, roadmap |
+| ✅ | **Demo video link** | [Mainnet walkthrough](https://drive.google.com/drive/folders/1-1BtdV2j7WqHs0YID6WRkH6jUj0S15Xu) |
+| ✅ | **Mainnet smart contract deployed** | [`CCNRSZLL…G65DE`](https://stellar.expert/explorer/public/contract/CCNRSZLLMHW36GOZQPR5VRRMNB5CH7AXOZMFN4KURNIQSO7LKELG65DE) — bound to Circle USDC SAC |
+| ✅ | **Deployment transactions confirmed** | [upload WASM](https://stellar.expert/explorer/public/tx/36193dcdb78e2d35fdf7cd6ac31a5816aa2dd63fcfeec1c7f168ddd10937b6c7) · [deploy escrow](https://stellar.expert/explorer/public/tx/0f7f30efc6bc051117cc42b7ba73bc9615770bc138d874a5c7fabb5564e1c38f) — both `SUCCESS` |
+| ✅ | **Proof of Mainnet users** | [20 funded Mainnet accounts](MAINNET_USERS.md), each linked to its explorer page |
+| ✅ | **Transaction activity proof** | [16 verified buy/sell pairs](#verified-mainnet-activity) with explorer links |
+| ✅ | **Audit / security review** | [internal security review](docs/SECURITY_REVIEW.md) and [contract test coverage](#verification) |
+| ✅ | **Technical documentation** | [contract behavior](#contract-behavior) · [technical map](#technical-map) · [deployment runbook](docs/RAILWAY_MAINNET.md) |
+| ✅ | **User documentation** | [Mainnet operating guide](#mainnet-operating-guide) for sender, agent and receiver |
+| ✅ | **Updated README** | This file |
+| ⬜ | **X launch post** | Project account [@stlremit](https://x.com/stlremit); direct post URL not yet published |
+| ⬜ | **Community contribution URL** | Not yet published |
 
-### Evidence still to collect
-
-- [x] Live Mainnet application: [Railway production](https://stlremitv2-production.up.railway.app/)
-- [x] Project-specific Mainnet activity: [16 buy/sell transaction pairs](#verified-mainnet-activity)
-- [ ] Direct X launch-post URL; project account: [@stlremit](https://x.com/stlremit)
-- [x] Mainnet walkthrough video: [Google Drive folder](https://drive.google.com/drive/folders/1-1BtdV2j7WqHs0YID6WRkH6jUj0S15Xu)
-- [ ] Community contribution URL
-
-No pending item is counted as completed submission evidence.
+Two items remain open and are marked as such. Nothing pending is presented as
+completed evidence.
 
 ## On-chain record
 

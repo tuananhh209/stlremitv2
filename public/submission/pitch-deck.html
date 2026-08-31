@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>STLRemit — Pitch Deck</title>
+<meta name="description" content="STLRemit: a Soroban escrow that protects a remittance agent's USDC collateral while sender and receiver complete an off-chain payout." />
+<style>
+  :root {
+    --bg: #070b14;
+    --panel: #0e1626;
+    --panel-2: #131f34;
+    --line: #21324f;
+    --ink: #eaf1ff;
+    --muted: #93a6c4;
+    --accent: #35d0a5;
+    --accent-2: #4c8dff;
+    --warn: #f5a524;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { max-width: 1120px; margin: 0 auto; padding: 24px 20px 96px; }
+
+  .slide {
+    background: linear-gradient(180deg, var(--panel) 0%, #0b1322 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 44px 46px;
+    margin: 0 0 22px;
+    scroll-margin-top: 16px;
+  }
+  .slide > :first-child { margin-top: 0; }
+  .slide > :last-child { margin-bottom: 0; }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  h1 { font-size: clamp(34px, 5.2vw, 58px); line-height: 1.05; margin: 0 0 14px; letter-spacing: -.02em; }
+  h2 { font-size: clamp(24px, 3.4vw, 36px); line-height: 1.15; margin: 0 0 18px; letter-spacing: -.015em; }
+  h3 { font-size: 17px; margin: 26px 0 10px; color: var(--ink); }
+  p { margin: 0 0 14px; color: #cfdcf2; }
+  .lead { font-size: clamp(17px, 2.1vw, 21px); color: #cfdcf2; max-width: 74ch; }
+  .muted { color: var(--muted); }
+  small { color: var(--muted); font-size: 13px; }
+
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 860px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .card h4 { margin: 0 0 8px; font-size: 15px; letter-spacing: .01em; }
+  .card p { margin: 0; font-size: 14.5px; color: var(--muted); }
+
+  .stat { font-family: var(--mono); font-size: clamp(26px, 4vw, 38px); font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .stat-sub { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  ul { margin: 0 0 14px; padding-left: 20px; color: #cfdcf2; }
+  li { margin: 0 0 9px; }
+  li::marker { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 14.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; }
+  td code, code { font-family: var(--mono); font-size: 13px; color: var(--accent-2); word-break: break-all; }
+
+  pre {
+    background: #060a12;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #b9cbe8;
+    margin: 0 0 14px;
+  }
+
+  a { color: var(--accent-2); text-decoration: none; border-bottom: 1px solid rgba(76,141,255,.35); }
+  a:hover { border-bottom-color: var(--accent-2); }
+
+  .pill {
+    display: inline-block; font-size: 12px; font-family: var(--mono);
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(53,208,165,.1); color: var(--accent);
+    border: 1px solid rgba(53,208,165,.28);
+  }
+  .pill.warn { background: rgba(245,165,36,.1); color: var(--warn); border-color: rgba(245,165,36,.3); }
+
+  .note {
+    border-left: 3px solid var(--warn);
+    background: rgba(245,165,36,.07);
+    padding: 12px 16px; border-radius: 0 10px 10px 0;
+    font-size: 14.5px; color: #e8d9bd;
+  }
+  .note strong { color: var(--warn); }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .toc a {
+    font-size: 13px; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--muted); border-bottom: 1px solid var(--line);
+  }
+  .toc a:hover { color: var(--ink); border-color: var(--accent); }
+
+  .num { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0 0; }
+
+  @media print {
+    body { background: #fff; color: #111; }
+    .slide { break-after: page; border: none; background: #fff; padding: 24px 0; }
+    h1, h2, h3, p, li, td { color: #111; }
+    .toc, .note { break-inside: avoid; }
+    a { color: #0b4fd0; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1 -->
+  <section class="slide" id="cover">
+    <p class="eyebrow">Stellar · Soroban · Mainnet</p>
+    <h1>STLRemit</h1>
+    <p class="lead">A remittance agent locks USDC collateral in a Soroban escrow. The receiver's signature is what releases it. Nobody has to trust the agent, the sender, or us.</p>
+    <div class="grid g4" style="margin-top:28px">
+      <div class="card"><div class="stat">Mainnet</div><div class="stat-sub">Stellar Public Network, live</div></div>
+      <div class="card"><div class="stat">USDC</div><div class="stat-sub">Circle's official Stellar SAC</div></div>
+      <div class="card"><div class="stat">20</div><div class="stat-sub">funded Mainnet accounts</div></div>
+      <div class="card"><div class="stat">72+</div><div class="stat-sub">commits on main</div></div>
+    </div>
+    <div class="toc">
+      <a href="#problem">Problem</a>
+      <a href="#why">Why it persists</a>
+      <a href="#solution">Solution</a>
+      <a href="#flow">How it moves</a>
+      <a href="#split">On-chain / off-chain</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#evidence">Live evidence</a>
+      <a href="#market">Market</a>
+      <a href="#growth">Growth</a>
+      <a href="#roadmap">Roadmap</a>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" id="problem">
+    <p class="eyebrow"><span class="num">01</span> &nbsp;Problem</p>
+    <h2>The last mile of a remittance runs on trust nobody can verify</h2>
+    <p class="lead">Money crosses a border quickly. Getting it into a recipient's hands does not — and that hand-off is where the risk sits.</p>
+
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card">
+        <h4>The sender pays first and hopes</h4>
+        <p>Funds go to a local agent on the strength of a reputation the sender cannot check. If the payout never happens, there is no shared record to appeal to.</p>
+      </div>
+      <div class="card">
+        <h4>The agent fronts cash and hopes</h4>
+        <p>An agent who pays the receiver before being reimbursed carries the loss when the sender disappears. So agents demand pre-payment — which pushes the risk back onto the sender.</p>
+      </div>
+      <div class="card">
+        <h4>The receiver has no standing</h4>
+        <p>The person the money is for is the one party with no leverage, no visibility, and usually no way to prove what did or did not arrive.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px">Somebody always goes first, and whoever goes first is exposed. Every participant is rationally cautious, so the whole corridor runs slower and costs more than the underlying transfer ever needed to.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" id="why">
+    <p class="eyebrow"><span class="num">02</span> &nbsp;Why it persists</p>
+    <h2>Faster settlement did not fix it, because the gap is evidentiary</h2>
+    <p class="lead">Stablecoins already move value across borders in seconds. The corridor still stalls, because the disputed fact is not <em>did the transfer settle</em> — it is <em>did the recipient actually get paid</em>.</p>
+
+    <table>
+      <thead><tr><th>What is already solved</th><th>What is still broken</th></tr></thead>
+      <tbody>
+        <tr><td>Moving value between two wallets</td><td>Proving a cash payout happened at the other end</td></tr>
+        <tr><td>Settlement finality on chain</td><td>Who carries the loss when one side defaults</td></tr>
+        <tr><td>Low network fees</td><td>The risk premium agents charge to cover that default</td></tr>
+        <tr><td>Public transaction history</td><td>A record all three parties can read and none can edit</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top:18px">
+      <strong>The insight.</strong> An off-chain payout can never be proved on chain. So do not try. Put the <em>agent's collateral</em> on chain instead, and let the receiver's own signature be the thing that releases it. The chain enforces the consequence, not the event.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" id="solution">
+    <p class="eyebrow"><span class="num">03</span> &nbsp;Solution</p>
+    <h2>Collateral in escrow, released by the receiver</h2>
+    <p class="lead">STLRemit is a coordination layer around a Soroban escrow contract. The agent stakes USDC against a remittance they have agreed to fulfil. The stake comes back only when the receiver confirms.</p>
+
+    <div class="grid g2" style="margin-top:22px">
+      <div class="card">
+        <h4>For the sender</h4>
+        <p>The agent has money at risk before you transfer anything. If the payout fails, the collateral is not the agent's to walk away with.</p>
+      </div>
+      <div class="card">
+        <h4>For the agent</h4>
+        <p>Your collateral is held by a contract, not by a platform. A timeout returns it to you without asking anyone's permission — including ours.</p>
+      </div>
+      <div class="card">
+        <h4>For the receiver</h4>
+        <p>Your signature is the release condition. For the first time in this flow, the person the money is for holds the lever.</p>
+      </div>
+      <div class="card">
+        <h4>For the corridor</h4>
+        <p>Every remittance leaves a public record of who staked what, when it released, and to whom. Reputation stops being a claim.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" id="flow">
+    <p class="eyebrow"><span class="num">04</span> &nbsp;How a remittance moves</p>
+    <h2>Four steps, two of them on chain</h2>
+
+<pre>Sender creates request
+        │
+        ▼
+Agent reviews ──── accepts + locks USDC collateral        ← on chain: accept()
+        │
+        ▼
+Sender completes the local transfer, uploads proof
+        │
+        ▼
+Receiver verifies the payout and signs
+        │
+        ├── confirmed ──────────► collateral released     ← on chain: receiver_confirm()
+        │
+        └── timeout ────────────► collateral refundable   ← on chain: refund()
+</pre>
+
+    <h3>Contract surface</h3>
+    <table>
+      <thead><tr><th>Function</th><th>What it enforces</th></tr></thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Authenticates the agent, rejects non-positive collateral, locks USDC</td></tr>
+        <tr><td><code>receiver_confirm</code></td><td>Authenticates the <em>assigned</em> receiver, returns collateral to the correct agent</td></tr>
+        <tr><td><code>refund</code></td><td>Returns collateral after the timeout — the agent's unconditional exit</td></tr>
+        <tr><td><code>get_tx_record</code> · <code>get_tx_status</code> · <code>get_balance</code> · <code>get_usdc_token</code></td><td>Open reads: anyone can audit a remittance without asking us</td></tr>
+      </tbody>
+    </table>
+
+    <p class="muted" style="font-size:14px">Verified contract coverage includes collateral locked by multiple agents, release to the correct agent, timeout refund, rejection of the wrong receiver, duplicate-acceptance prevention, and rejection of zero or negative collateral.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" id="split">
+    <p class="eyebrow"><span class="num">05</span> &nbsp;Design boundary</p>
+    <h2>What we put on a public ledger, and what we refuse to</h2>
+    <p class="lead">A remittance touches bank details, phone numbers and identity documents. None of that belongs on a permanent public record.</p>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <h4>On chain</h4>
+        <p>Remittance identifier · collateral amount · agent address · receiver address · timestamp · status. Small, public, permanent — the parts that decide where money goes.</p>
+      </div>
+      <div class="card">
+        <h4>Off chain</h4>
+        <p>Profiles, banking instructions, payout evidence images, remittance state. Access-controlled, deletable, and never written to the ledger.</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:18px">
+      <strong>The escrow contract never stores private banking credentials.</strong> A public ledger is the wrong place for a recipient's account number, and putting it there would be irreversible.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" id="architecture">
+    <p class="eyebrow"><span class="num">06</span> &nbsp;Architecture</p>
+    <h2>One application, one contract, no custody</h2>
+
+<pre>┌──────────────────────────────────────────────┐
+│  Browser — Next.js 16 / React 19             │
+│  sender · agent · receiver workflows         │
+│            │                    │            │
+│            │ fetch              │ sign       │
+└────────────┼────────────────────┼────────────┘
+             ▼                    ▼
+   ┌───────────────────┐   ┌──────────────────┐
+   │  Route handlers   │   │ Freighter/Rabet  │
+   │  (same deploy)    │   │ locked to PUBLIC │
+   └─────────┬─────────┘   └────────┬─────────┘
+             │                      │
+             ▼                      ▼
+   ┌───────────────────┐   ┌──────────────────┐
+   │ Neon PostgreSQL   │   │ Soroban escrow   │
+   │ Drizzle ORM       │   │ Circle USDC SAC  │
+   └───────────────────┘   └──────────────────┘
+</pre>
+
+    <table>
+      <thead><tr><th>Concern</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Web application</td><td>Next.js 16, React 19, TypeScript</td></tr>
+        <tr><td>Wallets</td><td>Freighter API and Rabet, locked to <code>PUBLIC</code></td></tr>
+        <tr><td>Contract</td><td>Rust <code>no_std</code>, Soroban SDK 22</td></tr>
+        <tr><td>Token</td><td>Circle USDC Stellar Asset Contract</td></tr>
+        <tr><td>Database</td><td>Neon PostgreSQL with Drizzle ORM</td></tr>
+        <tr><td>Evidence storage</td><td>Cloudinary</td></tr>
+        <tr><td>Hosting</td><td>Railway, Docker</td></tr>
+        <tr><td>CI</td><td>GitHub Actions production build</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>The server holds no key.</strong> Every state change that moves collateral is authorised by a wallet signature and verified by the contract. A compromised deployment could show wrong information; it could not release someone's stake.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" id="evidence">
+    <p class="eyebrow"><span class="num">07</span> &nbsp;Live on Mainnet</p>
+    <h2>Everything below is publicly checkable</h2>
+    <p class="lead">No account, no API key, no request to us. Open a block explorer.</p>
+
+    <table>
+      <tbody>
+        <tr><th style="width:190px">Escrow contract</th><td><a href="https://stellar.expert/explorer/public/contract/CCNRSZLLMHW36GOZQPR5VRRMNB5CH7AXOZMFN4KURNIQSO7LKELG65DE"><code>CCNRSZLL…G65DE</code></a></td></tr>
+        <tr><th>USDC SAC</th><td><code>CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75</code></td></tr>
+        <tr><th>Optimized WASM</th><td><code>5d13258c3b823f8265652e7ca48a063e7dab02c12f826b0f858b9a43460201d6</code></td></tr>
+        <tr><th>Upload WASM</th><td><a href="https://stellar.expert/explorer/public/tx/36193dcdb78e2d35fdf7cd6ac31a5816aa2dd63fcfeec1c7f168ddd10937b6c7"><code>36193dcd…b6c7</code></a></td></tr>
+        <tr><th>Deploy escrow</th><td><a href="https://stellar.expert/explorer/public/tx/0f7f30efc6bc051117cc42b7ba73bc9615770bc138d874a5c7fabb5564e1c38f"><code>0f7f30ef…c38f</code></a></td></tr>
+        <tr><th>Application</th><td><a href="https://stlremitv2-production.up.railway.app/">stlremitv2-production.up.railway.app</a></td></tr>
+        <tr><th>Repository</th><td><a href="https://github.com/tuananhh209/stlremitv2">tuananhh209/stlremitv2</a></td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><div class="stat">20</div><div class="stat-sub">funded Mainnet accounts, each linked to its explorer page</div></div>
+      <div class="card"><div class="stat">16</div><div class="stat-sub">verified buy/sell transaction pairs</div></div>
+      <div class="card"><div class="stat">2 / 2</div><div class="stat-sub">deployment transactions returned <code>SUCCESS</code></div></div>
+    </div>
+
+    <p class="muted" style="margin-top:16px;font-size:14px">Post-deployment read checks returned the expected USDC contract and an initial escrow balance of <code>0</code>.</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" id="market">
+    <p class="eyebrow"><span class="num">08</span> &nbsp;Market opportunity</p>
+    <h2>The cost sits in the last mile, which is where we work</h2>
+
+    <div class="grid g3" style="margin-top:4px">
+      <div class="card"><div class="stat">~$685B</div><div class="stat-sub">annual remittances to low- and middle-income countries</div></div>
+      <div class="card"><div class="stat">~6.4%</div><div class="stat-sub">average cost of sending $200 across corridors</div></div>
+      <div class="card"><div class="stat">3%</div><div class="stat-sub">UN Sustainable Development Goal 10.c target</div></div>
+    </div>
+    <p><small>Source: World Bank <em>Remittance Prices Worldwide</em> and Migration &amp; Development Brief. Figures are approximate and should be refreshed against the latest quarterly release before any external use.</small></p>
+
+    <h3>Where the gap between 6.4% and 3% actually lives</h3>
+    <p>Network fees are already negligible on Stellar — a settlement costs a fraction of a cent. What remains is the <strong>counterparty risk premium</strong>: the margin an agent charges for fronting cash to a stranger, and the margin a sender accepts for paying one.</p>
+    <p>That premium is not a technology cost. It is the price of an unverifiable promise. Collateral in escrow prices it down directly, because the promise stops needing to be believed.</p>
+
+    <h3>Beachhead</h3>
+    <p>Corridors with high informal-agent density and low card penetration — where the payout is cash, the agent is a person rather than an institution, and neither side has recourse. Those are precisely the corridors where the risk premium is highest and where a verifiable stake is worth the most.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" id="growth">
+    <p class="eyebrow"><span class="num">09</span> &nbsp;Growth strategy</p>
+    <h2>Agents are the constrained side. Recruit them first.</h2>
+    <p class="lead">Senders follow liquidity. An empty corridor cannot be fixed by acquiring more senders, so growth is agent-led by construction.</p>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <h4>1 · Seed one corridor deeply</h4>
+        <p>Enough agents in a single corridor that a request is always accepted quickly. A shallow presence in ten corridors is worse than a reliable presence in one.</p>
+      </div>
+      <div class="card">
+        <h4>2 · Make the on-chain record portable</h4>
+        <p>An agent's history of completed releases is public and belongs to their wallet. It follows them, which is a reason to build it here rather than inside a closed platform.</p>
+      </div>
+      <div class="card">
+        <h4>3 · Let evidence do the selling</h4>
+        <p>Every remittance produces an explorer link a sender can hand to the next sender. The product's marketing artefact is a transaction, not a testimonial.</p>
+      </div>
+      <div class="card">
+        <h4>4 · Lower the stake as trust accrues</h4>
+        <p>Collateral requirements can fall as an agent's verified record grows. Capital efficiency becomes the reward for reliability, and the reward is enforced on chain.</p>
+      </div>
+    </div>
+
+    <h3>What we measure</h3>
+    <table>
+      <thead><tr><th>Metric</th><th>Why it is the right one</th></tr></thead>
+      <tbody>
+        <tr><td>Time from request to agent acceptance</td><td>Direct measure of corridor liquidity</td></tr>
+        <tr><td>Share of remittances released vs refunded</td><td>Whether agents actually complete what they stake against</td></tr>
+        <tr><td>Repeat rate per sender</td><td>The only honest signal that the trust problem was solved for them</td></tr>
+        <tr><td>Collateral turnover per agent</td><td>Capital efficiency, and the basis for lowering stake requirements</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" id="roadmap">
+    <p class="eyebrow"><span class="num">10</span> &nbsp;Roadmap</p>
+    <h2>Widen the guarantee only after it has been audited</h2>
+
+    <div class="grid g2">
+      <div class="card">
+        <h4><span class="pill">Shipped</span> &nbsp;Mainnet escrow</h4>
+        <p>Contract deployed against Circle USDC. Accept, receiver-confirm and timeout-refund paths live and covered by contract tests. 20 funded accounts, 16 verified transaction pairs.</p>
+      </div>
+      <div class="card">
+        <h4><span class="pill warn">Next</span> &nbsp;Dispute resolution</h4>
+        <p>A named arbitrator able to split collateral when sender and receiver disagree. Deliberately absent today: moving someone's stake on a contested claim needs an independent audit first.</p>
+      </div>
+      <div class="card">
+        <h4><span class="pill warn">Next</span> &nbsp;Agent reputation on chain</h4>
+        <p>Completed releases, refunds and timeouts recorded against an agent's address, so the record survives this application and is readable by any client.</p>
+      </div>
+      <div class="card">
+        <h4><span class="pill warn">Later</span> &nbsp;Risk-tiered collateral</h4>
+        <p>Stake requirements that fall with a verified history, turning reliability into working capital.</p>
+      </div>
+      <div class="card">
+        <h4><span class="pill warn">Later</span> &nbsp;Multi-corridor liquidity</h4>
+        <p>Agent discovery and routing across corridors once a single corridor is reliably deep.</p>
+      </div>
+      <div class="card">
+        <h4><span class="pill warn">Later</span> &nbsp;Third-party audit</h4>
+        <p>The security material published today is an internal review. An external audit gates every increase in the amount the contract is allowed to hold.</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:20px">
+      <strong>What is deliberately not built.</strong> No administrative withdrawal path exists in the deployed contract. Collateral returns to the agent on timeout or moves to the agent on receiver confirmation — there is no third option, and no key that creates one.
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" id="close">
+    <p class="eyebrow">Close</p>
+    <h2>Check it rather than believe it</h2>
+    <p class="lead">Every claim in this deck resolves to a public transaction, a deployed contract, or a file in the repository.</p>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <h4>Live application</h4>
+        <p><a href="https://stlremitv2-production.up.railway.app/">stlremitv2-production.up.railway.app</a></p>
+      </div>
+      <div class="card">
+        <h4>Repository</h4>
+        <p><a href="https://github.com/tuananhh209/stlremitv2">github.com/tuananhh209/stlremitv2</a></p>
+      </div>
+      <div class="card">
+        <h4>Escrow contract</h4>
+        <p><a href="https://stellar.expert/explorer/public/contract/CCNRSZLLMHW36GOZQPR5VRRMNB5CH7AXOZMFN4KURNIQSO7LKELG65DE">Inspect on Stellar Expert</a></p>
+      </div>
+      <div class="card">
+        <h4>Mainnet accounts</h4>
+        <p><a href="https://github.com/tuananhh209/stlremitv2/blob/main/MAINNET_USERS.md">MAINNET_USERS.md</a> — 20 addresses</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:20px">
+      <strong>Mainnet carries real value.</strong> USDC and XLM on the Public Network are real money. Never approve a transaction whose contract ID, network or amount differs from what the application shows you.
+    </div>
+  </section>
+
+  <footer>STLRemit · MIT © 2026 · Print this page to export the deck as PDF</footer>
+</div>
+</body>
+</html>
