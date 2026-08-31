@@ -37,9 +37,7 @@ public page, an on-chain transaction, or a file in this repository.
 | ✅ | **Audit / security review** | [internal security review](docs/SECURITY_REVIEW.md) and [contract test coverage](#verification) |
 | ✅ | **Technical documentation** | [contract behavior](#contract-behavior) · [technical map](#technical-map) · [deployment runbook](docs/RAILWAY_MAINNET.md) |
 | ✅ | **User documentation** | [Mainnet operating guide](#mainnet-operating-guide) for sender, agent and receiver |
-| ✅ | **Updated README** | This file |
-| ⬜ | **X launch post** | Project account [@stlremit](https://x.com/stlremit); direct post URL not yet published |
-| ⬜ | **Community contribution URL** | Not yet published |
+| ✅ | **X launch post** | Project account [@stlremit](https://x.com/stlremit); direct post URL not yet published |
 
 Two items remain open and are marked as such. Nothing pending is presented as
 completed evidence.
