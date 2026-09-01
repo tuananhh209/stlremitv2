@@ -19,7 +19,10 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-ARG NEXT_PUBLIC_APP_URL
+# A default matters here: an ARG without one becomes an empty ENV rather than
+# an unset variable, and the build then fails validating a value nobody asked
+# for. The other two ARGs below already had defaults; this one did not.
+ARG NEXT_PUBLIC_APP_URL=https://stlremitv2-production.up.railway.app
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ARG NEXT_PUBLIC_STELLAR_NETWORK=mainnet
 ENV NEXT_PUBLIC_STELLAR_NETWORK=${NEXT_PUBLIC_STELLAR_NETWORK}
